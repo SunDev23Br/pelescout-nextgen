@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
 import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
+import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
 
 const ManualRoute = ManualRouteImport.update({
   id: '/manual',
@@ -58,6 +59,11 @@ const PeneirasPeneiraIdRoute = PeneirasPeneiraIdRouteImport.update({
   path: '/peneiras/$peneiraId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
+  id: '/candidatos/$candidatoId',
+  path: '/candidatos/$candidatoId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/candidatos': typeof CandidatosIndexRoute
   '/peneiras': typeof PeneirasIndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/candidatos/'
     | '/peneiras/'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/candidatos'
     | '/peneiras'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/candidatos/'
     | '/peneiras/'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
+  CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   CandidatosIndexRoute: typeof CandidatosIndexRoute
   PeneirasIndexRoute: typeof PeneirasIndexRoute
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeneirasPeneiraIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/candidatos/$candidatoId': {
+      id: '/candidatos/$candidatoId'
+      path: '/candidatos/$candidatoId'
+      fullPath: '/candidatos/$candidatoId'
+      preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
+  CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   CandidatosIndexRoute: CandidatosIndexRoute,
   PeneirasIndexRoute: PeneirasIndexRoute,
