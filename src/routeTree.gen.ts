@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/': typeof PeneirasIndexRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras': typeof PeneirasIndexRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/': typeof PeneirasIndexRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/dashboard'
     | '/login'
+    | '/manual'
     | '/peneiras/$peneiraId'
     | '/peneiras/'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/dashboard'
     | '/login'
+    | '/manual'
     | '/peneiras/$peneiraId'
     | '/peneiras'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/dashboard'
     | '/login'
+    | '/manual'
     | '/peneiras/$peneiraId'
     | '/peneiras/'
   fileRoutesById: FileRoutesById
@@ -104,12 +116,20 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  ManualRoute: typeof ManualRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   PeneirasIndexRoute: typeof PeneirasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  ManualRoute: ManualRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   PeneirasIndexRoute: PeneirasIndexRoute,
 }
