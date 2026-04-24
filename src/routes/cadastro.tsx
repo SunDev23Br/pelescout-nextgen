@@ -12,10 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { setSession } from "@/lib/session";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -26,7 +23,8 @@ export const Route = createFileRoute("/cadastro")({
       { title: "Cadastro de atleta — Pelé Next Gen" },
       {
         name: "description",
-        content: "Crie sua conta de atleta na Pelé Next Gen e participe das peneiras oficiais.",
+        content:
+          "Crie sua conta de atleta na Pelé Next Gen e participe das peneiras oficiais.",
       },
     ],
   }),
@@ -36,6 +34,12 @@ export const Route = createFileRoute("/cadastro")({
 const schema = z.object({
   nome: z.string().trim().min(3, "Informe seu nome completo").max(100),
   email: z.string().trim().email("E-mail inválido").max(255),
+  celular: z
+    .string()
+    .trim()
+    .min(10, "Celular inválido")
+    .max(20, "Celular inválido")
+    .regex(/[\d\s()+\-]+/, "Use apenas números e (), +, -"),
   senha: z.string().min(6, "A senha deve ter ao menos 6 caracteres").max(72),
   idade: z.coerce.number().int().min(8, "Idade mínima 8").max(40, "Idade máxima 40"),
   altura: z.coerce.number().min(120, "Altura em cm").max(230),
@@ -46,11 +50,19 @@ const schema = z.object({
 
 const POSICOES = ["Goleiro", "Zagueiro", "Lateral", "Volante", "Meia", "Atacante"];
 
+function maskCelular(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
 function CadastroPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     nome: "",
     email: "",
+    celular: "",
     senha: "",
     idade: "",
     altura: "",
@@ -131,7 +143,17 @@ function CadastroPage() {
                   placeholder="seu@email.com"
                 />
               </Field>
-              <Field label="Senha" error={errors.senha}>
+              <Field label="Celular (WhatsApp)" error={errors.celular}>
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  value={form.celular}
+                  onChange={(e) => update("celular", maskCelular(e.target.value))}
+                  placeholder="(11) 98765-4321"
+                  maxLength={20}
+                />
+              </Field>
+              <Field label="Senha" error={errors.senha} className="sm:col-span-2">
                 <Input
                   type="password"
                   value={form.senha}
@@ -171,10 +193,7 @@ function CadastroPage() {
               </Field>
 
               <Field label="Posição" error={errors.posicao}>
-                <Select
-                  value={form.posicao}
-                  onValueChange={(v) => update("posicao", v)}
-                >
+                <Select value={form.posicao} onValueChange={(v) => update("posicao", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
