@@ -81,7 +81,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="hidden h-24 items-center border-b border-border px-6 lg:flex">
+        <div className="hidden h-20 items-center border-b border-border px-6 lg:flex">
           <Logo />
         </div>
 
