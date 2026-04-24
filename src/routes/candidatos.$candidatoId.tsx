@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Ruler, Weight, Footprints } from "lucide-react";
+import { ArrowLeft, MapPin, Ruler, Weight, Footprints, Mail, Phone } from "lucide-react";
+import { useSession } from "@/lib/session";
 import {
   Radar,
   RadarChart,
