@@ -3,7 +3,12 @@ import logoImg from "@/assets/pele-next-gen-logo.png";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center", className)}>
+    <div
+      className={cn(
+        "inline-flex items-center justify-center rounded-xl bg-blue px-3 py-1.5 shadow-md",
+        className,
+      )}
+    >
       <img
         src={logoImg}
         alt="Pelé Next Gen"
