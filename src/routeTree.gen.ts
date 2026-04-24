@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
+import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -40,12 +41,18 @@ const PeneirasIndexRoute = PeneirasIndexRouteImport.update({
   path: '/peneiras/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PeneirasPeneiraIdRoute = PeneirasPeneiraIdRouteImport.update({
+  id: '/peneiras/$peneiraId',
+  path: '/peneiras/$peneiraId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/': typeof PeneirasIndexRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras': typeof PeneirasIndexRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,34 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/': typeof PeneirasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cadastro' | '/dashboard' | '/login' | '/peneiras/'
+  fullPaths:
+    | '/'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/peneiras/$peneiraId'
+    | '/peneiras/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cadastro' | '/dashboard' | '/login' | '/peneiras'
-  id: '__root__' | '/' | '/cadastro' | '/dashboard' | '/login' | '/peneiras/'
+  to:
+    | '/'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/peneiras/$peneiraId'
+    | '/peneiras'
+  id:
+    | '__root__'
+    | '/'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/peneiras/$peneiraId'
+    | '/peneiras/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +104,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   PeneirasIndexRoute: typeof PeneirasIndexRoute
 }
 
@@ -116,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeneirasIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/peneiras/$peneiraId': {
+      id: '/peneiras/$peneiraId'
+      path: '/peneiras/$peneiraId'
+      fullPath: '/peneiras/$peneiraId'
+      preLoaderRoute: typeof PeneirasPeneiraIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -124,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   PeneirasIndexRoute: PeneirasIndexRoute,
 }
 export const routeTree = rootRouteImport
