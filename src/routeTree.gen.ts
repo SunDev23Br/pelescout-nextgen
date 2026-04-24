@@ -9,38 +9,194 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ManualRouteImport } from './routes/manual'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as AvaliacoesRouteImport } from './routes/avaliacoes'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
+import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
+import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
+import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
 
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacoesRoute = AvaliacoesRouteImport.update({
+  id: '/avaliacoes',
+  path: '/avaliacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PeneirasIndexRoute = PeneirasIndexRouteImport.update({
+  id: '/peneiras/',
+  path: '/peneiras/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatosIndexRoute = CandidatosIndexRouteImport.update({
+  id: '/candidatos/',
+  path: '/candidatos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasPeneiraIdRoute = PeneirasPeneiraIdRouteImport.update({
+  id: '/peneiras/$peneiraId',
+  path: '/peneiras/$peneiraId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
+  id: '/candidatos/$candidatoId',
+  path: '/candidatos/$candidatoId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/avaliacoes': typeof AvaliacoesRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
+  '/candidatos/': typeof CandidatosIndexRoute
+  '/peneiras/': typeof PeneirasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/avaliacoes': typeof AvaliacoesRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
+  '/candidatos': typeof CandidatosIndexRoute
+  '/peneiras': typeof PeneirasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/avaliacoes': typeof AvaliacoesRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
+  '/manual': typeof ManualRoute
+  '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
+  '/candidatos/': typeof CandidatosIndexRoute
+  '/peneiras/': typeof PeneirasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/avaliacoes'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/manual'
+    | '/candidatos/$candidatoId'
+    | '/peneiras/$peneiraId'
+    | '/candidatos/'
+    | '/peneiras/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/avaliacoes'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/manual'
+    | '/candidatos/$candidatoId'
+    | '/peneiras/$peneiraId'
+    | '/candidatos'
+    | '/peneiras'
+  id:
+    | '__root__'
+    | '/'
+    | '/avaliacoes'
+    | '/cadastro'
+    | '/dashboard'
+    | '/login'
+    | '/manual'
+    | '/candidatos/$candidatoId'
+    | '/peneiras/$peneiraId'
+    | '/candidatos/'
+    | '/peneiras/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AvaliacoesRoute: typeof AvaliacoesRoute
+  CadastroRoute: typeof CadastroRoute
+  DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
+  ManualRoute: typeof ManualRoute
+  CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
+  PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
+  CandidatosIndexRoute: typeof CandidatosIndexRoute
+  PeneirasIndexRoute: typeof PeneirasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avaliacoes': {
+      id: '/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/avaliacoes'
+      preLoaderRoute: typeof AvaliacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +204,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/peneiras/': {
+      id: '/peneiras/'
+      path: '/peneiras'
+      fullPath: '/peneiras/'
+      preLoaderRoute: typeof PeneirasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidatos/': {
+      id: '/candidatos/'
+      path: '/candidatos'
+      fullPath: '/candidatos/'
+      preLoaderRoute: typeof CandidatosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras/$peneiraId': {
+      id: '/peneiras/$peneiraId'
+      path: '/peneiras/$peneiraId'
+      fullPath: '/peneiras/$peneiraId'
+      preLoaderRoute: typeof PeneirasPeneiraIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidatos/$candidatoId': {
+      id: '/candidatos/$candidatoId'
+      path: '/candidatos/$candidatoId'
+      fullPath: '/candidatos/$candidatoId'
+      preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AvaliacoesRoute: AvaliacoesRoute,
+  CadastroRoute: CadastroRoute,
+  DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
+  ManualRoute: ManualRoute,
+  CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
+  PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
+  CandidatosIndexRoute: CandidatosIndexRoute,
+  PeneirasIndexRoute: PeneirasIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
