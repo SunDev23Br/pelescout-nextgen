@@ -79,10 +79,18 @@ function PeneiraDetalhe() {
 
   const totalJogos = peneira.jogos.length;
 
+  const isAtleta = user?.role === "atleta";
+
   function inscrever() {
     if (!user) {
-      toast.error("Faça login para se inscrever.");
+      toast.error("Faça login como atleta para se inscrever.");
       navigate({ to: "/login" });
+      return;
+    }
+    if (!isAtleta) {
+      toast.error(
+        "Apenas atletas podem se inscrever em peneiras. Clubes e olheiros têm áreas próprias."
+      );
       return;
     }
     if (peneira.visibilidade === "privada") {
@@ -251,20 +259,31 @@ function PeneiraDetalhe() {
                     disabled={
                       peneira.status === "encerrada" ||
                       peneira.inscritos >= peneira.vagas ||
-                      peneira.visibilidade === "privada"
+                      peneira.visibilidade === "privada" ||
+                      (!!user && !isAtleta)
                     }
                   >
-                    {peneira.visibilidade === "privada"
-                      ? "Peneira privada — só convidados"
-                      : peneira.status === "encerrada"
-                        ? "Peneira encerrada"
-                        : peneira.inscritos >= peneira.vagas
-                          ? "Vagas esgotadas"
-                          : "Confirmar inscrição"}
+                    {user && !isAtleta
+                      ? user.role === "clube"
+                        ? "Apenas atletas podem se inscrever"
+                        : "Olheiros não se inscrevem"
+                      : peneira.visibilidade === "privada"
+                        ? "Peneira privada — só convidados"
+                        : peneira.status === "encerrada"
+                          ? "Peneira encerrada"
+                          : peneira.inscritos >= peneira.vagas
+                            ? "Vagas esgotadas"
+                            : !user
+                              ? "Entrar como atleta para se inscrever"
+                              : "Confirmar inscrição"}
                   </Button>
 
                   <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                    Ao se inscrever você concorda com os termos da Pelé Next Gen.
+                    {user && !isAtleta
+                      ? user.role === "clube"
+                        ? "Sua conta é de clube. Acesse a área de clubes para ver atletas aprovados."
+                        : "Sua conta é de olheiro/admin. Use a área de avaliações em tempo real."
+                      : "Ao se inscrever você concorda com os termos da Pelé Next Gen."}
                   </p>
                 </>
               )}
