@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 
-export type Role = "atleta" | "admin";
+export type Role = "atleta" | "admin" | "clube";
 
 export interface SessionUser {
   nome: string;
   email: string;
   role: Role;
+  /** Apenas quando role === "clube". Lista de candidatoIds com contato desbloqueado (pago). */
+  contatosDesbloqueados?: string[];
 }
 
 const KEY = "png_session";
@@ -30,6 +32,15 @@ export function clearSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KEY);
   window.dispatchEvent(new Event("png-session"));
+}
+
+/** Marca um contato como desbloqueado (após "pagamento" simulado). */
+export function unlockContato(candidatoId: string) {
+  const s = getSession();
+  if (!s || s.role !== "clube") return;
+  const set = new Set(s.contatosDesbloqueados ?? []);
+  set.add(candidatoId);
+  setSession({ ...s, contatosDesbloqueados: Array.from(set) });
 }
 
 export function useSession() {

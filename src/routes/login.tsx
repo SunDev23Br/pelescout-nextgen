@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, Mail, Lock, Shield, User } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Shield, User, Building2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,12 +33,24 @@ function LoginPage() {
     }
     setLoading(true);
     setTimeout(() => {
+      const slug = email.split("@")[0];
       const nome =
-        email.split("@")[0].split(".").map((s) => s[0]?.toUpperCase() + s.slice(1)).join(" ") ||
-        "Atleta";
-      setSession({ nome, email, role });
+        role === "clube"
+          ? `Clube ${slug.charAt(0).toUpperCase() + slug.slice(1)}`
+          : slug
+              .split(".")
+              .map((s) => s[0]?.toUpperCase() + s.slice(1))
+              .join(" ") || "Usuário";
+      setSession({
+        nome,
+        email,
+        role,
+        contatosDesbloqueados: role === "clube" ? [] : undefined,
+      });
       toast.success(`Bem-vindo, ${nome}!`);
-      navigate({ to: role === "admin" ? "/dashboard" : "/peneiras" });
+      const dest =
+        role === "admin" ? "/dashboard" : role === "clube" ? "/clubes" : "/peneiras";
+      navigate({ to: dest });
     }, 600);
   }
 
@@ -82,7 +94,7 @@ function LoginPage() {
             Entre na sua conta para continuar.
           </p>
 
-          <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl border border-border bg-bg2 p-1">
+          <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl border border-border bg-bg2 p-1">
             <RoleButton
               active={role === "atleta"}
               onClick={() => setRole("atleta")}
@@ -90,12 +102,26 @@ function LoginPage() {
               label="Atleta"
             />
             <RoleButton
+              active={role === "clube"}
+              onClick={() => setRole("clube")}
+              icon={<Building2 className="h-4 w-4" />}
+              label="Clube"
+            />
+            <RoleButton
               active={role === "admin"}
               onClick={() => setRole("admin")}
               icon={<Shield className="h-4 w-4" />}
-              label="Olheiro / Admin"
+              label="Admin"
             />
           </div>
+
+          {role === "clube" && (
+            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+              <strong className="text-primary">Área de clubes.</strong> Visualize atletas
+              aprovados nas peneiras. Os dados de contato (e-mail e celular) são liberados
+              mediante pagamento por atleta.
+            </div>
+          )}
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div className="space-y-2">
@@ -107,7 +133,9 @@ function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder={
+                    role === "clube" ? "contato@seuclube.com" : "seu@email.com"
+                  }
                   className="pl-10"
                   autoComplete="email"
                 />
@@ -166,7 +194,7 @@ function RoleButton({
       type="button"
       onClick={onClick}
       className={
-        "flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors " +
+        "flex items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-sm font-semibold transition-colors " +
         (active
           ? "bg-primary text-primary-foreground shadow"
           : "text-muted-foreground hover:text-foreground")

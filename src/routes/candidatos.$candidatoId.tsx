@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Ruler, Weight, Footprints } from "lucide-react";
+import { ArrowLeft, MapPin, Ruler, Weight, Footprints, Mail, Phone } from "lucide-react";
+import { useSession } from "@/lib/session";
 import {
   Radar,
   RadarChart,
@@ -43,6 +44,10 @@ export const Route = createFileRoute("/candidatos/$candidatoId")({
 
 function CandidatoDetalhe() {
   const { candidato, peneira } = Route.useLoaderData();
+  const { user } = useSession();
+  const isClube = user?.role === "clube";
+  const liberado =
+    !isClube || (user?.contatosDesbloqueados ?? []).includes(candidato.id);
 
   const radarData = candidato.avaliacao
     ? [
@@ -93,6 +98,39 @@ function CandidatoDetalhe() {
               <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
                 <MapPin className="h-4 w-4 text-primary" /> {candidato.cidade}
               </p>
+            </div>
+
+            <div className="mt-4 w-full rounded-xl border border-border bg-bg2 p-4 text-left">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Contato
+              </p>
+              <p className="mt-2 flex items-center gap-1.5 text-sm">
+                <Mail className="h-4 w-4 text-primary" />
+                <span
+                  className={
+                    "font-semibold " +
+                    (liberado ? "" : "select-none blur-sm text-muted-foreground")
+                  }
+                >
+                  {liberado ? candidato.email : "•••••••• oculto"}
+                </span>
+              </p>
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm">
+                <Phone className="h-4 w-4 text-primary" />
+                <span
+                  className={
+                    "font-semibold " +
+                    (liberado ? "" : "select-none blur-sm text-muted-foreground")
+                  }
+                >
+                  {liberado ? candidato.celular : "•••••••• oculto"}
+                </span>
+              </p>
+              {!liberado && (
+                <Button asChild size="sm" className="mt-3 w-full">
+                  <Link to="/clubes">Liberar contato</Link>
+                </Button>
+              )}
             </div>
 
             {peneira && (

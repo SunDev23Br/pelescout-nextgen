@@ -5,8 +5,12 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Globe2,
+  ListChecks,
+  Lock,
   MapPin,
   ShieldCheck,
+  Timer,
   Trophy,
   Users,
 } from "lucide-react";
@@ -63,10 +67,26 @@ function PeneiraDetalhe() {
     year: "numeric",
   });
 
+  const limiteFmt = peneira.limiteInscricao
+    ? new Date(peneira.limiteInscricao).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+
+  const totalJogos = peneira.jogos.length;
+
   function inscrever() {
     if (!user) {
       toast.error("Faça login para se inscrever.");
       navigate({ to: "/login" });
+      return;
+    }
+    if (peneira.visibilidade === "privada") {
+      toast.error("Esta peneira é privada — apenas atletas convidados.");
       return;
     }
     setInscrito(true);
@@ -93,6 +113,7 @@ function PeneiraDetalhe() {
           <div className="absolute bottom-6 left-6 right-6">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StatusBadge status={peneira.status} />
+              <VisibilidadeBadge visibilidade={peneira.visibilidade} />
               {peneira.categorias.map((c) => (
                 <span
                   key={c}
@@ -119,7 +140,21 @@ function PeneiraDetalhe() {
                 label="Data"
                 value={dataFmt.charAt(0).toUpperCase() + dataFmt.slice(1)}
               />
-              <Info icon={Clock} label="Horário" value={`${peneira.horario}h`} />
+              <Info
+                icon={Clock}
+                label="Janela de jogos"
+                value={`${peneira.horaInicio} – ${peneira.horaFim}`}
+              />
+              <Info
+                icon={Timer}
+                label="Duração / jogo"
+                value={`${peneira.duracaoJogoMin} min`}
+              />
+              <Info
+                icon={ListChecks}
+                label="Jogos no dia"
+                value={`${totalJogos} (${peneira.participantesPorJogo} atletas/jogo)`}
+              />
               <Info
                 icon={MapPin}
                 label="Local"
@@ -138,7 +173,37 @@ function PeneiraDetalhe() {
               />
             </div>
 
-            <div className="mt-8 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+            {/* Cronograma de jogos */}
+            <div className="mt-8 rounded-2xl border border-border bg-bg2 p-5">
+              <h3 className="flex items-center gap-2 font-display font-bold">
+                <ListChecks className="h-5 w-5 text-primary" />
+                Cronograma do dia
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {totalJogos} jogos × {peneira.participantesPorJogo} atletas ={" "}
+                {peneira.vagas} vagas totais
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {peneira.jogos.slice(0, 12).map((j) => (
+                  <div
+                    key={j.numero}
+                    className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                  >
+                    <span className="font-display font-bold">Jogo {j.numero}</span>
+                    <span className="rounded bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
+                      {j.horario}
+                    </span>
+                  </div>
+                ))}
+                {peneira.jogos.length > 12 && (
+                  <div className="flex items-center justify-center rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+                    +{peneira.jogos.length - 12} jogos
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-5">
               <h3 className="flex items-center gap-2 font-display font-bold">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
                 O que levar no dia
@@ -176,7 +241,7 @@ function PeneiraDetalhe() {
                     Gratuita
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Vagas limitadas — garanta a sua.
+                    Limite: <span className="font-semibold text-foreground">{limiteFmt}</span>
                   </p>
 
                   <Button
@@ -185,14 +250,17 @@ function PeneiraDetalhe() {
                     size="lg"
                     disabled={
                       peneira.status === "encerrada" ||
-                      peneira.inscritos >= peneira.vagas
+                      peneira.inscritos >= peneira.vagas ||
+                      peneira.visibilidade === "privada"
                     }
                   >
-                    {peneira.status === "encerrada"
-                      ? "Peneira encerrada"
-                      : peneira.inscritos >= peneira.vagas
-                        ? "Vagas esgotadas"
-                        : "Confirmar inscrição"}
+                    {peneira.visibilidade === "privada"
+                      ? "Peneira privada — só convidados"
+                      : peneira.status === "encerrada"
+                        ? "Peneira encerrada"
+                        : peneira.inscritos >= peneira.vagas
+                          ? "Vagas esgotadas"
+                          : "Confirmar inscrição"}
                   </Button>
 
                   <p className="mt-3 text-center text-[11px] text-muted-foreground">
@@ -205,6 +273,25 @@ function PeneiraDetalhe() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+function VisibilidadeBadge({
+  visibilidade,
+}: {
+  visibilidade: "publica" | "privada";
+}) {
+  if (visibilidade === "privada") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
+        <Lock className="h-3 w-3" /> Privada
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-success/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-success backdrop-blur">
+      <Globe2 className="h-3 w-3" /> Pública
+    </span>
   );
 }
 
