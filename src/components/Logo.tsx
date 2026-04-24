@@ -7,7 +7,7 @@ export function Logo({ className }: { className?: string }) {
       <img
         src={logoImg}
         alt="Pelé Next Gen"
-        className="h-14 w-auto object-contain"
+        className="h-20 w-auto object-contain"
       />
     </div>
   );
