@@ -44,6 +44,10 @@ export const Route = createFileRoute("/candidatos/$candidatoId")({
 
 function CandidatoDetalhe() {
   const { candidato, peneira } = Route.useLoaderData();
+  const { user } = useSession();
+  const isClube = user?.role === "clube";
+  const liberado =
+    !isClube || (user?.contatosDesbloqueados ?? []).includes(candidato.id);
 
   const radarData = candidato.avaliacao
     ? [
