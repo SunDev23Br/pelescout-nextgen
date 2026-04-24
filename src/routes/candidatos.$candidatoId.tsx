@@ -98,6 +98,7 @@ function CandidatoDetalhe() {
               <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
                 <MapPin className="h-4 w-4 text-primary" /> {candidato.cidade}
               </p>
+            </div>
 
             <div className="mt-4 w-full rounded-xl border border-border bg-bg2 p-4 text-left">
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
