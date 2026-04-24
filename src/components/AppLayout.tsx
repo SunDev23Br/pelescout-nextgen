@@ -9,9 +9,11 @@ import {
   LogOut,
   Menu,
   X,
+  PlusCircle,
+  Building2,
 } from "lucide-react";
 import { Logo } from "./Logo";
-import { useSession, clearSession } from "@/lib/session";
+import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -19,16 +21,30 @@ interface NavItem {
   to: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  roles: Array<"admin" | "atleta">;
+  roles: Role[];
 }
 
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
-  { to: "/peneiras", label: "Peneiras", icon: Trophy, roles: ["admin", "atleta"] },
+  { to: "/peneiras", label: "Peneiras", icon: Trophy, roles: ["admin", "atleta", "clube"] },
+  { to: "/peneiras/criar", label: "Criar peneira", icon: PlusCircle, roles: ["admin"] },
   { to: "/candidatos", label: "Candidatos", icon: Users, roles: ["admin"] },
-  { to: "/avaliacoes", label: "Avaliações", icon: ClipboardCheck, roles: ["admin"] },
+  { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin"] },
+  { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
 ];
+
+const ROLE_LABEL: Record<Role, string> = {
+  admin: "Olheiro / Admin",
+  atleta: "Atleta",
+  clube: "Clube",
+};
+
+const ROLE_AREA: Record<Role, string> = {
+  admin: "Painel administrativo",
+  atleta: "Área do atleta",
+  clube: "Área do clube",
+};
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useSession();
@@ -36,7 +52,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  const role = user?.role ?? "atleta";
+  const role: Role = user?.role ?? "atleta";
   const items = NAV.filter((i) => i.roles.includes(role));
 
   const handleLogout = () => {
@@ -71,12 +87,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="flex-1 overflow-y-auto p-4 pt-20 lg:pt-4">
           <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            {role === "admin" ? "Painel administrativo" : "Área do atleta"}
+            {ROLE_AREA[role]}
           </p>
           <nav className="space-y-1">
             {items.map((item) => {
               const Icon = item.icon;
-              const active = location.pathname === item.to ||
+              const active =
+                location.pathname === item.to ||
                 (item.to !== "/" && location.pathname.startsWith(item.to));
               return (
                 <Link
@@ -106,17 +123,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.nome}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {role === "admin" ? "Olheiro" : "Atleta"}
-                </p>
+                <p className="truncate text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
               </div>
             </div>
           )}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleLogout}
-          >
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Sair
           </Button>
@@ -133,9 +144,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Content */}
       <main className="flex-1 lg:pl-72">
-        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-8">
-          {children}
-        </div>
+        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-8">{children}</div>
       </main>
     </div>
   );
