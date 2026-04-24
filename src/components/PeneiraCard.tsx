@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, Lock, MapPin, Users } from "lucide-react";
 import type { Peneira } from "@/lib/mock-data";
 import { StatusBadge } from "./StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -26,8 +26,13 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-        <div className="absolute left-4 top-4">
+        <div className="absolute left-4 top-4 flex items-center gap-2">
           <StatusBadge status={peneira.status} />
+          {peneira.visibilidade === "privada" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
+              <Lock className="h-3 w-3" /> Privada
+            </span>
+          )}
         </div>
         <div className="absolute right-4 top-4 flex gap-1">
           {peneira.categorias.slice(0, 2).map((c) => (
