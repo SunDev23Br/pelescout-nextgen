@@ -79,10 +79,18 @@ function PeneiraDetalhe() {
 
   const totalJogos = peneira.jogos.length;
 
+  const isAtleta = user?.role === "atleta";
+
   function inscrever() {
     if (!user) {
-      toast.error("Faça login para se inscrever.");
+      toast.error("Faça login como atleta para se inscrever.");
       navigate({ to: "/login" });
+      return;
+    }
+    if (!isAtleta) {
+      toast.error(
+        "Apenas atletas podem se inscrever em peneiras. Clubes e olheiros têm áreas próprias."
+      );
       return;
     }
     if (peneira.visibilidade === "privada") {
