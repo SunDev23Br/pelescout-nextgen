@@ -72,10 +72,10 @@ function CandidatoDetalhe() {
         <div className="rounded-3xl border border-border bg-card p-6 shadow-card lg:col-span-1">
           <div className="flex flex-col items-center text-center">
             <div className="relative">
-              <img
+              <AthleteAvatar
                 src={candidato.avatar}
                 alt={candidato.nome}
-                className="h-28 w-28 rounded-full border-4 border-primary object-cover shadow-gold"
+                className="h-28 w-28 border-4 border-primary shadow-gold"
               />
               <span className="absolute -bottom-1 right-0 rounded-full bg-gradient-gold px-2 py-0.5 text-xs font-bold text-primary-foreground shadow">
                 {candidato.notaGeral?.toFixed(1) ?? "—"}
