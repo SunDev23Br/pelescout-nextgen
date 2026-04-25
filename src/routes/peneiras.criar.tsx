@@ -318,16 +318,19 @@ function Grid({ children }: { children: React.ReactNode }) {
 function Field({
   label,
   full,
+  error,
   children,
 }: {
   label: string;
   full?: boolean;
+  error?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className={"space-y-2 " + (full ? "sm:col-span-2" : "")}>
-      <Label className="text-sm font-semibold">{label}</Label>
+      <Label className={"text-sm font-semibold " + (error ? "text-error" : "")}>{label}</Label>
       {children}
+      {error && <p className="text-xs font-medium text-error">Campo obrigatório.</p>}
     </div>
   );
 }
