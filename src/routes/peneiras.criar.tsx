@@ -287,11 +287,17 @@ function CriarPeneiraPage() {
               </p>
             </div>
 
-            <Button type="submit" className="mt-6 w-full" size="lg" disabled={loading}>
+            <Button
+              type="submit"
+              className="mt-6 w-full"
+              size="lg"
+              disabled={loading}
+              variant={Object.values(errors).some(Boolean) ? "error" : "default"}
+            >
               {loading ? "Criando..." : (
                 <>
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Publicar peneira
+                  {Object.values(errors).some(Boolean) ? "Preencha os campos obrigatórios" : "Publicar peneira"}
                 </>
               )}
             </Button>
