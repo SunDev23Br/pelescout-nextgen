@@ -200,10 +200,10 @@ function AvaliacoesPage() {
                     (active ? "bg-primary/15 text-foreground" : "hover:bg-bg2")
                   }
                 >
-                  <img
+                  <AthleteAvatar
                     src={c.avatar}
                     alt={c.nome}
-                    className="h-9 w-9 rounded-full border border-border object-cover"
+                    className="h-9 w-9 border border-border"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{c.nome}</p>
