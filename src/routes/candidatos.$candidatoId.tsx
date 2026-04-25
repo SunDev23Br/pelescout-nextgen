@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AppLayout } from "@/components/AppLayout";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
 import { getCandidato, getPeneira } from "@/lib/mock-data";
 
