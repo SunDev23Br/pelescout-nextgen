@@ -152,6 +152,51 @@ function CadastroPage() {
           </div>
 
           <form onSubmit={submit} className="space-y-8">
+            <div>
+              <h2 className="mb-4 font-display text-lg font-bold">Foto de perfil</h2>
+              <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-bg2/40 p-6 sm:flex-row sm:items-center sm:gap-6">
+                <AthleteAvatar
+                  src={foto}
+                  alt="Sua foto"
+                  className="h-24 w-24 border-2 border-primary/40 shadow-card"
+                />
+                <div className="flex-1 space-y-2 text-center sm:text-left">
+                  <p className="text-sm font-semibold">Adicione uma foto sua</p>
+                  <p className="text-xs text-muted-foreground">
+                    Use uma foto recente, do rosto, em boa iluminação. PNG ou JPG até 5MB.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fotoInputRef.current?.click()}
+                    >
+                      <Camera className="mr-2 h-4 w-4" />
+                      {foto ? "Trocar foto" : "Enviar foto"}
+                    </Button>
+                    {foto && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removerFoto}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Remover
+                      </Button>
+                    )}
+                  </div>
+                  <input
+                    ref={fotoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleFotoChange}
+                  />
+                </div>
+              </div>
+            </div>
+
             <Section title="Dados pessoais">
               <Field label="Nome completo" error={errors.nome} className="sm:col-span-2">
                 <Input
