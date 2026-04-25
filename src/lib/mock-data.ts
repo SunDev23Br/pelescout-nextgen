@@ -340,7 +340,7 @@ export const candidatos: Candidato[] = nomes.map((nome, i) => {
     altura: 165 + (i % 25),
     peso: 58 + (i % 22),
     pe: i % 4 === 0 ? "Canhoto" : "Destro",
-    avatar: `https://i.pravatar.cc/150?img=${i + 12}`,
+    avatar: "",
     email: `${primeiroNome}.${i + 1}@email.com`,
     celular: `(${ddd}) ${numero.slice(0, 5)}-${numero.slice(5, 9)}`,
     peneiraId: peneira.id,
