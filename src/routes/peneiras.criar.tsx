@@ -38,6 +38,7 @@ function CriarPeneiraPage() {
     descricao: "",
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const totalJogos = useMemo(
     () => calcularJogos(form.horaInicio, form.horaFim, form.duracaoJogoMin),
@@ -56,11 +57,20 @@ function CriarPeneiraPage() {
 
   function update<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k as string]) setErrors((e) => ({ ...e, [k as string]: false }));
   }
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!form.titulo || !form.cidade || !form.data || !form.limiteInscricao) {
+    const newErrors: Record<string, boolean> = {};
+    if (!form.titulo) newErrors.titulo = true;
+    if (!form.cidade) newErrors.cidade = true;
+    if (!form.estado) newErrors.estado = true;
+    if (!form.local) newErrors.local = true;
+    if (!form.data) newErrors.data = true;
+    if (!form.limiteInscricao) newErrors.limiteInscricao = true;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
@@ -68,6 +78,7 @@ function CriarPeneiraPage() {
       toast.error("Janela de horários inválida — verifique início, fim e duração.");
       return;
     }
+    setErrors({});
     setLoading(true);
     setTimeout(() => {
       toast.success(
