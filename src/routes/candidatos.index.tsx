@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
 import { candidatos } from "@/lib/mock-data";
 
