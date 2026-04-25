@@ -306,13 +306,20 @@ function CadastroPage() {
               <Button type="button" variant="outline" asChild>
                 <Link to="/login">Cancelar</Link>
               </Button>
-              <Button type="submit" size="lg" disabled={loading}>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loading}
+                variant={Object.values(errors).some(Boolean) ? "error" : "default"}
+              >
                 {loading ? (
                   "Criando conta..."
                 ) : (
                   <>
                     <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Criar conta de atleta
+                    {Object.values(errors).some(Boolean)
+                      ? "Preencha os campos obrigatórios"
+                      : "Criar conta de atleta"}
                   </>
                 )}
               </Button>
