@@ -127,33 +127,37 @@ function CriarPeneiraPage() {
         <div className="space-y-6">
           <Card title="Informações básicas">
             <Grid>
-              <Field label="Título *" full>
+              <Field label="Título *" full error={errors.titulo}>
                 <Input
                   value={form.titulo}
                   onChange={(e) => update("titulo", e.target.value)}
                   placeholder="Ex: Peneira Sub-17 — CT Rei Pelé"
+                  className={errors.titulo ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Cidade *">
+              <Field label="Cidade *" error={errors.cidade}>
                 <Input
                   value={form.cidade}
                   onChange={(e) => update("cidade", e.target.value)}
                   placeholder="Santos"
+                  className={errors.cidade ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Estado *">
+              <Field label="Estado *" error={errors.estado}>
                 <Input
                   value={form.estado}
                   onChange={(e) => update("estado", e.target.value.toUpperCase())}
                   placeholder="SP"
                   maxLength={2}
+                  className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Local *" full>
+              <Field label="Local *" full error={errors.local}>
                 <Input
                   value={form.local}
                   onChange={(e) => update("local", e.target.value)}
                   placeholder="CT Rei Pelé — Vila Belmiro"
+                  className={errors.local ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
               <Field label="Descrição" full>
@@ -170,18 +174,20 @@ function CriarPeneiraPage() {
 
           <Card title="Programação">
             <Grid>
-              <Field label="Data da peneira *">
+              <Field label="Data da peneira *" error={errors.data}>
                 <Input
                   type="date"
                   value={form.data}
                   onChange={(e) => update("data", e.target.value)}
+                  className={errors.data ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Limite para inscrição *">
+              <Field label="Limite para inscrição *" error={errors.limiteInscricao}>
                 <Input
                   type="datetime-local"
                   value={form.limiteInscricao}
                   onChange={(e) => update("limiteInscricao", e.target.value)}
+                  className={errors.limiteInscricao ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
               <Field label="Início (campo disponível)">
