@@ -38,6 +38,7 @@ function CriarPeneiraPage() {
     descricao: "",
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const totalJogos = useMemo(
     () => calcularJogos(form.horaInicio, form.horaFim, form.duracaoJogoMin),
@@ -56,11 +57,20 @@ function CriarPeneiraPage() {
 
   function update<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k as string]) setErrors((e) => ({ ...e, [k as string]: false }));
   }
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!form.titulo || !form.cidade || !form.data || !form.limiteInscricao) {
+    const newErrors: Record<string, boolean> = {};
+    if (!form.titulo) newErrors.titulo = true;
+    if (!form.cidade) newErrors.cidade = true;
+    if (!form.estado) newErrors.estado = true;
+    if (!form.local) newErrors.local = true;
+    if (!form.data) newErrors.data = true;
+    if (!form.limiteInscricao) newErrors.limiteInscricao = true;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
@@ -68,6 +78,7 @@ function CriarPeneiraPage() {
       toast.error("Janela de horários inválida — verifique início, fim e duração.");
       return;
     }
+    setErrors({});
     setLoading(true);
     setTimeout(() => {
       toast.success(
@@ -116,33 +127,37 @@ function CriarPeneiraPage() {
         <div className="space-y-6">
           <Card title="Informações básicas">
             <Grid>
-              <Field label="Título *" full>
+              <Field label="Título *" full error={errors.titulo}>
                 <Input
                   value={form.titulo}
                   onChange={(e) => update("titulo", e.target.value)}
                   placeholder="Ex: Peneira Sub-17 — CT Rei Pelé"
+                  className={errors.titulo ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Cidade *">
+              <Field label="Cidade *" error={errors.cidade}>
                 <Input
                   value={form.cidade}
                   onChange={(e) => update("cidade", e.target.value)}
                   placeholder="Santos"
+                  className={errors.cidade ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Estado *">
+              <Field label="Estado *" error={errors.estado}>
                 <Input
                   value={form.estado}
                   onChange={(e) => update("estado", e.target.value.toUpperCase())}
                   placeholder="SP"
                   maxLength={2}
+                  className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Local *" full>
+              <Field label="Local *" full error={errors.local}>
                 <Input
                   value={form.local}
                   onChange={(e) => update("local", e.target.value)}
                   placeholder="CT Rei Pelé — Vila Belmiro"
+                  className={errors.local ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
               <Field label="Descrição" full>
@@ -159,18 +174,20 @@ function CriarPeneiraPage() {
 
           <Card title="Programação">
             <Grid>
-              <Field label="Data da peneira *">
+              <Field label="Data da peneira *" error={errors.data}>
                 <Input
                   type="date"
                   value={form.data}
                   onChange={(e) => update("data", e.target.value)}
+                  className={errors.data ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
-              <Field label="Limite para inscrição *">
+              <Field label="Limite para inscrição *" error={errors.limiteInscricao}>
                 <Input
                   type="datetime-local"
                   value={form.limiteInscricao}
                   onChange={(e) => update("limiteInscricao", e.target.value)}
+                  className={errors.limiteInscricao ? "border-error ring-2 ring-error/40" : ""}
                 />
               </Field>
               <Field label="Início (campo disponível)">
@@ -270,11 +287,17 @@ function CriarPeneiraPage() {
               </p>
             </div>
 
-            <Button type="submit" className="mt-6 w-full" size="lg" disabled={loading}>
+            <Button
+              type="submit"
+              className="mt-6 w-full"
+              size="lg"
+              disabled={loading}
+              variant={Object.values(errors).some(Boolean) ? "error" : "default"}
+            >
               {loading ? "Criando..." : (
                 <>
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Publicar peneira
+                  {Object.values(errors).some(Boolean) ? "Preencha os campos obrigatórios" : "Publicar peneira"}
                 </>
               )}
             </Button>
@@ -301,16 +324,19 @@ function Grid({ children }: { children: React.ReactNode }) {
 function Field({
   label,
   full,
+  error,
   children,
 }: {
   label: string;
   full?: boolean;
+  error?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className={"space-y-2 " + (full ? "sm:col-span-2" : "")}>
-      <Label className="text-sm font-semibold">{label}</Label>
+      <Label className={"text-sm font-semibold " + (error ? "text-error" : "")}>{label}</Label>
       {children}
+      {error && <p className="text-xs font-medium text-error">Campo obrigatório.</p>}
     </div>
   );
 }
