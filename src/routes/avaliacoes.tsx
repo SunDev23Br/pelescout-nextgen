@@ -236,10 +236,10 @@ function AvaliacoesPage() {
           <div className="space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <div className="flex flex-wrap items-center gap-4">
-                <img
+                <AthleteAvatar
                   src={selected.avatar}
                   alt={selected.nome}
-                  className="h-16 w-16 rounded-full border-2 border-primary object-cover"
+                  className="h-16 w-16 border-2 border-primary"
                 />
                 <div className="flex-1">
                   <h2 className="font-display text-xl font-extrabold">{selected.nome}</h2>
