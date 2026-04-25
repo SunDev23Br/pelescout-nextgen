@@ -10,6 +10,7 @@ import {
   Unlock,
 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
