@@ -10,6 +10,7 @@ import {
   Unlock,
 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -144,10 +145,10 @@ function ClubesPage() {
               >
                 <div className="flex items-start gap-4">
                   <div className="relative">
-                    <img
+                    <AthleteAvatar
                       src={c.avatar}
                       alt={c.nome}
-                      className="h-14 w-14 rounded-full border-2 border-primary object-cover"
+                      className="h-14 w-14 border-2 border-primary"
                     />
                     <span className="absolute -bottom-1 -right-1 rounded-full bg-gradient-gold px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow">
                       {c.notaGeral?.toFixed(1) ?? "—"}

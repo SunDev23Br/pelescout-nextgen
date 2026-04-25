@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AppLayout } from "@/components/AppLayout";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -199,10 +200,10 @@ function AvaliacoesPage() {
                     (active ? "bg-primary/15 text-foreground" : "hover:bg-bg2")
                   }
                 >
-                  <img
+                  <AthleteAvatar
                     src={c.avatar}
                     alt={c.nome}
-                    className="h-9 w-9 rounded-full border border-border object-cover"
+                    className="h-9 w-9 border border-border"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{c.nome}</p>
@@ -235,10 +236,10 @@ function AvaliacoesPage() {
           <div className="space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <div className="flex flex-wrap items-center gap-4">
-                <img
+                <AthleteAvatar
                   src={selected.avatar}
                   alt={selected.nome}
-                  className="h-16 w-16 rounded-full border-2 border-primary object-cover"
+                  className="h-16 w-16 border-2 border-primary"
                 />
                 <div className="flex-1">
                   <h2 className="font-display text-xl font-extrabold">{selected.nome}</h2>
