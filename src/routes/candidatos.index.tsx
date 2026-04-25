@@ -105,10 +105,10 @@ function CandidatosPage() {
                     params={{ candidatoId: c.id }}
                     className="flex items-center gap-3 font-semibold hover:text-primary"
                   >
-                    <img
+                    <AthleteAvatar
                       src={c.avatar}
                       alt={c.nome}
-                      className="h-9 w-9 rounded-full border border-border object-cover"
+                      className="h-9 w-9 border border-border"
                     />
                     {c.nome}
                   </Link>
