@@ -73,6 +73,30 @@ function CadastroPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [foto, setFoto] = useState<string>("");
+  const fotoInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setFoto(typeof reader.result === "string" ? reader.result : "");
+    reader.readAsDataURL(file);
+  }
+
+  function removerFoto() {
+    setFoto("");
+    if (fotoInputRef.current) fotoInputRef.current.value = "";
+  }
+
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
