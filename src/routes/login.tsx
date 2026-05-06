@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setSession, type Role } from "@/lib/session";
+import { authenticateUser } from "@/lib/user-registry";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -33,24 +34,37 @@ function LoginPage() {
     }
     setLoading(true);
     setTimeout(() => {
-      const slug = email.split("@")[0];
-      const nome =
-        role === "clube"
-          ? `Clube ${slug.charAt(0).toUpperCase() + slug.slice(1)}`
-          : slug
-              .split(".")
-              .map((s) => s[0]?.toUpperCase() + s.slice(1))
-              .join(" ") || "Usuário";
-      setSession({
-        nome,
-        email,
-        role,
-        contatosDesbloqueados: role === "clube" ? [] : undefined,
-      });
-      toast.success(`Bem-vindo, ${nome}!`);
-      const dest =
-        role === "admin" ? "/dashboard" : role === "clube" ? "/clubes" : "/peneiras";
-      navigate({ to: dest });
+      // For admin/clube roles, validate against user registry
+      if (role === "admin" || role === "clube") {
+        const authResult = authenticateUser(email, senha);
+        if (!authResult.success) {
+          setLoading(false);
+          toast.error(authResult.error ?? "Erro ao autenticar.");
+          return;
+        }
+        // User is active, proceed with login
+        const u = authResult.user!;
+        setSession({
+          nome: u.nome,
+          email: u.email,
+          role: u.role,
+          contatosDesbloqueados: u.role === "clube" ? [] : undefined,
+        });
+        toast.success(`Bem-vindo, ${u.nome}!`);
+        const dest = u.role === "admin" ? "/dashboard" : "/clubes";
+        navigate({ to: dest });
+      } else {
+        // Atleta login (simplified mock)
+        const slug = email.split("@")[0];
+        const nome = slug
+          .split(".")
+          .map((s) => s[0]?.toUpperCase() + s.slice(1))
+          .join(" ") || "Usuário";
+        setSession({ nome, email, role: "atleta" });
+        toast.success(`Bem-vindo, ${nome}!`);
+        navigate({ to: "/peneiras" });
+      }
+      setLoading(false);
     }, 600);
   }
 
