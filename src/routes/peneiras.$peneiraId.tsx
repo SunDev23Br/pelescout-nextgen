@@ -93,10 +93,7 @@ function PeneiraDetalhe() {
       );
       return;
     }
-    if (peneira.visibilidade === "privada") {
-      toast.error("Esta peneira é privada — apenas atletas convidados.");
-      return;
-    }
+    // Atletas podem se inscrever em peneiras privadas normalmente
     setInscrito(true);
     toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
   }
@@ -122,7 +119,7 @@ function PeneiraDetalhe() {
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StatusBadge status={peneira.status} />
               <VisibilidadeBadge visibilidade={peneira.visibilidade} />
-              {peneira.categorias.map((c) => (
+              {peneira.categorias.map((c: string) => (
                 <span
                   key={c}
                   className="rounded-full bg-background/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur"
@@ -192,7 +189,7 @@ function PeneiraDetalhe() {
                 {peneira.vagas} vagas totais
               </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {peneira.jogos.slice(0, 12).map((j) => (
+                {peneira.jogos.slice(0, 12).map((j: { numero: number; horario: string }) => (
                   <div
                     key={j.numero}
                     className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
@@ -259,7 +256,6 @@ function PeneiraDetalhe() {
                     disabled={
                       peneira.status === "encerrada" ||
                       peneira.inscritos >= peneira.vagas ||
-                      peneira.visibilidade === "privada" ||
                       (!!user && !isAtleta)
                     }
                   >
@@ -267,12 +263,10 @@ function PeneiraDetalhe() {
                       ? user.role === "clube"
                         ? "Apenas atletas podem se inscrever"
                         : "Olheiros não se inscrevem"
-                      : peneira.visibilidade === "privada"
-                        ? "Peneira privada — só convidados"
-                        : peneira.status === "encerrada"
-                          ? "Peneira encerrada"
-                          : peneira.inscritos >= peneira.vagas
-                            ? "Vagas esgotadas"
+                      : peneira.status === "encerrada"
+                        ? "Peneira encerrada"
+                        : peneira.inscritos >= peneira.vagas
+                          ? "Vagas esgotadas"
                             : !user
                               ? "Entrar como atleta para se inscrever"
                               : "Confirmar inscrição"}
@@ -288,6 +282,37 @@ function PeneiraDetalhe() {
                 </>
               )}
             </div>
+
+            {/* Link de convite para olheiros — só aparece para admins/clubes em peneiras privadas */}
+            {peneira.visibilidade === "privada" && user && (user.role === "admin" || user.role === "clube") && (
+              <div className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  🔗 Link de convite para olheiros
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Esta peneira é privada para olheiros. Compartilhe o link abaixo para convidar outros olheiros.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/peneiras/${peneira.id}?invite=${peneira.inviteToken ?? "token"}`}
+                    className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-xs text-foreground"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/peneiras/${peneira.id}?invite=${peneira.inviteToken ?? "token"}`
+                      );
+                      toast.success("Link copiado!");
+                    }}
+                  >
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
       </div>
@@ -303,7 +328,7 @@ function VisibilidadeBadge({
   if (visibilidade === "privada") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
-        <Lock className="h-3 w-3" /> Privada
+        <Lock className="h-3 w-3" /> Privada (olheiros)
       </span>
     );
   }

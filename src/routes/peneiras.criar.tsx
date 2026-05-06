@@ -236,14 +236,14 @@ function CriarPeneiraPage() {
                 onClick={() => update("visibilidade", "publica")}
                 icon={<Globe2 className="h-5 w-5" />}
                 title="Pública"
-                desc="Aparece para qualquer atleta cadastrado."
+                desc="Todos os olheiros têm acesso à peneira."
               />
               <VisOption
                 active={form.visibilidade === "privada"}
                 onClick={() => update("visibilidade", "privada")}
                 icon={<Lock className="h-5 w-5" />}
                 title="Privada"
-                desc="Apenas atletas convidados conseguem se inscrever."
+                desc="Apenas olheiros convidados via link têm acesso. Atletas veem normalmente."
               />
             </div>
           </Card>
