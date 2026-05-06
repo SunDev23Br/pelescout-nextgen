@@ -284,6 +284,37 @@ function PeneiraDetalhe() {
                 </>
               )}
             </div>
+
+            {/* Link de convite para olheiros — só aparece para admins/clubes em peneiras privadas */}
+            {peneira.visibilidade === "privada" && user && (user.role === "admin" || user.role === "clube") && (
+              <div className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  🔗 Link de convite para olheiros
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Esta peneira é privada para olheiros. Compartilhe o link abaixo para convidar outros olheiros.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/peneiras/${peneira.id}?invite=${peneira.inviteToken ?? "token"}`}
+                    className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-xs text-foreground"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/peneiras/${peneira.id}?invite=${peneira.inviteToken ?? "token"}`
+                      );
+                      toast.success("Link copiado!");
+                    }}
+                  >
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
       </div>
