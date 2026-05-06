@@ -93,10 +93,9 @@ function PeneiraDetalhe() {
       );
       return;
     }
-    if (peneira.visibilidade === "privada") {
-      toast.error("Esta peneira é privada — apenas atletas convidados.");
-      return;
-    }
+    // Atletas podem se inscrever em peneiras privadas normalmente
+    setInscrito(true);
+    toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
     setInscrito(true);
     toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
   }
@@ -259,7 +258,6 @@ function PeneiraDetalhe() {
                     disabled={
                       peneira.status === "encerrada" ||
                       peneira.inscritos >= peneira.vagas ||
-                      peneira.visibilidade === "privada" ||
                       (!!user && !isAtleta)
                     }
                   >
@@ -267,12 +265,10 @@ function PeneiraDetalhe() {
                       ? user.role === "clube"
                         ? "Apenas atletas podem se inscrever"
                         : "Olheiros não se inscrevem"
-                      : peneira.visibilidade === "privada"
-                        ? "Peneira privada — só convidados"
-                        : peneira.status === "encerrada"
-                          ? "Peneira encerrada"
-                          : peneira.inscritos >= peneira.vagas
-                            ? "Vagas esgotadas"
+                      : peneira.status === "encerrada"
+                        ? "Peneira encerrada"
+                        : peneira.inscritos >= peneira.vagas
+                          ? "Vagas esgotadas"
                             : !user
                               ? "Entrar como atleta para se inscrever"
                               : "Confirmar inscrição"}
