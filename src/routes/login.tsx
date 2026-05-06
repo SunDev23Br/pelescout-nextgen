@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setSession, type Role } from "@/lib/session";
+import { authenticateUser } from "@/lib/user-registry";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -33,24 +34,37 @@ function LoginPage() {
     }
     setLoading(true);
     setTimeout(() => {
-      const slug = email.split("@")[0];
-      const nome =
-        role === "clube"
-          ? `Clube ${slug.charAt(0).toUpperCase() + slug.slice(1)}`
-          : slug
-              .split(".")
-              .map((s) => s[0]?.toUpperCase() + s.slice(1))
-              .join(" ") || "Usuário";
-      setSession({
-        nome,
-        email,
-        role,
-        contatosDesbloqueados: role === "clube" ? [] : undefined,
-      });
-      toast.success(`Bem-vindo, ${nome}!`);
-      const dest =
-        role === "admin" ? "/dashboard" : role === "clube" ? "/clubes" : "/peneiras";
-      navigate({ to: dest });
+      // For admin/clube roles, validate against user registry
+      if (role === "admin" || role === "clube") {
+        const authResult = authenticateUser(email, senha);
+        if (!authResult.success) {
+          setLoading(false);
+          toast.error(authResult.error ?? "Erro ao autenticar.");
+          return;
+        }
+        // User is active, proceed with login
+        const u = authResult.user!;
+        setSession({
+          nome: u.nome,
+          email: u.email,
+          role: u.role,
+          contatosDesbloqueados: u.role === "clube" ? [] : undefined,
+        });
+        toast.success(`Bem-vindo, ${u.nome}!`);
+        const dest = u.role === "admin" ? "/dashboard" : "/clubes";
+        navigate({ to: dest });
+      } else {
+        // Atleta login (simplified mock)
+        const slug = email.split("@")[0];
+        const nome = slug
+          .split(".")
+          .map((s) => s[0]?.toUpperCase() + s.slice(1))
+          .join(" ") || "Usuário";
+        setSession({ nome, email, role: "atleta" });
+        toast.success(`Bem-vindo, ${nome}!`);
+        navigate({ to: "/peneiras" });
+      }
+      setLoading(false);
     }, 600);
   }
 
@@ -118,8 +132,14 @@ function LoginPage() {
           {role === "clube" && (
             <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
               <strong className="text-primary">Área de clubes.</strong> Visualize atletas
-              aprovados nas peneiras. Os dados de contato (e-mail e celular) são liberados
-              mediante pagamento por atleta.
+              aprovados nas peneiras. O acesso requer ativação prévia pelo suporte.
+            </div>
+          )}
+
+          {role === "admin" && (
+            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+              <strong className="text-primary">Área administrativa.</strong> O acesso requer
+              cadastro prévio e ativação pelo suporte.
             </div>
           )}
 
@@ -163,15 +183,23 @@ function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Ainda não tem conta?{" "}
-            <Link
-              to="/cadastro"
-              className="font-semibold text-primary hover:text-gold-light"
-            >
-              Cadastre-se como atleta
-            </Link>
-          </p>
+          <div className="mt-6 space-y-2 text-center text-sm text-muted-foreground">
+            <p>
+              Ainda não tem conta?{" "}
+              <Link to="/cadastro" className="font-semibold text-primary hover:text-gold-light">
+                Cadastre-se como atleta
+              </Link>
+            </p>
+            <p>
+              <Link to="/cadastro/admin" className="font-semibold text-primary hover:text-gold-light">
+                Cadastro de administrador
+              </Link>
+              {" · "}
+              <Link to="/cadastro/clube" className="font-semibold text-primary hover:text-gold-light">
+                Cadastro de clube
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

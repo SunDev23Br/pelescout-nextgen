@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -21,7 +22,14 @@ import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
 import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
+import { Route as CadastroClubeRouteImport } from './routes/cadastro.clube'
+import { Route as CadastroAdminRouteImport } from './routes/cadastro.admin'
 
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ManualRoute = ManualRouteImport.update({
   id: '/manual',
   path: '/manual',
@@ -82,15 +90,28 @@ const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
   path: '/candidatos/$candidatoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroClubeRoute = CadastroClubeRouteImport.update({
+  id: '/clube',
+  path: '/clube',
+  getParentRoute: () => CadastroRoute,
+} as any)
+const CadastroAdminRoute = CadastroAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => CadastroRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/cadastro': typeof CadastroRoute
+  '/cadastro': typeof CadastroRouteWithChildren
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/suporte': typeof SuporteRoute
+  '/cadastro/admin': typeof CadastroAdminRoute
+  '/cadastro/clube': typeof CadastroClubeRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -100,11 +121,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/cadastro': typeof CadastroRoute
+  '/cadastro': typeof CadastroRouteWithChildren
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/suporte': typeof SuporteRoute
+  '/cadastro/admin': typeof CadastroAdminRoute
+  '/cadastro/clube': typeof CadastroClubeRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -115,11 +139,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/cadastro': typeof CadastroRoute
+  '/cadastro': typeof CadastroRouteWithChildren
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/suporte': typeof SuporteRoute
+  '/cadastro/admin': typeof CadastroAdminRoute
+  '/cadastro/clube': typeof CadastroClubeRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -136,6 +163,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/suporte'
+    | '/cadastro/admin'
+    | '/cadastro/clube'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -150,6 +180,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/suporte'
+    | '/cadastro/admin'
+    | '/cadastro/clube'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -164,6 +197,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/suporte'
+    | '/cadastro/admin'
+    | '/cadastro/clube'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -174,11 +210,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AvaliacoesRoute: typeof AvaliacoesRoute
-  CadastroRoute: typeof CadastroRoute
+  CadastroRoute: typeof CadastroRouteWithChildren
   ClubesRoute: typeof ClubesRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
+  SuporteRoute: typeof SuporteRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   PeneirasCriarRoute: typeof PeneirasCriarRoute
@@ -188,6 +225,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/manual': {
       id: '/manual'
       path: '/manual'
@@ -272,17 +316,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro/clube': {
+      id: '/cadastro/clube'
+      path: '/clube'
+      fullPath: '/cadastro/clube'
+      preLoaderRoute: typeof CadastroClubeRouteImport
+      parentRoute: typeof CadastroRoute
+    }
+    '/cadastro/admin': {
+      id: '/cadastro/admin'
+      path: '/admin'
+      fullPath: '/cadastro/admin'
+      preLoaderRoute: typeof CadastroAdminRouteImport
+      parentRoute: typeof CadastroRoute
+    }
   }
 }
+
+interface CadastroRouteChildren {
+  CadastroAdminRoute: typeof CadastroAdminRoute
+  CadastroClubeRoute: typeof CadastroClubeRoute
+}
+
+const CadastroRouteChildren: CadastroRouteChildren = {
+  CadastroAdminRoute: CadastroAdminRoute,
+  CadastroClubeRoute: CadastroClubeRoute,
+}
+
+const CadastroRouteWithChildren = CadastroRoute._addFileChildren(
+  CadastroRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AvaliacoesRoute: AvaliacoesRoute,
-  CadastroRoute: CadastroRoute,
+  CadastroRoute: CadastroRouteWithChildren,
   ClubesRoute: ClubesRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
+  SuporteRoute: SuporteRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   PeneirasCriarRoute: PeneirasCriarRoute,
