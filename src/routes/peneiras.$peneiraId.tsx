@@ -96,8 +96,6 @@ function PeneiraDetalhe() {
     // Atletas podem se inscrever em peneiras privadas normalmente
     setInscrito(true);
     toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
-    setInscrito(true);
-    toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
   }
 
   return (
