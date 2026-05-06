@@ -43,6 +43,8 @@ export interface Peneira {
   categorias: string[];
   status: StatusPeneira;
   visibilidade: Visibilidade;
+  /** Token de convite para olheiros (gerado quando privada). */
+  inviteToken?: string;
   imagem: string;
   descricao: string;
   organizador: string;
@@ -266,10 +268,11 @@ export const peneiras: Peneira[] = [
     categorias: ["Sub-13"],
     status: "aberta",
     visibilidade: "privada",
+    inviteToken: "abc123-invite-token",
     imagem:
       "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=1200&q=80&auto=format&fit=crop",
     descricao:
-      "Peneira privada apenas para atletas convidados. Acesso restrito.",
+      "Peneira privada para olheiros — apenas olheiros convidados têm acesso. Atletas podem se inscrever normalmente.",
     organizador: "Pelé Next Gen",
   }),
 ];
