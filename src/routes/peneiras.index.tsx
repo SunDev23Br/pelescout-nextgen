@@ -32,8 +32,6 @@ function PeneirasPage() {
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
 
   const { user } = useSession();
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  const inviteParam = searchParams.get("invite");
 
   const list = useMemo(() => {
     return peneiras.filter((p) => {
