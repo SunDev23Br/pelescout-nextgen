@@ -30,7 +30,7 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
           <StatusBadge status={peneira.status} />
           {peneira.visibilidade === "privada" && (
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
-              <Lock className="h-3 w-3" /> Privada
+              <Lock className="h-3 w-3" /> Privada (olheiros)
             </span>
           )}
         </div>
