@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PeneiraCard } from "@/components/PeneiraCard";
 import { Input } from "@/components/ui/input";
 import { peneiras, type StatusPeneira } from "@/lib/mock-data";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/peneiras/")({
   head: () => ({
@@ -30,9 +31,18 @@ function PeneirasPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
 
+  const { user } = useSession();
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const inviteParam = searchParams.get("invite");
+
   const list = useMemo(() => {
     return peneiras.filter((p) => {
       if (filter !== "todas" && p.status !== filter) return false;
+      // Peneiras privadas: atletas veem todas; olheiros/clubes só veem se tiverem convite ou se for pública
+      if (p.visibilidade === "privada" && user && (user.role === "clube" || user.role === "admin")) {
+        // Olheiros só veem privadas com convite (simplificado: sempre mostram na listagem mas com badge)
+        // Na prática aqui mostramos todas para simplificar; a restrição real é no acesso ao conteúdo
+      }
       if (!q.trim()) return true;
       const term = q.toLowerCase();
       return (
@@ -41,7 +51,7 @@ function PeneirasPage() {
         p.estado.toLowerCase().includes(term)
       );
     });
-  }, [q, filter]);
+  }, [q, filter, user]);
 
   return (
     <AppLayout>
