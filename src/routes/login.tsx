@@ -132,8 +132,14 @@ function LoginPage() {
           {role === "clube" && (
             <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
               <strong className="text-primary">Área de clubes.</strong> Visualize atletas
-              aprovados nas peneiras. Os dados de contato (e-mail e celular) são liberados
-              mediante pagamento por atleta.
+              aprovados nas peneiras. O acesso requer ativação prévia pelo suporte.
+            </div>
+          )}
+
+          {role === "admin" && (
+            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+              <strong className="text-primary">Área administrativa.</strong> O acesso requer
+              cadastro prévio e ativação pelo suporte.
             </div>
           )}
 
