@@ -177,15 +177,23 @@ function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Ainda não tem conta?{" "}
-            <Link
-              to="/cadastro"
-              className="font-semibold text-primary hover:text-gold-light"
-            >
-              Cadastre-se como atleta
-            </Link>
-          </p>
+          <div className="mt-6 space-y-2 text-center text-sm text-muted-foreground">
+            <p>
+              Ainda não tem conta?{" "}
+              <Link to="/cadastro" className="font-semibold text-primary hover:text-gold-light">
+                Cadastre-se como atleta
+              </Link>
+            </p>
+            <p>
+              <Link to="/cadastro/admin" className="font-semibold text-primary hover:text-gold-light">
+                Cadastro de administrador
+              </Link>
+              {" · "}
+              <Link to="/cadastro/clube" className="font-semibold text-primary hover:text-gold-light">
+                Cadastro de clube
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
