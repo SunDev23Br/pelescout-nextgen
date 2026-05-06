@@ -121,7 +121,7 @@ function PeneiraDetalhe() {
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StatusBadge status={peneira.status} />
               <VisibilidadeBadge visibilidade={peneira.visibilidade} />
-              {peneira.categorias.map((c) => (
+              {peneira.categorias.map((c: string) => (
                 <span
                   key={c}
                   className="rounded-full bg-background/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider backdrop-blur"
@@ -191,7 +191,7 @@ function PeneiraDetalhe() {
                 {peneira.vagas} vagas totais
               </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {peneira.jogos.slice(0, 12).map((j) => (
+                {peneira.jogos.slice(0, 12).map((j: { numero: number; horario: string }) => (
                   <div
                     key={j.numero}
                     className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
