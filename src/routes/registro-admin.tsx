@@ -35,7 +35,6 @@ const schema = z
   });
 
 function CadastroAdminPage() {
-  const navigate = useNavigate();
   const [form, setForm] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
