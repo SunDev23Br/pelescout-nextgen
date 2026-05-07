@@ -83,7 +83,7 @@ function LoginPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden overflow-hidden lg:block">
         <img
-          src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1400&q=80"
+          src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1400&q=80"
           alt=""
           className="h-full w-full object-cover"
         />
