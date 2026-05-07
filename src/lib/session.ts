@@ -7,6 +7,7 @@ export interface SessionUser {
   id: string;
   nome: string;
   email: string;
+  avatarUrl?: string | null;
   role: Role;
   /** Apenas quando role === "clube". Lista de candidatoIds com contato desbloqueado. */
   contatosDesbloqueados?: string[];
