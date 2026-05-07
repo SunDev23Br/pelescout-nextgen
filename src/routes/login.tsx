@@ -84,7 +84,7 @@ function LoginPage() {
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1400&q=80"
-          alt="Estádio iluminado"
+          alt=""
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/70 to-blue-dark/60" />
