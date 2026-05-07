@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Camera, CheckCircle2, Loader2, Trash2 } from "lucide-react";
+import { Camera, CheckCircle2, KeyRound, Loader2, Lock, Mail, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
@@ -27,10 +27,18 @@ function PerfilPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [senha, setSenha] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingAuth, setSavingAuth] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Password change flow
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [verifyingCurrent, setVerifyingCurrent] = useState(false);
+  const [currentVerified, setCurrentVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
@@ -128,38 +136,91 @@ function PerfilPage() {
     toast.success("Perfil atualizado!");
   }
 
-  async function salvarAuth(e: FormEvent) {
-    e.preventDefault();
+  async function verificarSenhaAtual() {
     if (!user) return;
-    const updates: { email?: string; password?: string } = {};
-    if (email && email !== user.email) updates.email = email.trim();
-    if (senha) {
-      if (senha.length < 6) {
-        toast.error("A senha deve ter ao menos 6 caracteres.");
-        return;
-      }
-      updates.password = senha;
-    }
-    if (!updates.email && !updates.password) {
-      toast.message("Nada para atualizar.");
+    if (!currentPassword) {
+      toast.error("Informe sua senha atual.");
       return;
     }
-    setSavingAuth(true);
-    const { error } = await supabase.auth.updateUser(updates);
-    if (!error && updates.email) {
-      await supabase.from("profiles").update({ email: updates.email }).eq("id", user.id);
+    setVerifyingCurrent(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    setVerifyingCurrent(false);
+    if (error) {
+      toast.error("Senha atual incorreta.");
+      setCurrentVerified(false);
+      return;
     }
-    setSavingAuth(false);
+    setCurrentVerified(true);
+    toast.success("Senha verificada. Agora defina sua nova senha.");
+  }
+
+  async function enviarCodigoEmail() {
+    if (!user) return;
+    setSendingReset(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/`,
+    });
+    setSendingReset(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    setSenha("");
-    if (updates.email) {
-      toast.success("Verifique o novo e-mail para confirmar a alteração.");
-    } else {
-      toast.success("Senha atualizada!");
+    toast.success(`Enviamos um link de redefinição para ${user.email}.`);
+  }
+
+  async function salvarNovaSenha(e: FormEvent) {
+    e.preventDefault();
+    if (!currentVerified) {
+      toast.error("Confirme sua senha atual antes de continuar.");
+      return;
     }
+    if (newPassword.length < 6) {
+      toast.error("A nova senha deve ter ao menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      toast.error("A nova senha deve ser diferente da atual.");
+      return;
+    }
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSavingPassword(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setCurrentVerified(false);
+    toast.success("Senha atualizada com sucesso!");
+  }
+
+  async function salvarEmail(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    if (!email || email === user.email) {
+      toast.message("Nada para atualizar.");
+      return;
+    }
+    setSavingEmail(true);
+    const { error } = await supabase.auth.updateUser({ email: email.trim() });
+    if (!error) {
+      await supabase.from("profiles").update({ email: email.trim() }).eq("id", user.id);
+    }
+    setSavingEmail(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Verifique o novo e-mail para confirmar a alteração.");
     window.dispatchEvent(new Event("png-session"));
   }
 
@@ -246,10 +307,12 @@ function PerfilPage() {
         </form>
 
         <form
-          onSubmit={salvarAuth}
+          onSubmit={salvarEmail}
           className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="font-display text-lg font-bold">E-mail e senha</h2>
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+            <Mail className="h-5 w-5" /> E-mail
+          </h2>
           <div className="space-y-2">
             <Label className="text-sm font-semibold">E-mail</Label>
             <Input
@@ -262,23 +325,127 @@ function PerfilPage() {
               Ao alterar, será necessário confirmar pelo novo e-mail.
             </p>
           </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">Nova senha</Label>
-            <Input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Deixe em branco para não alterar"
-            />
-          </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={savingAuth}>
-              {savingAuth ? (
+            <Button type="submit" disabled={savingEmail}>
+              {savingEmail ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <CheckCircle2 className="mr-2 h-4 w-4" />
               )}
-              Atualizar acesso
+              Atualizar e-mail
+            </Button>
+          </div>
+        </form>
+
+        <form
+          onSubmit={salvarNovaSenha}
+          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+        >
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+              <Lock className="h-5 w-5" /> Alterar senha
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Confirme sua senha atual antes de definir uma nova.
+            </p>
+          </div>
+
+          {/* Step 1: current password */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Senha atual</Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  if (currentVerified) setCurrentVerified(false);
+                }}
+                placeholder="Digite sua senha atual"
+                disabled={currentVerified}
+                autoComplete="current-password"
+              />
+              {!currentVerified ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={verificarSenhaAtual}
+                  disabled={verifyingCurrent || !currentPassword}
+                >
+                  {verifyingCurrent ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
+                  Verificar
+                </Button>
+              ) : (
+                <span className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary">
+                  <CheckCircle2 className="h-4 w-4" /> Verificada
+                </span>
+              )}
+            </div>
+
+            {!currentVerified && (
+              <button
+                type="button"
+                onClick={enviarCodigoEmail}
+                disabled={sendingReset}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+              >
+                {sendingReset ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <KeyRound className="h-3.5 w-3.5" />
+                )}
+                Não sei minha senha — enviar código por e-mail
+              </button>
+            )}
+          </div>
+
+          {/* Step 2: new password (locked until verified) */}
+          <fieldset
+            disabled={!currentVerified}
+            className={
+              "space-y-4 rounded-2xl border border-dashed border-border p-4 transition-opacity " +
+              (currentVerified ? "opacity-100" : "opacity-50")
+            }
+          >
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Nova senha</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Confirmar nova senha</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita a nova senha"
+                autoComplete="new-password"
+              />
+            </div>
+          </fieldset>
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={
+                !currentVerified || savingPassword || !newPassword || !confirmPassword
+              }
+            >
+              {savingPassword ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+              )}
+              Trocar senha
             </Button>
           </div>
         </form>
