@@ -66,7 +66,7 @@ function CadastroAdminPage() {
       password: form.senha,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { nome: form.nome, role: "admin" },
+        data: { nome: form.nome },
       },
     });
     setLoading(false);
