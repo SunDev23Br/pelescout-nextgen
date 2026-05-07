@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { setSession } from "@/lib/session";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -103,7 +103,7 @@ function CadastroPage() {
     if (errors[key as string]) setErrors((e) => ({ ...e, [key as string]: "" }));
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     const result = schema.safeParse(form);
     if (!result.success) {
@@ -117,11 +117,24 @@ function CadastroPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setSession({ nome: form.nome, email: form.email, role: "atleta" });
-      toast.success("Cadastro concluído! Bem-vindo à Pelé Next Gen.");
-      navigate({ to: "/manual" });
-    }, 700);
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.senha,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          nome: form.nome,
+          role: "atleta",
+        },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Cadastro concluído! Bem-vindo à Pelé Next Gen.");
+    navigate({ to: "/manual" });
   }
 
   return (
