@@ -9,7 +9,7 @@ import { registerClube } from "@/lib/user-registry";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export const Route = createFileRoute("/cadastro/clube")({
+export const Route = createFileRoute("/registro-clube")({
   head: () => ({
     meta: [
       { title: "Cadastro de Clube — Pelé Next Gen" },
