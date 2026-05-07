@@ -33,6 +33,7 @@ import { ScoutComment } from "@/components/evaluation/ScoutComment";
 import { AutoSummary } from "@/components/evaluation/AutoSummary";
 import { OverallRating } from "@/components/evaluation/OverallRating";
 import { EvaluationCard } from "@/components/evaluation/EvaluationCard";
+import { FootProfile, EMPTY_FOOT_DATA, computeFootBonus, type FootData } from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/avaliacoes")({
