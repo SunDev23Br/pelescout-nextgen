@@ -34,24 +34,21 @@ function LoginPage() {
     }
     setLoading(true);
     setTimeout(() => {
-      // For admin/clube roles, validate against user registry
       if (role === "admin" || role === "clube") {
-        const authResult = authenticateUser(email, senha);
-        if (!authResult.success) {
-          setLoading(false);
-          toast.error(authResult.error ?? "Erro ao autenticar.");
-          return;
-        }
-        // User is active, proceed with login
-        const u = authResult.user!;
+        // Acesso liberado: login direto para admin/clube (sem exigir cadastro prévio)
+        const slug = email.split("@")[0];
+        const nome = slug
+          .split(".")
+          .map((s) => s[0]?.toUpperCase() + s.slice(1))
+          .join(" ") || "Usuário";
         setSession({
-          nome: u.nome,
-          email: u.email,
-          role: u.role,
-          contatosDesbloqueados: u.role === "clube" ? [] : undefined,
+          nome,
+          email,
+          role,
+          contatosDesbloqueados: role === "clube" ? [] : undefined,
         });
-        toast.success(`Bem-vindo, ${u.nome}!`);
-        const dest = u.role === "admin" ? "/dashboard" : "/clubes";
+        toast.success(`Bem-vindo, ${nome}!`);
+        const dest = role === "admin" ? "/dashboard" : "/clubes";
         navigate({ to: dest });
       } else {
         // Atleta login (simplified mock)
