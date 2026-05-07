@@ -136,38 +136,91 @@ function PerfilPage() {
     toast.success("Perfil atualizado!");
   }
 
-  async function salvarAuth(e: FormEvent) {
-    e.preventDefault();
+  async function verificarSenhaAtual() {
     if (!user) return;
-    const updates: { email?: string; password?: string } = {};
-    if (email && email !== user.email) updates.email = email.trim();
-    if (senha) {
-      if (senha.length < 6) {
-        toast.error("A senha deve ter ao menos 6 caracteres.");
-        return;
-      }
-      updates.password = senha;
-    }
-    if (!updates.email && !updates.password) {
-      toast.message("Nada para atualizar.");
+    if (!currentPassword) {
+      toast.error("Informe sua senha atual.");
       return;
     }
-    setSavingAuth(true);
-    const { error } = await supabase.auth.updateUser(updates);
-    if (!error && updates.email) {
-      await supabase.from("profiles").update({ email: updates.email }).eq("id", user.id);
+    setVerifyingCurrent(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    setVerifyingCurrent(false);
+    if (error) {
+      toast.error("Senha atual incorreta.");
+      setCurrentVerified(false);
+      return;
     }
-    setSavingAuth(false);
+    setCurrentVerified(true);
+    toast.success("Senha verificada. Agora defina sua nova senha.");
+  }
+
+  async function enviarCodigoEmail() {
+    if (!user) return;
+    setSendingReset(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/`,
+    });
+    setSendingReset(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    setSenha("");
-    if (updates.email) {
-      toast.success("Verifique o novo e-mail para confirmar a alteração.");
-    } else {
-      toast.success("Senha atualizada!");
+    toast.success(`Enviamos um link de redefinição para ${user.email}.`);
+  }
+
+  async function salvarNovaSenha(e: FormEvent) {
+    e.preventDefault();
+    if (!currentVerified) {
+      toast.error("Confirme sua senha atual antes de continuar.");
+      return;
     }
+    if (newPassword.length < 6) {
+      toast.error("A nova senha deve ter ao menos 6 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      toast.error("A nova senha deve ser diferente da atual.");
+      return;
+    }
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSavingPassword(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setCurrentVerified(false);
+    toast.success("Senha atualizada com sucesso!");
+  }
+
+  async function salvarEmail(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    if (!email || email === user.email) {
+      toast.message("Nada para atualizar.");
+      return;
+    }
+    setSavingEmail(true);
+    const { error } = await supabase.auth.updateUser({ email: email.trim() });
+    if (!error) {
+      await supabase.from("profiles").update({ email: email.trim() }).eq("id", user.id);
+    }
+    setSavingEmail(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Verifique o novo e-mail para confirmar a alteração.");
     window.dispatchEvent(new Event("png-session"));
   }
 
