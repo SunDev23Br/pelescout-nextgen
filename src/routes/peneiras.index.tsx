@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Check, Search, SlidersHorizontal } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PeneiraCard } from "@/components/PeneiraCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { peneiras, type StatusPeneira } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 
