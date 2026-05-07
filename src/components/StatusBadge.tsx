@@ -6,9 +6,9 @@ const styles: Record<StatusPeneira, string> = {
   aberta:
     "bg-success text-background border-2 border-success ring-2 ring-success/40 font-bold uppercase tracking-wide shadow-lg",
   em_andamento:
-    "bg-blue-light/15 text-blue-light border border-blue-light/30",
+    "bg-blue-light text-background border-2 border-blue-light ring-2 ring-blue-light/40 font-bold uppercase tracking-wide shadow-lg",
   encerrada:
-    "bg-muted-foreground/15 text-muted-foreground border border-muted-foreground/20",
+    "bg-muted-foreground text-background border-2 border-muted-foreground ring-2 ring-muted-foreground/40 font-bold uppercase tracking-wide shadow-lg",
 };
 
 export function StatusBadge({
@@ -30,8 +30,8 @@ export function StatusBadge({
         className={cn(
           "h-1.5 w-1.5 rounded-full",
           status === "aberta" && "bg-background animate-pulse",
-          status === "em_andamento" && "bg-blue-light animate-pulse",
-          status === "encerrada" && "bg-muted-foreground",
+          status === "em_andamento" && "bg-background animate-pulse",
+          status === "encerrada" && "bg-background",
         )}
       />
       {statusLabel[status]}
