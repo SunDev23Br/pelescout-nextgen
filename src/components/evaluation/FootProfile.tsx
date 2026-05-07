@@ -84,11 +84,34 @@ export function FootProfile({ data, onChange }: FootProfileProps) {
     { key: "drible", label: "Drible" },
   ];
 
+  const bilateralValues = [data.bilateral.passe, data.bilateral.finalizacao, data.bilateral.dominio, data.bilateral.drible];
+  const bilateralFilled = bilateralValues.filter((v) => v > 0);
+  const bilateralAvg = bilateralFilled.length ? bilateralFilled.reduce((a, b) => a + b, 0) / bilateralFilled.length : 0;
+  const usoVal = data.usoNaoDominante;
+  const mediaParts = [usoVal, bilateralAvg].filter((v) => v > 0);
+  const mediaPerna = mediaParts.length ? mediaParts.reduce((a, b) => a + b, 0) / mediaParts.length : 0;
+
+  const mediaColor = mediaPerna >= 4
+    ? "text-success border-success/30 bg-success/10"
+    : mediaPerna >= 3
+      ? "text-primary border-primary/30 bg-primary/10"
+      : mediaPerna > 0
+        ? "text-destructive border-destructive/30 bg-destructive/10"
+        : "text-muted-foreground border-border bg-bg2";
+
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-card space-y-4">
-      <div className="flex items-center gap-2">
-        <Footprints className="h-4 w-4 text-primary" />
-        <h3 className="font-display text-sm font-bold">Perna Dominante & Bilateralidade</h3>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Footprints className="h-4 w-4 text-primary" />
+          <h3 className="font-display text-sm font-bold">Perna Dominante & Bilateralidade</h3>
+        </div>
+        <div className={cn("flex items-baseline gap-1.5 rounded-full border px-3 py-1", mediaColor)}>
+          <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">Média</span>
+          <span className="font-display text-sm font-extrabold tabular-nums">
+            {mediaPerna > 0 ? mediaPerna.toFixed(1) : "—"}
+          </span>
+        </div>
       </div>
 
       {/* Dominant foot */}
