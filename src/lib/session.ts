@@ -39,7 +39,7 @@ export async function unlockContato(candidatoId: string) {
 
 async function loadSessionUser(userId: string): Promise<SessionUser | null> {
   const [{ data: profile }, { data: roles }] = await Promise.all([
-    supabase.from("profiles").select("nome, email").eq("id", userId).maybeSingle(),
+    supabase.from("profiles").select("nome, email, avatar_url").eq("id", userId).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
   ]);
 
@@ -66,6 +66,7 @@ async function loadSessionUser(userId: string): Promise<SessionUser | null> {
     id: userId,
     nome: profile.nome,
     email: profile.email,
+    avatarUrl: (profile as { avatar_url?: string | null }).avatar_url ?? null,
     role,
     contatosDesbloqueados,
   };
