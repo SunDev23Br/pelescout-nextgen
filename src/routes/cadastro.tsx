@@ -74,6 +74,7 @@ function CadastroPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [foto, setFoto] = useState<string>("");
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
   const fotoInputRef = useRef<HTMLInputElement>(null);
 
   function handleFotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -87,6 +88,7 @@ function CadastroPage() {
       toast.error("A imagem deve ter no máximo 5MB.");
       return;
     }
+    setFotoFile(file);
     const reader = new FileReader();
     reader.onload = () => setFoto(typeof reader.result === "string" ? reader.result : "");
     reader.readAsDataURL(file);
@@ -94,6 +96,7 @@ function CadastroPage() {
 
   function removerFoto() {
     setFoto("");
+    setFotoFile(null);
     if (fotoInputRef.current) fotoInputRef.current.value = "";
   }
 
@@ -117,7 +120,7 @@ function CadastroPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.senha,
       options: {
@@ -127,11 +130,30 @@ function CadastroPage() {
         },
       },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
       return;
     }
+
+    // Upload da foto de perfil (se enviada e usuário já autenticado pós-signup)
+    const userId = signUpData.user?.id;
+    if (fotoFile && userId) {
+      const ext = fotoFile.name.split(".").pop() ?? "jpg";
+      const path = `${userId}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, fotoFile, { upsert: true, contentType: fotoFile.type });
+      if (!upErr) {
+        const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+        await supabase
+          .from("profiles")
+          .update({ avatar_url: pub.publicUrl })
+          .eq("id", userId);
+      }
+    }
+
+    setLoading(false);
     toast.success("Cadastro concluído! Bem-vindo à Pelé Next Gen.");
     navigate({ to: "/manual" });
   }
