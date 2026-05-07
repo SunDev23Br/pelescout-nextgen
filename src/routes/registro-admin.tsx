@@ -9,7 +9,7 @@ import { registerAdmin } from "@/lib/user-registry";
 import { toast } from "sonner";
 import { z } from "zod";
 
-export const Route = createFileRoute("/cadastro/admin")({
+export const Route = createFileRoute("/registro-admin")({
   head: () => ({
     meta: [
       { title: "Cadastro de Administrador — Pelé Next Gen" },
