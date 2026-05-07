@@ -270,7 +270,7 @@ function AvaliacoesPage() {
                 idade={selected.idade}
                 avatar={selected.avatar}
               />
-              <OverallRating scores={scores} />
+              <OverallRating scores={scores} bonus={footBonus} />
             </div>
 
             {/* Decision buttons */}
@@ -333,8 +333,11 @@ function AvaliacoesPage() {
               />
             </div>
 
+            {/* Foot / bilateral profile */}
+            <FootProfile data={footData} onChange={setFootData} />
+
             {/* Auto summary */}
-            <AutoSummary scores={scores} positiveTags={positiveTags} negativeTags={negativeTags} />
+            <AutoSummary scores={scores} positiveTags={positiveTags} negativeTags={negativeTags} foot={footData} />
 
             {/* Scout comment */}
             <ScoutComment value={comentario} onChange={setComentario} />
