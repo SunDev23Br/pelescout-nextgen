@@ -29,7 +29,7 @@ export function StatusBadge({
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          status === "aberta" && "bg-success animate-pulse",
+          status === "aberta" && "bg-background animate-pulse",
           status === "em_andamento" && "bg-blue-light animate-pulse",
           status === "encerrada" && "bg-muted-foreground",
         )}
