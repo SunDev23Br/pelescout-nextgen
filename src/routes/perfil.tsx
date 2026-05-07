@@ -27,10 +27,18 @@ function PerfilPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [senha, setSenha] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingAuth, setSavingAuth] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Password change flow
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [verifyingCurrent, setVerifyingCurrent] = useState(false);
+  const [currentVerified, setCurrentVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
