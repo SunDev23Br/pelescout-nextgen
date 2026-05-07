@@ -87,6 +87,10 @@ function AvaliacoesPage() {
   // Comment
   const [comentario, setComentario] = useState("");
 
+  // Foot / bilateral
+  const [footData, setFootData] = useState<FootData>(EMPTY_FOOT_DATA);
+  const footBonus = useMemo(() => computeFootBonus(footData), [footData]);
+
   // Decision
   const [decisoes, setDecisoes] = useState<Record<string, Decision>>({});
   const decisaoSel = selected ? decisoes[selected.id] : undefined;
