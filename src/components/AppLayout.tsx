@@ -34,6 +34,7 @@ const NAV: NavItem[] = [
   { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
+  { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube"] },
 ];
 
 const ROLE_LABEL: Record<Role, string> = {
