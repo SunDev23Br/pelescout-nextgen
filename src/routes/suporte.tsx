@@ -185,6 +185,48 @@ function SuportePage() {
         </p>
       </div>
 
+      {!loading && requests.filter((r) => r.status === "pending").length > 0 && (
+        <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+          <h2 className="font-display text-xl font-bold text-primary">
+            Solicitações de acesso administrativo
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Apenas você (admin) pode aprovar ou rejeitar novos administradores.
+          </p>
+          <div className="mt-4 space-y-2">
+            {requests
+              .filter((r) => r.status === "pending")
+              .map((r) => (
+                <div
+                  key={r.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{r.nome}</p>
+                    <p className="truncate text-xs text-muted-foreground">{r.email}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Solicitado em{" "}
+                      {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => approveRequest(r)}>
+                      Aprovar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => rejectRequest(r)}
+                    >
+                      Rejeitar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-muted-foreground">Carregando usuários…</p>
       ) : users.length === 0 ? (
