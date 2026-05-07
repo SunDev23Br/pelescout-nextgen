@@ -81,8 +81,6 @@ function PeneirasPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
-          <SlidersHorizontal className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
         <Popover>
           <PopoverTrigger asChild>
             <Button
