@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Check, Search, SlidersHorizontal } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PeneiraCard } from "@/components/PeneiraCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { peneiras, type StatusPeneira } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 
@@ -75,23 +81,48 @@ function PeneirasPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
-          <SlidersHorizontal className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={
-                "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors " +
-                (filter === f.value
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground")
-              }
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="shrink-0 gap-2"
             >
-              {f.label}
-            </button>
-          ))}
-        </div>
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtros
+              {filter !== "todas" && (
+                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  1
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-56 p-2">
+            <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Status
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {FILTERS.map((f) => {
+                const active = filter === f.value;
+                return (
+                  <button
+                    key={f.value}
+                    onClick={() => setFilter(f.value)}
+                    className={
+                      "flex items-center justify-between rounded-lg px-2.5 py-2 text-sm font-medium transition-colors " +
+                      (active
+                        ? "bg-primary/15 text-primary"
+                        : "text-foreground hover:bg-bg2")
+                    }
+                  >
+                    {f.label}
+                    {active && <Check className="h-4 w-4" />}
+                  </button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {list.length === 0 ? (
