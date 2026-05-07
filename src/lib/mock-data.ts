@@ -352,7 +352,7 @@ export const candidatos: Candidato[] = nomes.map((nome, i) => {
     comentario: avaliado
       ? "Boa leitura de jogo, precisa melhorar finalização sob pressão."
       : undefined,
-    status: avaliado ? (notaGeral! >= 8 ? "aprovado" : "avaliado") : "pendente",
+    status: avaliado ? (notaGeral! >= 3 ? "aprovado" : "avaliado") : "pendente",
   };
 });
 
