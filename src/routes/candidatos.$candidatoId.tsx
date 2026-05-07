@@ -166,7 +166,7 @@ function CandidatoDetalhe() {
                       tick={{ fill: "#e8ecf2", fontSize: 13, fontWeight: 600 }}
                     />
                     <PolarRadiusAxis
-                      domain={[0, 10]}
+                      domain={[0, 5]}
                       tick={{ fill: "#8a9bb5", fontSize: 11 }}
                     />
                     <Radar
