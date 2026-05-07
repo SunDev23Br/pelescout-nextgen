@@ -111,12 +111,13 @@ export function authenticateUser(
   if (!user) {
     return { success: false, error: "E-mail ou senha incorretos." };
   }
-  if (user.status === "pendente") {
-    return {
-      success: false,
-      error: "Acesso não liberado. Entre em contato com o suporte.",
-    };
-  }
+  // Restrição de ativação temporariamente desabilitada
+  // if (user.status === "pendente") {
+  //   return {
+  //     success: false,
+  //     error: "Acesso não liberado. Entre em contato com o suporte.",
+  //   };
+  // }
   return { success: true, user };
 }
 
