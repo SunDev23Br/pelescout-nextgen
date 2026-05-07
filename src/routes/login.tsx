@@ -115,6 +115,11 @@ function LoginPage() {
     const { data } = await supabase.auth.getUser();
     if (data.user) {
       const dest = await destinationFor(data.user.id);
+      if (!dest) {
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
       navigate({ to: dest });
     }
     setLoading(false);
