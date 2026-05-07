@@ -55,8 +55,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const role: Role = user?.role ?? "atleta";
   const items = NAV.filter((i) => i.roles.includes(role));
 
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await clearSession();
     navigate({ to: "/login" });
   };
 
