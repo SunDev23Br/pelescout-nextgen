@@ -85,9 +85,9 @@ function ClubesPage() {
     );
   }
 
-  function confirmarPagamento() {
+  async function confirmarPagamento() {
     if (!target) return;
-    unlockContato(target.id);
+    await unlockContato(target.id);
     toast.success("Pagamento confirmado!", {
       description: `Contato de ${target.nome} desbloqueado.`,
     });

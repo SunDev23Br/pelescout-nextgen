@@ -5,7 +5,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { registerClube } from "@/lib/user-registry";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -65,7 +65,7 @@ function CadastroClubePage() {
     setErrors((e) => ({ ...e, [field]: "" }));
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     const result = schema.safeParse(form);
     if (!result.success) {
@@ -80,21 +80,25 @@ function CadastroClubePage() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const res = registerClube({
-        nomeClube: form.nomeClube,
-        cnpj: form.cnpj,
-        nome: form.nome,
-        email: form.email,
-        senha: form.senha,
-      });
-      setLoading(false);
-      if (!res.success) {
-        toast.error(res.error ?? "Erro ao cadastrar.");
-        return;
-      }
-      setSuccess(true);
-    }, 800);
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.senha,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          nome: form.nome,
+          nome_clube: form.nomeClube,
+          cnpj: form.cnpj,
+          role: "clube",
+        },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setSuccess(true);
   }
 
   if (success) {
