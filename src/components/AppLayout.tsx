@@ -11,8 +11,10 @@ import {
   X,
   PlusCircle,
   Building2,
+  UserCog,
 } from "lucide-react";
 import { Logo } from "./Logo";
+import { AthleteAvatar } from "./AthleteAvatar";
 import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,6 +34,7 @@ const NAV: NavItem[] = [
   { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
+  { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube"] },
 ];
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -117,15 +120,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="border-t border-border p-4">
           {user && (
-            <div className="mb-3 flex items-center gap-3 rounded-xl bg-bg3 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-gold font-bold text-primary-foreground">
-                {user.nome.charAt(0).toUpperCase()}
-              </div>
+            <Link
+              to="/perfil"
+              onClick={() => setOpen(false)}
+              className="mb-3 flex items-center gap-3 rounded-xl bg-bg3 p-3 transition-colors hover:bg-sidebar-accent"
+            >
+              {user.avatarUrl ? (
+                <AthleteAvatar src={user.avatarUrl} alt={user.nome} className="h-10 w-10" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-gold font-bold text-primary-foreground">
+                  {user.nome.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.nome}</p>
                 <p className="truncate text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
               </div>
-            </div>
+            </Link>
           )}
           <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
