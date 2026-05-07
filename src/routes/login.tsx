@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, Mail, Lock, Shield, User, Building2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,20 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!active || !data.user) return;
+      const dest = await destinationFor(data.user.id);
+      if (active) navigate({ to: dest });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
 
   async function destinationFor(userId: string): Promise<string> {
     const { data } = await supabase
@@ -62,7 +76,8 @@ function LoginPage() {
   async function loginWithGoogle() {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/login`,
+      extraParams: { prompt: "select_account" },
     });
     if (result.error) {
       setLoading(false);
