@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["admin_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["admin_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["admin_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       avaliacoes: {
         Row: {
           avaliador_id: string | null
@@ -304,6 +337,7 @@ export type Database = {
       }
     }
     Enums: {
+      admin_request_status: "pending" | "approved" | "rejected"
       app_role: "atleta" | "admin" | "clube"
       pe_dominante: "Destro" | "Canhoto"
       posicao:
@@ -443,6 +477,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_request_status: ["pending", "approved", "rejected"],
       app_role: ["atleta", "admin", "clube"],
       pe_dominante: ["Destro", "Canhoto"],
       posicao: [
