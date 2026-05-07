@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, Shield, Mail, Lock, User, CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -35,7 +35,6 @@ const schema = z
   });
 
 function CadastroAdminPage() {
-  const navigate = useNavigate();
   const [form, setForm] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -61,19 +60,36 @@ function CadastroAdminPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.senha,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/login`,
         data: { nome: form.nome },
       },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
       return;
     }
+
+    // Cria solicitação de acesso administrativo (status pendente).
+    if (data.user) {
+      const { error: reqErr } = await supabase
+        .from("admin_requests")
+        .insert({ user_id: data.user.id, status: "pending" });
+      if (reqErr && reqErr.code !== "23505") {
+        // 23505 = unique_violation (já existe solicitação)
+        console.error(reqErr);
+      }
+    }
+
+    // Encerra a sessão criada automaticamente pelo signUp para impedir
+    // que o usuário entre na plataforma antes da aprovação.
+    await supabase.auth.signOut();
+
+    setLoading(false);
     setSuccess(true);
   }
 

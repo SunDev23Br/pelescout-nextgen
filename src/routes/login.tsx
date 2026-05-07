@@ -33,7 +33,12 @@ function LoginPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!active || !data.user) return;
       const dest = await destinationFor(data.user.id);
-      if (active) navigate({ to: dest });
+      if (!active) return;
+      if (!dest) {
+        await supabase.auth.signOut();
+        return;
+      }
+      navigate({ to: dest });
     });
 
     return () => {
@@ -41,11 +46,31 @@ function LoginPage() {
     };
   }, [navigate]);
 
-  async function destinationFor(userId: string): Promise<string> {
+  /**
+   * Retorna a rota de destino conforme os papéis do usuário.
+   * Retorna `null` quando o cadastro de admin ainda está pendente/rejeitado
+   * — nesse caso o login deve ser bloqueado.
+   */
+  async function destinationFor(userId: string): Promise<string | null> {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     const roles = new Set((data ?? []).map((r) => r.role));
     if (roles.has("admin")) return "/dashboard";
     if (roles.has("clube")) return "/clubes";
+
+    // Sem papéis privilegiados — verifica se há solicitação de admin pendente.
+    const { data: req } = await supabase
+      .from("admin_requests")
+      .select("status")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (req) {
+      if (req.status === "pending") {
+        toast.error("Seu cadastro de administrador ainda aguarda aprovação.");
+      } else if (req.status === "rejected") {
+        toast.error("Seu cadastro de administrador foi rejeitado.");
+      }
+      return null;
+    }
     return "/peneiras";
   }
 
@@ -65,8 +90,12 @@ function LoginPage() {
       toast.error(error?.message ?? "E-mail ou senha incorretos.");
       return;
     }
-    toast.success("Bem-vindo!");
     const dest = await destinationFor(data.user.id);
+    if (!dest) {
+      await supabase.auth.signOut();
+      return;
+    }
+    toast.success("Bem-vindo!");
     navigate({ to: dest });
   }
 
@@ -86,6 +115,11 @@ function LoginPage() {
     const { data } = await supabase.auth.getUser();
     if (data.user) {
       const dest = await destinationFor(data.user.id);
+      if (!dest) {
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
       navigate({ to: dest });
     }
     setLoading(false);
