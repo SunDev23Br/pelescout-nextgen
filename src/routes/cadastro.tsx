@@ -124,7 +124,6 @@ function CadastroPage() {
         emailRedirectTo: `${window.location.origin}/`,
         data: {
           nome: form.nome,
-          role: "atleta",
         },
       },
     });

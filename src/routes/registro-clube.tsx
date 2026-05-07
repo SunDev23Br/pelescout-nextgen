@@ -89,7 +89,6 @@ function CadastroClubePage() {
           nome: form.nome,
           nome_clube: form.nomeClube,
           cnpj: form.cnpj,
-          role: "clube",
         },
       },
     });
