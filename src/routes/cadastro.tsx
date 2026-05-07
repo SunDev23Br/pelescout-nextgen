@@ -74,6 +74,7 @@ function CadastroPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [foto, setFoto] = useState<string>("");
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
   const fotoInputRef = useRef<HTMLInputElement>(null);
 
   function handleFotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -87,6 +88,7 @@ function CadastroPage() {
       toast.error("A imagem deve ter no máximo 5MB.");
       return;
     }
+    setFotoFile(file);
     const reader = new FileReader();
     reader.onload = () => setFoto(typeof reader.result === "string" ? reader.result : "");
     reader.readAsDataURL(file);
@@ -94,6 +96,7 @@ function CadastroPage() {
 
   function removerFoto() {
     setFoto("");
+    setFotoFile(null);
     if (fotoInputRef.current) fotoInputRef.current.value = "";
   }
 
