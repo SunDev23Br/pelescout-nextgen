@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Camera, CheckCircle2, Loader2, Trash2 } from "lucide-react";
+import { Camera, CheckCircle2, KeyRound, Loader2, Lock, Mail, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
