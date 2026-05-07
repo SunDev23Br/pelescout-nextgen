@@ -33,6 +33,7 @@ import { ScoutComment } from "@/components/evaluation/ScoutComment";
 import { AutoSummary } from "@/components/evaluation/AutoSummary";
 import { OverallRating } from "@/components/evaluation/OverallRating";
 import { EvaluationCard } from "@/components/evaluation/EvaluationCard";
+import { FootProfile, EMPTY_FOOT_DATA, computeFootBonus, type FootData } from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/avaliacoes")({
@@ -86,6 +87,10 @@ function AvaliacoesPage() {
   // Comment
   const [comentario, setComentario] = useState("");
 
+  // Foot / bilateral
+  const [footData, setFootData] = useState<FootData>(EMPTY_FOOT_DATA);
+  const footBonus = useMemo(() => computeFootBonus(footData), [footData]);
+
   // Decision
   const [decisoes, setDecisoes] = useState<Record<string, Decision>>({});
   const decisaoSel = selected ? decisoes[selected.id] : undefined;
@@ -113,7 +118,7 @@ function AvaliacoesPage() {
       setTimeout(() => setSaving(false), 800);
     }, 2000);
     return () => clearTimeout(timeout);
-  }, [scores, positiveTags, negativeTags, comentario, selected]);
+  }, [scores, positiveTags, negativeTags, comentario, footData, selected]);
 
   // Reset when athlete changes
   useEffect(() => {
@@ -121,6 +126,7 @@ function AvaliacoesPage() {
     setPositiveTags([]);
     setNegativeTags([]);
     setComentario("");
+    setFootData(EMPTY_FOOT_DATA);
   }, [selectedId]);
 
   function decidir(decisao: Decision) {
@@ -264,7 +270,7 @@ function AvaliacoesPage() {
                 idade={selected.idade}
                 avatar={selected.avatar}
               />
-              <OverallRating scores={scores} />
+              <OverallRating scores={scores} bonus={footBonus} />
             </div>
 
             {/* Decision buttons */}
@@ -327,8 +333,11 @@ function AvaliacoesPage() {
               />
             </div>
 
+            {/* Foot / bilateral profile */}
+            <FootProfile data={footData} onChange={setFootData} />
+
             {/* Auto summary */}
-            <AutoSummary scores={scores} positiveTags={positiveTags} negativeTags={negativeTags} />
+            <AutoSummary scores={scores} positiveTags={positiveTags} negativeTags={negativeTags} foot={footData} />
 
             {/* Scout comment */}
             <ScoutComment value={comentario} onChange={setComentario} />

@@ -9,6 +9,7 @@ interface OverallRatingProps {
     mental: number;
     intensidade: number;
   };
+  bonus?: number;
 }
 
 type Classification = {
@@ -24,8 +25,9 @@ const CLASSIFICATIONS: { min: number; data: Classification }[] = [
   { min: 0, data: { label: "Abaixo do nível", color: "text-destructive", bg: "bg-destructive/15 border-destructive/30" } },
 ];
 
-export function OverallRating({ scores }: OverallRatingProps) {
-  const avg = (scores.tecnica + scores.tatica + scores.fisica + scores.mental + scores.intensidade) / 5;
+export function OverallRating({ scores, bonus = 0 }: OverallRatingProps) {
+  const base = (scores.tecnica + scores.tatica + scores.fisica + scores.mental + scores.intensidade) / 5;
+  const avg = base > 0 ? Math.max(0, Math.min(5, base + bonus)) : 0;
   const classification = useMemo(() => {
     return CLASSIFICATIONS.find((c) => avg >= c.min)?.data ?? CLASSIFICATIONS[3].data;
   }, [avg]);
@@ -39,6 +41,11 @@ export function OverallRating({ scores }: OverallRatingProps) {
       <p className={cn("text-xs font-bold uppercase tracking-wider mt-1", classification.color)}>
         {avg > 0 ? classification.label : "Aguardando avaliação"}
       </p>
+      {bonus !== 0 && avg > 0 && (
+        <p className={cn("text-[10px] mt-1 font-semibold", bonus > 0 ? "text-success" : "text-destructive")}>
+          {bonus > 0 ? "+" : ""}{bonus.toFixed(1)} bilateral
+        </p>
+      )}
     </div>
   );
 }
