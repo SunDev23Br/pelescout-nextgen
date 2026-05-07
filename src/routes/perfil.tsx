@@ -307,10 +307,12 @@ function PerfilPage() {
         </form>
 
         <form
-          onSubmit={salvarAuth}
+          onSubmit={salvarEmail}
           className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="font-display text-lg font-bold">E-mail e senha</h2>
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+            <Mail className="h-5 w-5" /> E-mail
+          </h2>
           <div className="space-y-2">
             <Label className="text-sm font-semibold">E-mail</Label>
             <Input
@@ -323,23 +325,127 @@ function PerfilPage() {
               Ao alterar, será necessário confirmar pelo novo e-mail.
             </p>
           </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">Nova senha</Label>
-            <Input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Deixe em branco para não alterar"
-            />
-          </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={savingAuth}>
-              {savingAuth ? (
+            <Button type="submit" disabled={savingEmail}>
+              {savingEmail ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <CheckCircle2 className="mr-2 h-4 w-4" />
               )}
-              Atualizar acesso
+              Atualizar e-mail
+            </Button>
+          </div>
+        </form>
+
+        <form
+          onSubmit={salvarNovaSenha}
+          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+        >
+          <div>
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+              <Lock className="h-5 w-5" /> Alterar senha
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Confirme sua senha atual antes de definir uma nova.
+            </p>
+          </div>
+
+          {/* Step 1: current password */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold">Senha atual</Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  if (currentVerified) setCurrentVerified(false);
+                }}
+                placeholder="Digite sua senha atual"
+                disabled={currentVerified}
+                autoComplete="current-password"
+              />
+              {!currentVerified ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={verificarSenhaAtual}
+                  disabled={verifyingCurrent || !currentPassword}
+                >
+                  {verifyingCurrent ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
+                  Verificar
+                </Button>
+              ) : (
+                <span className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary">
+                  <CheckCircle2 className="h-4 w-4" /> Verificada
+                </span>
+              )}
+            </div>
+
+            {!currentVerified && (
+              <button
+                type="button"
+                onClick={enviarCodigoEmail}
+                disabled={sendingReset}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+              >
+                {sendingReset ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <KeyRound className="h-3.5 w-3.5" />
+                )}
+                Não sei minha senha — enviar código por e-mail
+              </button>
+            )}
+          </div>
+
+          {/* Step 2: new password (locked until verified) */}
+          <fieldset
+            disabled={!currentVerified}
+            className={
+              "space-y-4 rounded-2xl border border-dashed border-border p-4 transition-opacity " +
+              (currentVerified ? "opacity-100" : "opacity-50")
+            }
+          >
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Nova senha</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Confirmar nova senha</Label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita a nova senha"
+                autoComplete="new-password"
+              />
+            </div>
+          </fieldset>
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={
+                !currentVerified || savingPassword || !newPassword || !confirmPassword
+              }
+            >
+              {savingPassword ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+              )}
+              Trocar senha
             </Button>
           </div>
         </form>
