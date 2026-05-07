@@ -125,13 +125,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               onClick={() => setOpen(false)}
               className="mb-3 flex items-center gap-3 rounded-xl bg-bg3 p-3 transition-colors hover:bg-sidebar-accent"
             >
-              {user.avatarUrl ? (
-                <AthleteAvatar src={user.avatarUrl} alt={user.nome} className="h-10 w-10" />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-gold font-bold text-primary-foreground">
-                  {user.nome.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <AthleteAvatar
+                src={user.avatarUrl ?? undefined}
+                alt={user.nome}
+                className="h-10 w-10 shrink-0 border border-primary/30"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.nome}</p>
                 <p className="truncate text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
