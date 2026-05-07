@@ -11,8 +11,10 @@ import {
   X,
   PlusCircle,
   Building2,
+  UserCog,
 } from "lucide-react";
 import { Logo } from "./Logo";
+import { AthleteAvatar } from "./AthleteAvatar";
 import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

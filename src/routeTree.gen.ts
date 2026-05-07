@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
 import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -38,6 +39,11 @@ const RegistroClubeRoute = RegistroClubeRouteImport.update({
 const RegistroAdminRoute = RegistroAdminRouteImport.update({
   id: '/registro-admin',
   path: '/registro-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManualRoute = ManualRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/perfil': typeof PerfilRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/perfil': typeof PerfilRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
+  '/perfil': typeof PerfilRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/perfil'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/perfil'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/manual'
+    | '/perfil'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
+  PerfilRoute: typeof PerfilRoute
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
   SuporteRoute: typeof SuporteRoute
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/registro-admin'
       fullPath: '/registro-admin'
       preLoaderRoute: typeof RegistroAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manual': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
+  PerfilRoute: PerfilRoute,
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
   SuporteRoute: SuporteRoute,
