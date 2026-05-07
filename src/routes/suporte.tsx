@@ -32,19 +32,33 @@ interface UserRow {
   roles: Role[];
 }
 
+interface AdminRequestRow {
+  id: string;
+  user_id: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  nome: string;
+  email: string;
+}
+
 function SuportePage() {
   const { user, ready } = useSession();
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [requests, setRequests] = useState<AdminRequestRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function load() {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }] = await Promise.all([
+    const [{ data: profiles }, { data: roles }, { data: reqs }] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, nome, email, nome_clube, cnpj, created_at")
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role"),
+      supabase
+        .from("admin_requests")
+        .select("id, user_id, status, created_at")
+        .order("created_at", { ascending: false }),
     ]);
 
     const rolesByUser = new Map<string, Role[]>();
@@ -54,11 +68,27 @@ function SuportePage() {
       rolesByUser.set(r.user_id, list);
     });
 
+    const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+
     setUsers(
       (profiles ?? []).map((p) => ({
         ...p,
         roles: rolesByUser.get(p.id) ?? [],
       }))
+    );
+
+    setRequests(
+      (reqs ?? []).map((r) => {
+        const p = profileById.get(r.user_id);
+        return {
+          id: r.id,
+          user_id: r.user_id,
+          status: r.status as AdminRequestRow["status"],
+          created_at: r.created_at,
+          nome: p?.nome ?? "—",
+          email: p?.email ?? "—",
+        };
+      })
     );
     setLoading(false);
   }
@@ -66,6 +96,40 @@ function SuportePage() {
   useEffect(() => {
     if (user?.role === "admin") load();
   }, [user?.role]);
+
+  async function approveRequest(req: AdminRequestRow) {
+    // Concede papel admin e marca solicitação como aprovada.
+    const { error: roleErr } = await supabase
+      .from("user_roles")
+      .insert({ user_id: req.user_id, role: "admin" });
+    if (roleErr && roleErr.code !== "23505") {
+      toast.error(roleErr.message);
+      return;
+    }
+    const { error } = await supabase
+      .from("admin_requests")
+      .update({ status: "approved", reviewed_at: new Date().toISOString() })
+      .eq("id", req.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Acesso de administrador aprovado.");
+    load();
+  }
+
+  async function rejectRequest(req: AdminRequestRow) {
+    const { error } = await supabase
+      .from("admin_requests")
+      .update({ status: "rejected", reviewed_at: new Date().toISOString() })
+      .eq("id", req.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Solicitação rejeitada.");
+    load();
+  }
 
   async function addRole(userId: string, role: Role) {
     const { error } = await supabase
