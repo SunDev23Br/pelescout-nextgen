@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, Shield, Mail, Lock, User, CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
