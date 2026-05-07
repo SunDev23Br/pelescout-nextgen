@@ -4,7 +4,7 @@ import { statusLabel } from "@/lib/mock-data";
 
 const styles: Record<StatusPeneira, string> = {
   aberta:
-    "bg-success/15 text-success border border-success/30",
+    "bg-success text-background border-2 border-success ring-2 ring-success/40 font-bold uppercase tracking-wide shadow-lg",
   em_andamento:
     "bg-blue-light/15 text-blue-light border border-blue-light/30",
   encerrada:
@@ -29,7 +29,7 @@ export function StatusBadge({
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          status === "aberta" && "bg-success animate-pulse",
+          status === "aberta" && "bg-background animate-pulse",
           status === "em_andamento" && "bg-blue-light animate-pulse",
           status === "encerrada" && "bg-muted-foreground",
         )}
