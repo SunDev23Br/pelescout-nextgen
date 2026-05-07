@@ -12,6 +12,7 @@ import {
   PlusCircle,
   Building2,
   UserCog,
+  ShieldCheck,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { AthleteAvatar } from "./AthleteAvatar";
