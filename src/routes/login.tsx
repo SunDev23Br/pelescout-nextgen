@@ -191,11 +191,11 @@ function LoginPage() {
               </Link>
             </p>
             <p>
-              <Link to="/cadastro/admin" className="font-semibold text-primary hover:text-gold-light">
+              <Link to="/registro-admin" className="font-semibold text-primary hover:text-gold-light">
                 Cadastro de administrador
               </Link>
               {" · "}
-              <Link to="/cadastro/clube" className="font-semibold text-primary hover:text-gold-light">
+              <Link to="/registro-clube" className="font-semibold text-primary hover:text-gold-light">
                 Cadastro de clube
               </Link>
             </p>
