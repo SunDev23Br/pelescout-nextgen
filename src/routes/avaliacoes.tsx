@@ -118,7 +118,7 @@ function AvaliacoesPage() {
       setTimeout(() => setSaving(false), 800);
     }, 2000);
     return () => clearTimeout(timeout);
-  }, [scores, positiveTags, negativeTags, comentario, selected]);
+  }, [scores, positiveTags, negativeTags, comentario, footData, selected]);
 
   // Reset when athlete changes
   useEffect(() => {
@@ -126,6 +126,7 @@ function AvaliacoesPage() {
     setPositiveTags([]);
     setNegativeTags([]);
     setComentario("");
+    setFootData(EMPTY_FOOT_DATA);
   }, [selectedId]);
 
   function decidir(decisao: Decision) {
