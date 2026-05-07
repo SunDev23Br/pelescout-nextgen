@@ -30,8 +30,8 @@ export function StatusBadge({
         className={cn(
           "h-1.5 w-1.5 rounded-full",
           status === "aberta" && "bg-background animate-pulse",
-          status === "em_andamento" && "bg-blue-light animate-pulse",
-          status === "encerrada" && "bg-muted-foreground",
+          status === "em_andamento" && "bg-background animate-pulse",
+          status === "encerrada" && "bg-background",
         )}
       />
       {statusLabel[status]}
