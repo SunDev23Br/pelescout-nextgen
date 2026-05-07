@@ -321,10 +321,10 @@ export const candidatos: Candidato[] = nomes.map((nome, i) => {
   const avaliado = i % 3 !== 0;
   const av: Avaliacao | undefined = avaliado
     ? {
-        tecnica: 6 + Math.round(Math.random() * 35) / 10,
-        fisico: 6 + Math.round(Math.random() * 35) / 10,
-        tatico: 6 + Math.round(Math.random() * 35) / 10,
-        psicologico: 6 + Math.round(Math.random() * 35) / 10,
+        tecnica: 1.5 + Math.round(Math.random() * 35) / 10,
+        fisico: 1.5 + Math.round(Math.random() * 35) / 10,
+        tatico: 1.5 + Math.round(Math.random() * 35) / 10,
+        psicologico: 1.5 + Math.round(Math.random() * 35) / 10,
       }
     : undefined;
   const notaGeral = av
@@ -352,7 +352,7 @@ export const candidatos: Candidato[] = nomes.map((nome, i) => {
     comentario: avaliado
       ? "Boa leitura de jogo, precisa melhorar finalização sob pressão."
       : undefined,
-    status: avaliado ? (notaGeral! >= 8 ? "aprovado" : "avaliado") : "pendente",
+    status: avaliado ? (notaGeral! >= 3 ? "aprovado" : "avaliado") : "pendente",
   };
 });
 
