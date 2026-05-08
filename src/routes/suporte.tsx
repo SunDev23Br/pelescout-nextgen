@@ -42,11 +42,14 @@ interface RequestRow {
   kind: "admin" | "clube";
 }
 
+type RoleFilter = "all" | "atleta" | "admin" | "clube";
+
 function SuportePage() {
   const { user, ready } = useSession();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   async function load() {
     setLoading(true);
