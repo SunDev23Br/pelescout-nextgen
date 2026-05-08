@@ -109,7 +109,7 @@ function SuportePage() {
   }
 
   useEffect(() => {
-    if (user?.role === "admin") load();
+    if (user?.role === "suporte") load();
   }, [user?.role]);
 
   async function approveRequest(req: RequestRow) {
