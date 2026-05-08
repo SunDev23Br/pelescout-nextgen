@@ -116,31 +116,6 @@ function LoginPage() {
       toast.error(error?.message ?? "E-mail ou senha incorretos.");
       return;
     }
-    const dest = await destinationFor(data.user.id);
-    if (!dest) {
-      await supabase.auth.signOut();
-      return;
-    }
-    toast.success("Bem-vindo!");
-    navigate({ to: dest });
-  }
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!email || !senha) {
-      toast.error("Preencha email e senha.");
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    });
-    setLoading(false);
-    if (error || !data.user) {
-      toast.error(error?.message ?? "E-mail ou senha incorretos.");
-      return;
-    }
     const dest = await destinationFor(data.user.id, role);
     if (!dest) {
       await supabase.auth.signOut();
