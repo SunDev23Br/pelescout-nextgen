@@ -147,7 +147,22 @@ function PeneirasPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p) => (
-            <PeneiraCard key={p.id} peneira={p} />
+            <div key={p.id} className="relative">
+              <PeneiraCard peneira={p} />
+              {isSuporte && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(p.id, p.titulo)}
+                  aria-label={`Excluir peneira ${p.titulo}`}
+                  className="absolute right-3 top-3 z-10 gap-1.5 shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir
+                </Button>
+              )}
+            </div>
           ))}
         </div>
       )}
