@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "atleta" | "admin" | "clube";
+export type Role = "atleta" | "admin" | "clube" | "suporte";
 
 export interface SessionUser {
   id: string;
