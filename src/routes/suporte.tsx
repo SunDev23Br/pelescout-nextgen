@@ -323,10 +323,12 @@ function UserCard({
   user,
   onAdd,
   onRemove,
+  onDelete,
 }: {
   user: UserRow;
   onAdd: (r: Role) => void;
   onRemove: (r: Role) => void;
+  onDelete: () => void;
 }) {
   const has = (r: Role) => user.roles.includes(r);
   return (
@@ -364,18 +366,25 @@ function UserCard({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {(["admin", "clube"] as Role[]).map((r) =>
-          has(r) ? (
-            <Button key={r} variant="outline" size="sm" onClick={() => onRemove(r)}>
-              Remover {r}
-            </Button>
-          ) : (
-            <Button key={r} size="sm" onClick={() => onAdd(r)}>
-              Tornar {r}
-            </Button>
-          )
+      <div className="mt-4 flex flex-wrap gap-2">
+        {has("admin") ? (
+          <Button variant="outline" size="sm" onClick={() => onRemove("admin")}>
+            Remover admin
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => onAdd("admin")}>
+            Tornar admin
+          </Button>
         )}
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={onDelete}
+          className="ml-auto"
+        >
+          <Trash2 className="mr-1 h-3.5 w-3.5" />
+          Recusar
+        </Button>
       </div>
     </div>
   );
