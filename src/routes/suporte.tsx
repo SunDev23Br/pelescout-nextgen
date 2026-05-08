@@ -180,13 +180,14 @@ function SuportePage() {
   }
 
   const filteredUsers = useMemo(() => {
-    if (roleFilter === "all") return users;
+    const base = users.filter((u) => !u.roles.some((r) => (r as string) === "suporte"));
+    if (roleFilter === "all") return base;
     if (roleFilter === "atleta") {
-      return users.filter(
+      return base.filter(
         (u) => u.roles.includes("atleta") && !u.roles.some((r) => r === "admin" || r === "clube")
       );
     }
-    return users.filter((u) => u.roles.includes(roleFilter));
+    return base.filter((u) => u.roles.includes(roleFilter));
   }, [users, roleFilter]);
 
   if (!ready) return <AppLayout><div className="py-24 text-center text-muted-foreground">Carregando…</div></AppLayout>;
