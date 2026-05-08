@@ -54,13 +54,13 @@ const ROLE_AREA: Record<Role, string> = {
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useSession();
+  const { user, ready } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  const role: Role = user?.role ?? "atleta";
-  const items = NAV.filter((i) => i.roles.includes(role));
+  const role: Role | null = user?.role ?? null;
+  const items = role ? NAV.filter((i) => i.roles.includes(role)) : [];
 
   const handleLogout = async () => {
     await clearSession();
