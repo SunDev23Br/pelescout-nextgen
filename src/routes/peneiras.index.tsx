@@ -38,8 +38,22 @@ const FILTERS: { value: StatusPeneira | "todas"; label: string }[] = [
 function PeneirasPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
   const { user } = useSession();
+  const isSuporte = user?.role === "suporte";
+
+  async function handleDelete(id: string, titulo: string) {
+    if (!confirm(`Excluir a peneira "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+    setHiddenIds((prev) => new Set(prev).add(id));
+    const { error } = await supabase.from("peneiras").delete().eq("id", id);
+    if (error && !error.message.toLowerCase().includes("0 rows")) {
+      // erro real; manter exclusão visual mas avisar
+      toast.error(`Erro ao excluir no banco: ${error.message}`);
+      return;
+    }
+    toast.success("Peneira excluída.");
+  }
 
   const list = useMemo(() => {
     return peneiras.filter((p) => {
