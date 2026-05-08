@@ -185,12 +185,8 @@ function Dashboard() {
               <XAxis dataKey="mes" stroke="#8a9bb5" fontSize={12} />
               <YAxis stroke="#8a9bb5" fontSize={12} />
               <Tooltip
-                contentStyle={{
-                  background: "#0f1e33",
-                  border: "1px solid rgba(212,175,55,0.3)",
-                  borderRadius: 12,
-                  color: "#e8ecf2",
-                }}
+                cursor={{ fill: "rgba(212,175,55,0.08)" }}
+                content={<AccessibleTooltip unitLabel="Inscrições" />}
               />
               <Line
                 type="monotone"
