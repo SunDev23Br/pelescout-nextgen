@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Check, Search, SlidersHorizontal } from "lucide-react";
+import { Check, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PeneiraCard } from "@/components/PeneiraCard";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/popover";
 import { peneiras, type StatusPeneira } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/peneiras/")({
   head: () => ({
@@ -36,17 +38,27 @@ const FILTERS: { value: StatusPeneira | "todas"; label: string }[] = [
 function PeneirasPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
   const { user } = useSession();
+  const isSuporte = user?.role === "suporte";
+
+  async function handleDelete(id: string, titulo: string) {
+    if (!confirm(`Excluir a peneira "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+    setHiddenIds((prev) => new Set(prev).add(id));
+    const { error } = await supabase.from("peneiras").delete().eq("id", id);
+    if (error && !error.message.toLowerCase().includes("0 rows")) {
+      // erro real; manter exclusão visual mas avisar
+      toast.error(`Erro ao excluir no banco: ${error.message}`);
+      return;
+    }
+    toast.success("Peneira excluída.");
+  }
 
   const list = useMemo(() => {
     return peneiras.filter((p) => {
+      if (hiddenIds.has(p.id)) return false;
       if (filter !== "todas" && p.status !== filter) return false;
-      // Peneiras privadas: atletas veem todas; olheiros/clubes só veem se tiverem convite ou se for pública
-      if (p.visibilidade === "privada" && user && (user.role === "clube" || user.role === "admin")) {
-        // Olheiros só veem privadas com convite (simplificado: sempre mostram na listagem mas com badge)
-        // Na prática aqui mostramos todas para simplificar; a restrição real é no acesso ao conteúdo
-      }
       if (!q.trim()) return true;
       const term = q.toLowerCase();
       return (
@@ -55,7 +67,7 @@ function PeneirasPage() {
         p.estado.toLowerCase().includes(term)
       );
     });
-  }, [q, filter, user]);
+  }, [q, filter, hiddenIds]);
 
   return (
     <AppLayout>
@@ -135,7 +147,22 @@ function PeneirasPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p) => (
-            <PeneiraCard key={p.id} peneira={p} />
+            <div key={p.id} className="relative">
+              <PeneiraCard peneira={p} />
+              {isSuporte && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(p.id, p.titulo)}
+                  aria-label={`Excluir peneira ${p.titulo}`}
+                  className="absolute right-3 top-3 z-10 gap-1.5 shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir
+                </Button>
+              )}
+            </div>
           ))}
         </div>
       )}
