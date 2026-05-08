@@ -280,25 +280,74 @@ function SuportePage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <label className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Filtrar
-          </span>
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
-            className="bg-transparent text-sm font-semibold outline-none"
+      <div
+        role="region"
+        aria-label="Filtrar usuários"
+        className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-card"
+      >
+        <div className="flex items-center gap-2 text-foreground">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary"
           >
-            <option value="all">Todos</option>
-            <option value="atleta">Atletas</option>
-            <option value="admin">Admins</option>
-            <option value="clube">Clubes</option>
-          </select>
-        </label>
-        <span className="ml-auto text-xs text-muted-foreground">
-          {filteredUsers.length} {filteredUsers.length === 1 ? "usuário" : "usuários"}
-        </span>
+            <Filter className="h-4 w-4" />
+          </span>
+          <label
+            htmlFor="role-filter"
+            className="text-sm font-bold uppercase tracking-wider"
+          >
+            Filtrar por papel
+          </label>
+        </div>
+
+        <Select
+          value={roleFilter}
+          onValueChange={(v) => setRoleFilter(v as RoleFilter)}
+        >
+          <SelectTrigger
+            id="role-filter"
+            aria-label="Selecionar papel para filtrar a lista de usuários"
+            className="h-11 min-w-[180px] rounded-xl border-2 text-base font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            <SelectValue placeholder="Selecione…" />
+          </SelectTrigger>
+          <SelectContent className="text-base">
+            <SelectItem value="all" className="py-2.5">
+              <span className="inline-flex items-center gap-2">
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Todos os usuários
+              </span>
+            </SelectItem>
+            <SelectItem value="atleta" className="py-2.5">
+              <span className="inline-flex items-center gap-2">
+                <UserIcon className="h-4 w-4" aria-hidden="true" />
+                Atletas
+              </span>
+            </SelectItem>
+            <SelectItem value="admin" className="py-2.5">
+              <span className="inline-flex items-center gap-2">
+                <Shield className="h-4 w-4" aria-hidden="true" />
+                Administradores
+              </span>
+            </SelectItem>
+            <SelectItem value="clube" className="py-2.5">
+              <span className="inline-flex items-center gap-2">
+                <Building2 className="h-4 w-4" aria-hidden="true" />
+                Clubes
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        <p
+          aria-live="polite"
+          className="ml-auto rounded-full bg-muted px-3 py-1 text-sm font-semibold text-foreground"
+        >
+          {filteredUsers.length}{" "}
+          <span className="text-muted-foreground">
+            {filteredUsers.length === 1 ? "usuário" : "usuários"}
+          </span>
+        </p>
       </div>
 
       {loading ? (
