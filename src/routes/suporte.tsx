@@ -235,10 +235,10 @@ function SuportePage() {
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="destructive"
                       onClick={() => rejectRequest(r)}
                     >
-                      Rejeitar
+                      Recusar
                     </Button>
                   </div>
                 </div>
