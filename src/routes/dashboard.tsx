@@ -239,12 +239,10 @@ function Dashboard() {
               <XAxis dataKey="criterio" stroke="#8a9bb5" fontSize={12} />
               <YAxis stroke="#8a9bb5" fontSize={12} domain={[0, 10]} />
               <Tooltip
-                contentStyle={{
-                  background: "#0f1e33",
-                  border: "1px solid rgba(212,175,55,0.3)",
-                  borderRadius: 12,
-                  color: "#e8ecf2",
-                }}
+                cursor={{ fill: "rgba(212,175,55,0.08)" }}
+                content={
+                  <AccessibleTooltip unitLabel="Média" valueSuffix=" / 10" />
+                }
               />
               <Bar dataKey="media" fill="#d4af37" radius={[8, 8, 0, 0]} />
             </BarChart>
