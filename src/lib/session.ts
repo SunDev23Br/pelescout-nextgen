@@ -45,13 +45,15 @@ async function loadSessionUser(userId: string): Promise<SessionUser | null> {
 
   if (!profile) return null;
 
-  // Determine role priority: admin > clube > atleta
+  // Determine role priority: suporte > admin > clube > atleta
   const roleSet = new Set((roles ?? []).map((r) => r.role as Role));
-  const role: Role = roleSet.has("admin")
-    ? "admin"
-    : roleSet.has("clube")
-      ? "clube"
-      : "atleta";
+  const role: Role = roleSet.has("suporte")
+    ? "suporte"
+    : roleSet.has("admin")
+      ? "admin"
+      : roleSet.has("clube")
+        ? "clube"
+        : "atleta";
 
   let contatosDesbloqueados: string[] | undefined;
   if (role === "clube") {
