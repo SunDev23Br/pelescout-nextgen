@@ -57,12 +57,8 @@ function PeneirasPage() {
 
   const list = useMemo(() => {
     return peneiras.filter((p) => {
+      if (hiddenIds.has(p.id)) return false;
       if (filter !== "todas" && p.status !== filter) return false;
-      // Peneiras privadas: atletas veem todas; olheiros/clubes só veem se tiverem convite ou se for pública
-      if (p.visibilidade === "privada" && user && (user.role === "clube" || user.role === "admin")) {
-        // Olheiros só veem privadas com convite (simplificado: sempre mostram na listagem mas com badge)
-        // Na prática aqui mostramos todas para simplificar; a restrição real é no acesso ao conteúdo
-      }
       if (!q.trim()) return true;
       const term = q.toLowerCase();
       return (
@@ -71,7 +67,7 @@ function PeneirasPage() {
         p.estado.toLowerCase().includes(term)
       );
     });
-  }, [q, filter, user]);
+  }, [q, filter, hiddenIds]);
 
   return (
     <AppLayout>
