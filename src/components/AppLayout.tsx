@@ -28,27 +28,29 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin"] },
-  { to: "/peneiras", label: "Peneiras", icon: Trophy, roles: ["admin", "atleta", "clube"] },
-  { to: "/peneiras/criar", label: "Criar peneira", icon: PlusCircle, roles: ["admin"] },
-  { to: "/candidatos", label: "Candidatos", icon: Users, roles: ["admin"] },
-  { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin"] },
-  { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["admin"] },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "suporte"] },
+  { to: "/peneiras", label: "Peneiras", icon: Trophy, roles: ["admin", "atleta", "clube", "suporte"] },
+  { to: "/peneiras/criar", label: "Criar peneira", icon: PlusCircle, roles: ["admin", "suporte"] },
+  { to: "/candidatos", label: "Candidatos", icon: Users, roles: ["admin", "suporte"] },
+  { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin", "suporte"] },
+  { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
-  { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube"] },
+  { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube", "suporte"] },
 ];
 
 const ROLE_LABEL: Record<Role, string> = {
   admin: "Olheiro / Admin",
   atleta: "Atleta",
   clube: "Clube",
+  suporte: "Suporte",
 };
 
 const ROLE_AREA: Record<Role, string> = {
   admin: "Painel administrativo",
   atleta: "Área do atleta",
   clube: "Área do clube",
+  suporte: "Painel de suporte",
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
