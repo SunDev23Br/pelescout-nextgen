@@ -24,6 +24,65 @@ import {
 import { AppLayout } from "@/components/AppLayout";
 import { peneiras, candidatos } from "@/lib/mock-data";
 
+type TooltipEntry = {
+  name?: string;
+  value?: number | string;
+  color?: string;
+  payload?: { name?: string; fill?: string };
+};
+
+function AccessibleTooltip({
+  active,
+  payload,
+  label,
+  unitLabel,
+  valueSuffix = "",
+}: {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+  unitLabel: string;
+  valueSuffix?: string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  return (
+    <div
+      role="tooltip"
+      aria-live="polite"
+      className="rounded-xl border-2 border-primary/70 bg-[#0a1426] px-4 py-3 shadow-2xl ring-1 ring-black/40"
+      style={{ minWidth: 180 }}
+    >
+      {label !== undefined && (
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
+          {label}
+        </p>
+      )}
+      <ul className="flex flex-col gap-1.5">
+        {payload.map((entry, i) => {
+          const name = entry.name ?? entry.payload?.name ?? unitLabel;
+          const swatch = entry.color ?? entry.payload?.fill ?? "#d4af37";
+          return (
+            <li key={i} className="flex items-center justify-between gap-4">
+              <span className="flex items-center gap-2 text-sm font-medium text-white">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-3 w-3 rounded-full ring-2 ring-white/20"
+                  style={{ background: swatch }}
+                />
+                {name}
+              </span>
+              <span className="text-base font-bold tabular-nums text-white">
+                {entry.value}
+                {valueSuffix}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
