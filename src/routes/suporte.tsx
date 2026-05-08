@@ -45,12 +45,17 @@ interface RequestRow {
 function SuportePage() {
   const { user, ready } = useSession();
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [requests, setRequests] = useState<AdminRequestRow[]>([]);
+  const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function load() {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: reqs }] = await Promise.all([
+    const [
+      { data: profiles },
+      { data: roles },
+      { data: adminReqs },
+      { data: clubeReqs },
+    ] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, nome, email, nome_clube, cnpj, created_at")
@@ -58,6 +63,10 @@ function SuportePage() {
       supabase.from("user_roles").select("user_id, role"),
       supabase
         .from("admin_requests")
+        .select("id, user_id, status, created_at")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("clube_requests")
         .select("id, user_id, status, created_at")
         .order("created_at", { ascending: false }),
     ]);
@@ -78,19 +87,24 @@ function SuportePage() {
       }))
     );
 
-    setRequests(
-      (reqs ?? []).map((r) => {
+    const toRow = (kind: "admin" | "clube") =>
+      (r: { id: string; user_id: string; status: string; created_at: string }): RequestRow => {
         const p = profileById.get(r.user_id);
         return {
           id: r.id,
           user_id: r.user_id,
-          status: r.status as AdminRequestRow["status"],
+          status: r.status as RequestRow["status"],
           created_at: r.created_at,
           nome: p?.nome ?? "—",
           email: p?.email ?? "—",
+          kind,
         };
-      })
-    );
+      };
+
+    setRequests([
+      ...(adminReqs ?? []).map(toRow("admin")),
+      ...(clubeReqs ?? []).map(toRow("clube")),
+    ]);
     setLoading(false);
   }
 
@@ -98,22 +112,22 @@ function SuportePage() {
     if (user?.role === "admin") load();
   }, [user?.role]);
 
-  async function approveRequest(req: AdminRequestRow) {
-    const { error } = await supabase.rpc("approve_admin_request", {
-      _request_id: req.id,
-    });
+  async function approveRequest(req: RequestRow) {
+    const rpc = req.kind === "admin" ? "approve_admin_request" : "approve_clube_request";
+    const { error } = await supabase.rpc(rpc, { _request_id: req.id });
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Acesso de administrador aprovado.");
+    toast.success(
+      req.kind === "admin" ? "Acesso de administrador aprovado." : "Acesso de clube aprovado."
+    );
     load();
   }
 
-  async function rejectRequest(req: AdminRequestRow) {
-    const { error } = await supabase.rpc("reject_admin_request", {
-      _request_id: req.id,
-    });
+  async function rejectRequest(req: RequestRow) {
+    const rpc = req.kind === "admin" ? "reject_admin_request" : "reject_clube_request";
+    const { error } = await supabase.rpc(rpc, { _request_id: req.id });
     if (error) {
       toast.error(error.message);
       return;
