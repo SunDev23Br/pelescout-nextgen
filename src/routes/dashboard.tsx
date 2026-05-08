@@ -216,12 +216,7 @@ function Dashboard() {
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  background: "#0f1e33",
-                  border: "1px solid rgba(212,175,55,0.3)",
-                  borderRadius: 12,
-                  color: "#e8ecf2",
-                }}
+                content={<AccessibleTooltip unitLabel="Atletas" />}
               />
               <Legend
                 verticalAlign="bottom"
