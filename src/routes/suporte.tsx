@@ -272,20 +272,45 @@ function SuportePage() {
         </div>
       )}
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Filtrar:
+        </span>
+        {([
+          { key: "all", label: "Todos" },
+          { key: "atleta", label: "Atletas" },
+          { key: "admin", label: "Admins" },
+          { key: "clube", label: "Clubes" },
+        ] as { key: RoleFilter; label: string }[]).map((opt) => (
+          <Button
+            key={opt.key}
+            size="sm"
+            variant={roleFilter === opt.key ? "default" : "outline"}
+            onClick={() => setRoleFilter(opt.key)}
+          >
+            {opt.label}
+          </Button>
+        ))}
+        <span className="ml-auto text-xs text-muted-foreground">
+          {filteredUsers.length} {filteredUsers.length === 1 ? "usuário" : "usuários"}
+        </span>
+      </div>
+
       {loading ? (
         <p className="text-muted-foreground">Carregando usuários…</p>
-      ) : users.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-          Nenhum usuário cadastrado ainda.
+          Nenhum usuário encontrado.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {users.map((u) => (
+          {filteredUsers.map((u) => (
             <UserCard
               key={u.id}
               user={u}
               onAdd={(r) => addRole(u.id, r)}
               onRemove={(r) => removeRole(u.id, r)}
+              onDelete={() => deleteUser(u.id, u.nome)}
             />
           ))}
         </div>
