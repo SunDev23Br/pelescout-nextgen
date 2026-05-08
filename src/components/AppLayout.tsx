@@ -94,31 +94,42 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="flex-1 overflow-y-auto p-4 pt-20 lg:pt-4">
           <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            {ROLE_AREA[role]}
+            {role ? ROLE_AREA[role] : "\u00A0"}
           </p>
-          <nav className="space-y-1">
-            {items.map((item) => {
-              const Icon = item.icon;
-              const active =
-                location.pathname === item.to ||
-                (item.to !== "/" && location.pathname.startsWith(item.to));
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-primary/15 text-primary shadow-[inset_3px_0_0_0_var(--gold)]"
-                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+          <nav className="space-y-1" aria-busy={!ready}>
+            {!ready ? (
+              <div className="space-y-1.5" aria-hidden="true">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 animate-pulse rounded-xl bg-sidebar-accent/40"
+                  />
+                ))}
+              </div>
+            ) : (
+              items.map((item) => {
+                const Icon = item.icon;
+                const active =
+                  location.pathname === item.to ||
+                  (item.to !== "/" && location.pathname.startsWith(item.to));
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/15 text-primary shadow-[inset_3px_0_0_0_var(--gold)]"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                );
+              })
+            )}
           </nav>
         </div>
 
