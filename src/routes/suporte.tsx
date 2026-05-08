@@ -203,7 +203,7 @@ function SuportePage() {
               .filter((r) => r.status === "pending")
               .map((r) => (
                 <div
-                  key={r.id}
+                  key={`${r.kind}-${r.id}`}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
                 >
                   <div className="min-w-0">
