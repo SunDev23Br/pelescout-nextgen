@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { CheckCircle2, Shield, Building2, User as UserIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/session";
@@ -42,11 +42,14 @@ interface RequestRow {
   kind: "admin" | "clube";
 }
 
+type RoleFilter = "all" | "atleta" | "admin" | "clube";
+
 function SuportePage() {
   const { user, ready } = useSession();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   async function load() {
     setLoading(true);
@@ -164,6 +167,28 @@ function SuportePage() {
     load();
   }
 
+  async function deleteUser(userId: string, nome: string) {
+    if (!confirm(`Recusar e excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    const { error } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+    if (error) {
+      toast.error(error.message);
+      load();
+      return;
+    }
+    toast.success("Usuário excluído.");
+  }
+
+  const filteredUsers = useMemo(() => {
+    if (roleFilter === "all") return users;
+    if (roleFilter === "atleta") {
+      return users.filter(
+        (u) => u.roles.includes("atleta") && !u.roles.some((r) => r === "admin" || r === "clube")
+      );
+    }
+    return users.filter((u) => u.roles.includes(roleFilter));
+  }, [users, roleFilter]);
+
   if (!ready) return <AppLayout><div className="py-24 text-center text-muted-foreground">Carregando…</div></AppLayout>;
 
   if (!user || user.role !== "suporte") {
@@ -247,20 +272,45 @@ function SuportePage() {
         </div>
       )}
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Filtrar:
+        </span>
+        {([
+          { key: "all", label: "Todos" },
+          { key: "atleta", label: "Atletas" },
+          { key: "admin", label: "Admins" },
+          { key: "clube", label: "Clubes" },
+        ] as { key: RoleFilter; label: string }[]).map((opt) => (
+          <Button
+            key={opt.key}
+            size="sm"
+            variant={roleFilter === opt.key ? "default" : "outline"}
+            onClick={() => setRoleFilter(opt.key)}
+          >
+            {opt.label}
+          </Button>
+        ))}
+        <span className="ml-auto text-xs text-muted-foreground">
+          {filteredUsers.length} {filteredUsers.length === 1 ? "usuário" : "usuários"}
+        </span>
+      </div>
+
       {loading ? (
         <p className="text-muted-foreground">Carregando usuários…</p>
-      ) : users.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-          Nenhum usuário cadastrado ainda.
+          Nenhum usuário encontrado.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {users.map((u) => (
+          {filteredUsers.map((u) => (
             <UserCard
               key={u.id}
               user={u}
               onAdd={(r) => addRole(u.id, r)}
               onRemove={(r) => removeRole(u.id, r)}
+              onDelete={() => deleteUser(u.id, u.nome)}
             />
           ))}
         </div>
@@ -273,10 +323,12 @@ function UserCard({
   user,
   onAdd,
   onRemove,
+  onDelete,
 }: {
   user: UserRow;
   onAdd: (r: Role) => void;
   onRemove: (r: Role) => void;
+  onDelete: () => void;
 }) {
   const has = (r: Role) => user.roles.includes(r);
   return (
@@ -314,18 +366,25 @@ function UserCard({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {(["admin", "clube"] as Role[]).map((r) =>
-          has(r) ? (
-            <Button key={r} variant="outline" size="sm" onClick={() => onRemove(r)}>
-              Remover {r}
-            </Button>
-          ) : (
-            <Button key={r} size="sm" onClick={() => onAdd(r)}>
-              Tornar {r}
-            </Button>
-          )
+      <div className="mt-4 flex flex-wrap gap-2">
+        {has("admin") ? (
+          <Button variant="outline" size="sm" onClick={() => onRemove("admin")}>
+            Remover admin
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => onAdd("admin")}>
+            Tornar admin
+          </Button>
         )}
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={onDelete}
+          className="ml-auto"
+        >
+          <Trash2 className="mr-1 h-3.5 w-3.5" />
+          Recusar
+        </Button>
       </div>
     </div>
   );
