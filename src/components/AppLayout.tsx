@@ -147,7 +147,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{user.nome}</p>
-                <p className="truncate text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
+                <p className="truncate text-xs text-muted-foreground">{role ? ROLE_LABEL[role] : ""}</p>
               </div>
             </Link>
           )}
