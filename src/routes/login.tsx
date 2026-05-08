@@ -47,33 +47,55 @@ function LoginPage() {
   }, [navigate]);
 
   /**
-   * Retorna a rota de destino conforme os papéis do usuário.
-   * Retorna `null` quando o cadastro de admin ainda está pendente/rejeitado
-   * — nesse caso o login deve ser bloqueado.
+   * Retorna a rota de destino conforme o papel selecionado e os papéis reais do usuário.
+   * Retorna `null` quando o login deve ser bloqueado (papel incompatível ou
+   * cadastro de admin pendente/rejeitado). Quando `selectedRole` é omitido,
+   * usa a sessão existente para redirecionar (auto-login na montagem).
    */
-  async function destinationFor(userId: string): Promise<string | null> {
+  async function destinationFor(
+    userId: string,
+    selectedRole?: Role,
+  ): Promise<string | null> {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     const roles = new Set((data ?? []).map((r) => r.role));
-    if (roles.has("admin")) return "/dashboard";
-    if (roles.has("clube")) return "/clubes";
+    const isAdmin = roles.has("admin");
+    const isClube = roles.has("clube");
 
-    // Sem papéis privilegiados — verifica se há solicitação de admin pendente.
-    const { data: req } = await supabase
-      .from("admin_requests")
-      .select("status")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (req) {
-      if (req.status === "pending") {
+    // Sem papel selecionado (auto-login): manda para a área de maior privilégio.
+    if (!selectedRole) {
+      if (isAdmin) return "/dashboard";
+      if (isClube) return "/clubes";
+      return "/peneiras";
+    }
+
+    if (selectedRole === "admin") {
+      if (isAdmin) return "/dashboard";
+      // Verifica solicitação para mensagem adequada.
+      const { data: req } = await supabase
+        .from("admin_requests")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (req?.status === "pending") {
         toast.error("Seu cadastro de administrador ainda aguarda aprovação.");
-        return null;
-      }
-      if (req.status === "rejected") {
+      } else if (req?.status === "rejected") {
         toast.error("Seu cadastro de administrador foi rejeitado.");
-        return null;
+      } else {
+        toast.error("Esta conta não tem acesso de administrador.");
       }
-      // status === "approved" mas sem papel admin: caso raro (falha de RLS na aprovação).
-      // Permite entrar como atleta para não bloquear o usuário.
+      return null;
+    }
+
+    if (selectedRole === "clube") {
+      if (isClube) return "/clubes";
+      toast.error("Esta conta não está cadastrada como clube.");
+      return null;
+    }
+
+    // selectedRole === "atleta"
+    if (isAdmin || isClube) {
+      toast.error("Esta conta não é de atleta. Selecione o tipo correto.");
+      return null;
     }
     return "/peneiras";
   }
@@ -94,7 +116,7 @@ function LoginPage() {
       toast.error(error?.message ?? "E-mail ou senha incorretos.");
       return;
     }
-    const dest = await destinationFor(data.user.id);
+    const dest = await destinationFor(data.user.id, role);
     if (!dest) {
       await supabase.auth.signOut();
       return;
@@ -115,10 +137,9 @@ function LoginPage() {
       return;
     }
     if (result.redirected) return;
-    // Tokens received synchronously
     const { data } = await supabase.auth.getUser();
     if (data.user) {
-      const dest = await destinationFor(data.user.id);
+      const dest = await destinationFor(data.user.id, role);
       if (!dest) {
         await supabase.auth.signOut();
         setLoading(false);
