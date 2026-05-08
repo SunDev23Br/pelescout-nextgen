@@ -98,18 +98,9 @@ function SuportePage() {
   }, [user?.role]);
 
   async function approveRequest(req: AdminRequestRow) {
-    // Concede papel admin e marca solicitação como aprovada.
-    const { error: roleErr } = await supabase
-      .from("user_roles")
-      .insert({ user_id: req.user_id, role: "admin" });
-    if (roleErr && roleErr.code !== "23505") {
-      toast.error(roleErr.message);
-      return;
-    }
-    const { error } = await supabase
-      .from("admin_requests")
-      .update({ status: "approved", reviewed_at: new Date().toISOString() })
-      .eq("id", req.id);
+    const { error } = await supabase.rpc("approve_admin_request", {
+      _request_id: req.id,
+    });
     if (error) {
       toast.error(error.message);
       return;
@@ -119,10 +110,9 @@ function SuportePage() {
   }
 
   async function rejectRequest(req: AdminRequestRow) {
-    const { error } = await supabase
-      .from("admin_requests")
-      .update({ status: "rejected", reviewed_at: new Date().toISOString() })
-      .eq("id", req.id);
+    const { error } = await supabase.rpc("reject_admin_request", {
+      _request_id: req.id,
+    });
     if (error) {
       toast.error(error.message);
       return;

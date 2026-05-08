@@ -66,10 +66,14 @@ function LoginPage() {
     if (req) {
       if (req.status === "pending") {
         toast.error("Seu cadastro de administrador ainda aguarda aprovação.");
-      } else if (req.status === "rejected") {
-        toast.error("Seu cadastro de administrador foi rejeitado.");
+        return null;
       }
-      return null;
+      if (req.status === "rejected") {
+        toast.error("Seu cadastro de administrador foi rejeitado.");
+        return null;
+      }
+      // status === "approved" mas sem papel admin: caso raro (falha de RLS na aprovação).
+      // Permite entrar como atleta para não bloquear o usuário.
     }
     return "/peneiras";
   }
