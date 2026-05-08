@@ -167,6 +167,28 @@ function SuportePage() {
     load();
   }
 
+  async function deleteUser(userId: string, nome: string) {
+    if (!confirm(`Recusar e excluir "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    const { error } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+    if (error) {
+      toast.error(error.message);
+      load();
+      return;
+    }
+    toast.success("Usuário excluído.");
+  }
+
+  const filteredUsers = useMemo(() => {
+    if (roleFilter === "all") return users;
+    if (roleFilter === "atleta") {
+      return users.filter(
+        (u) => u.roles.includes("atleta") && !u.roles.some((r) => r === "admin" || r === "clube")
+      );
+    }
+    return users.filter((u) => u.roles.includes(roleFilter));
+  }, [users, roleFilter]);
+
   if (!ready) return <AppLayout><div className="py-24 text-center text-muted-foreground">Carregando…</div></AppLayout>;
 
   if (!user || user.role !== "suporte") {
