@@ -193,10 +193,10 @@ function SuportePage() {
       {!loading && requests.filter((r) => r.status === "pending").length > 0 && (
         <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/5 p-5">
           <h2 className="font-display text-xl font-bold text-primary">
-            Solicitações de acesso administrativo
+            Solicitações de acesso pendentes
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Apenas você (admin) pode aprovar ou rejeitar novos administradores.
+            Apenas você (admin) pode aprovar ou rejeitar novos administradores e clubes.
           </p>
           <div className="mt-4 space-y-2">
             {requests
