@@ -32,13 +32,14 @@ interface UserRow {
   roles: Role[];
 }
 
-interface AdminRequestRow {
+interface RequestRow {
   id: string;
   user_id: string;
   status: "pending" | "approved" | "rejected";
   created_at: string;
   nome: string;
   email: string;
+  kind: "admin" | "clube";
 }
 
 function SuportePage() {
