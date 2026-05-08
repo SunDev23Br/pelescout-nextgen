@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { CheckCircle2, Shield, Building2, User as UserIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/session";
