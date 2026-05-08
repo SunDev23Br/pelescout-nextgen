@@ -376,15 +376,17 @@ function UserCard({
             Tornar admin
           </Button>
         )}
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={onDelete}
-          className="ml-auto"
-        >
-          <Trash2 className="mr-1 h-3.5 w-3.5" />
-          Recusar
-        </Button>
+        {!user.roles.some((r) => (r as string) === "suporte") && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={onDelete}
+            className="ml-auto"
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" />
+            Recusar
+          </Button>
+        )}
       </div>
     </div>
   );
