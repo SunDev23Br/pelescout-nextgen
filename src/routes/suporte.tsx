@@ -32,24 +32,30 @@ interface UserRow {
   roles: Role[];
 }
 
-interface AdminRequestRow {
+interface RequestRow {
   id: string;
   user_id: string;
   status: "pending" | "approved" | "rejected";
   created_at: string;
   nome: string;
   email: string;
+  kind: "admin" | "clube";
 }
 
 function SuportePage() {
   const { user, ready } = useSession();
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [requests, setRequests] = useState<AdminRequestRow[]>([]);
+  const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function load() {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: reqs }] = await Promise.all([
+    const [
+      { data: profiles },
+      { data: roles },
+      { data: adminReqs },
+      { data: clubeReqs },
+    ] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, nome, email, nome_clube, cnpj, created_at")
@@ -57,6 +63,10 @@ function SuportePage() {
       supabase.from("user_roles").select("user_id, role"),
       supabase
         .from("admin_requests")
+        .select("id, user_id, status, created_at")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("clube_requests")
         .select("id, user_id, status, created_at")
         .order("created_at", { ascending: false }),
     ]);
@@ -77,19 +87,24 @@ function SuportePage() {
       }))
     );
 
-    setRequests(
-      (reqs ?? []).map((r) => {
+    const toRow = (kind: "admin" | "clube") =>
+      (r: { id: string; user_id: string; status: string; created_at: string }): RequestRow => {
         const p = profileById.get(r.user_id);
         return {
           id: r.id,
           user_id: r.user_id,
-          status: r.status as AdminRequestRow["status"],
+          status: r.status as RequestRow["status"],
           created_at: r.created_at,
           nome: p?.nome ?? "—",
           email: p?.email ?? "—",
+          kind,
         };
-      })
-    );
+      };
+
+    setRequests([
+      ...(adminReqs ?? []).map(toRow("admin")),
+      ...(clubeReqs ?? []).map(toRow("clube")),
+    ]);
     setLoading(false);
   }
 
@@ -97,22 +112,22 @@ function SuportePage() {
     if (user?.role === "admin") load();
   }, [user?.role]);
 
-  async function approveRequest(req: AdminRequestRow) {
-    const { error } = await supabase.rpc("approve_admin_request", {
-      _request_id: req.id,
-    });
+  async function approveRequest(req: RequestRow) {
+    const rpc = req.kind === "admin" ? "approve_admin_request" : "approve_clube_request";
+    const { error } = await supabase.rpc(rpc, { _request_id: req.id });
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Acesso de administrador aprovado.");
+    toast.success(
+      req.kind === "admin" ? "Acesso de administrador aprovado." : "Acesso de clube aprovado."
+    );
     load();
   }
 
-  async function rejectRequest(req: AdminRequestRow) {
-    const { error } = await supabase.rpc("reject_admin_request", {
-      _request_id: req.id,
-    });
+  async function rejectRequest(req: RequestRow) {
+    const rpc = req.kind === "admin" ? "reject_admin_request" : "reject_clube_request";
+    const { error } = await supabase.rpc(rpc, { _request_id: req.id });
     if (error) {
       toast.error(error.message);
       return;
@@ -178,21 +193,34 @@ function SuportePage() {
       {!loading && requests.filter((r) => r.status === "pending").length > 0 && (
         <div className="mb-8 rounded-2xl border border-primary/30 bg-primary/5 p-5">
           <h2 className="font-display text-xl font-bold text-primary">
-            Solicitações de acesso administrativo
+            Solicitações de acesso pendentes
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Apenas você (admin) pode aprovar ou rejeitar novos administradores.
+            Apenas você (admin) pode aprovar ou rejeitar novos administradores e clubes.
           </p>
           <div className="mt-4 space-y-2">
             {requests
               .filter((r) => r.status === "pending")
               .map((r) => (
                 <div
-                  key={r.id}
+                  key={`${r.kind}-${r.id}`}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-semibold">{r.nome}</p>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
+                          (r.kind === "admin"
+                            ? "bg-primary/15 text-primary"
+                            : "bg-blue-500/15 text-blue-400")
+                        }
+                      >
+                        {r.kind === "admin" ? <Shield className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                        {r.kind === "admin" ? "Admin" : "Clube"}
+                      </span>
+                      <p className="truncate font-semibold">{r.nome}</p>
+                    </div>
                     <p className="truncate text-xs text-muted-foreground">{r.email}</p>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       Solicitado em{" "}

@@ -165,6 +165,39 @@ export type Database = {
           },
         ]
       }
+      clube_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["admin_request_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["admin_request_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["admin_request_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contatos_desbloqueados: {
         Row: {
           candidato_id: string
@@ -332,6 +365,10 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      approve_clube_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -340,6 +377,10 @@ export type Database = {
         Returns: boolean
       }
       reject_admin_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
+      reject_clube_request: {
         Args: { _request_id: string }
         Returns: undefined
       }

@@ -80,11 +80,11 @@ function CadastroClubePage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.senha,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           nome: form.nome,
           nome_clube: form.nomeClube,
@@ -92,11 +92,26 @@ function CadastroClubePage() {
         },
       },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
       return;
     }
+
+    // Cria solicitação de acesso de clube (status pendente).
+    if (data.user) {
+      const { error: reqErr } = await supabase
+        .from("clube_requests")
+        .insert({ user_id: data.user.id, status: "pending" });
+      if (reqErr && reqErr.code !== "23505") {
+        console.error(reqErr);
+      }
+    }
+
+    // Encerra a sessão criada automaticamente para impedir acesso antes da aprovação.
+    await supabase.auth.signOut();
+
+    setLoading(false);
     setSuccess(true);
   }
 

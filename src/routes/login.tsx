@@ -88,7 +88,18 @@ function LoginPage() {
 
     if (selectedRole === "clube") {
       if (isClube) return "/clubes";
-      toast.error("Esta conta não está cadastrada como clube.");
+      const { data: req } = await supabase
+        .from("clube_requests")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (req?.status === "pending") {
+        toast.error("Seu cadastro de clube ainda aguarda aprovação.");
+      } else if (req?.status === "rejected") {
+        toast.error("Seu cadastro de clube foi rejeitado.");
+      } else {
+        toast.error("Esta conta não está cadastrada como clube.");
+      }
       return null;
     }
 
