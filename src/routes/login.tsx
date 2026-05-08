@@ -58,17 +58,20 @@ function LoginPage() {
   ): Promise<string | null> {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     const roles = new Set((data ?? []).map((r) => r.role));
+    const isSuporte = roles.has("suporte");
     const isAdmin = roles.has("admin");
     const isClube = roles.has("clube");
 
     // Sem papel selecionado (auto-login): manda para a área de maior privilégio.
     if (!selectedRole) {
+      if (isSuporte) return "/suporte";
       if (isAdmin) return "/dashboard";
       if (isClube) return "/clubes";
       return "/peneiras";
     }
 
     if (selectedRole === "admin") {
+      if (isSuporte) return "/suporte";
       if (isAdmin) return "/dashboard";
       // Verifica solicitação para mensagem adequada.
       const { data: req } = await supabase
@@ -104,7 +107,7 @@ function LoginPage() {
     }
 
     // selectedRole === "atleta"
-    if (isAdmin || isClube) {
+    if (isAdmin || isClube || isSuporte) {
       toast.error("Esta conta não é de atleta. Selecione o tipo correto.");
       return null;
     }

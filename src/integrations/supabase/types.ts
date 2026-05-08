@@ -387,7 +387,7 @@ export type Database = {
     }
     Enums: {
       admin_request_status: "pending" | "approved" | "rejected"
-      app_role: "atleta" | "admin" | "clube"
+      app_role: "atleta" | "admin" | "clube" | "suporte"
       pe_dominante: "Destro" | "Canhoto"
       posicao:
         | "Goleiro"
@@ -527,7 +527,7 @@ export const Constants = {
   public: {
     Enums: {
       admin_request_status: ["pending", "approved", "rejected"],
-      app_role: ["atleta", "admin", "clube"],
+      app_role: ["atleta", "admin", "clube", "suporte"],
       pe_dominante: ["Destro", "Canhoto"],
       posicao: [
         "Goleiro",

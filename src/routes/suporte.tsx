@@ -109,7 +109,7 @@ function SuportePage() {
   }
 
   useEffect(() => {
-    if (user?.role === "admin") load();
+    if (user?.role === "suporte") load();
   }, [user?.role]);
 
   async function approveRequest(req: RequestRow) {
@@ -164,7 +164,7 @@ function SuportePage() {
 
   if (!ready) return <AppLayout><div className="py-24 text-center text-muted-foreground">Carregando…</div></AppLayout>;
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "suporte") {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center py-24 text-center">
