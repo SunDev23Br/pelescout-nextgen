@@ -273,25 +273,22 @@ function SuportePage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Filtrar:
-        </span>
-        {([
-          { key: "all", label: "Todos" },
-          { key: "atleta", label: "Atletas" },
-          { key: "admin", label: "Admins" },
-          { key: "clube", label: "Clubes" },
-        ] as { key: RoleFilter; label: string }[]).map((opt) => (
-          <Button
-            key={opt.key}
-            size="sm"
-            variant={roleFilter === opt.key ? "default" : "outline"}
-            onClick={() => setRoleFilter(opt.key)}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <label className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Filtrar
+          </span>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
+            className="bg-transparent text-sm font-semibold outline-none"
           >
-            {opt.label}
-          </Button>
-        ))}
+            <option value="all">Todos</option>
+            <option value="atleta">Atletas</option>
+            <option value="admin">Admins</option>
+            <option value="clube">Clubes</option>
+          </select>
+        </label>
         <span className="ml-auto text-xs text-muted-foreground">
           {filteredUsers.length} {filteredUsers.length === 1 ? "usuário" : "usuários"}
         </span>
