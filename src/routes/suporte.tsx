@@ -126,14 +126,16 @@ function SuportePage() {
   }
 
   async function rejectRequest(req: RequestRow) {
+    // Otimista: remove o card imediatamente
+    setRequests((prev) => prev.filter((r) => !(r.id === req.id && r.kind === req.kind)));
     const rpc = req.kind === "admin" ? "reject_admin_request" : "reject_clube_request";
     const { error } = await supabase.rpc(rpc, { _request_id: req.id });
     if (error) {
       toast.error(error.message);
+      load();
       return;
     }
-    toast.success("Solicitação rejeitada.");
-    load();
+    toast.success("Solicitação recusada e removida.");
   }
 
   async function addRole(userId: string, role: Role) {
