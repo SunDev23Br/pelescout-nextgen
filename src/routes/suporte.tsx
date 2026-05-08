@@ -207,7 +207,20 @@ function SuportePage() {
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-semibold">{r.nome}</p>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
+                          (r.kind === "admin"
+                            ? "bg-primary/15 text-primary"
+                            : "bg-blue-500/15 text-blue-400")
+                        }
+                      >
+                        {r.kind === "admin" ? <Shield className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                        {r.kind === "admin" ? "Admin" : "Clube"}
+                      </span>
+                      <p className="truncate font-semibold">{r.nome}</p>
+                    </div>
                     <p className="truncate text-xs text-muted-foreground">{r.email}</p>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       Solicitado em{" "}
