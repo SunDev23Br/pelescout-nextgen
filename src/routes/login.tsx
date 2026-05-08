@@ -107,7 +107,7 @@ function LoginPage() {
     }
 
     // selectedRole === "atleta"
-    if (isAdmin || isClube) {
+    if (isAdmin || isClube || isSuporte) {
       toast.error("Esta conta não é de atleta. Selecione o tipo correto.");
       return null;
     }
