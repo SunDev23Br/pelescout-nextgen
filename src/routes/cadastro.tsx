@@ -139,6 +139,12 @@ function CadastroPage() {
         emailRedirectTo: `${window.location.origin}/`,
         data: {
           nome: form.nome,
+          celular: form.celular,
+          data_nascimento: form.dataNascimento,
+          posicao: form.posicao,
+          altura: form.altura,
+          peso: form.peso,
+          pe: form.pe,
         },
       },
     });

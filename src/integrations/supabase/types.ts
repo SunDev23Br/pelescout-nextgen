@@ -304,33 +304,54 @@ export type Database = {
       }
       profiles: {
         Row: {
+          altura: number | null
           avatar_url: string | null
+          celular: string | null
+          cidade: string | null
           cnpj: string | null
           created_at: string
+          data_nascimento: string | null
           email: string
           id: string
           nome: string
           nome_clube: string | null
+          pe: Database["public"]["Enums"]["pe_dominante"] | null
+          peso: number | null
+          posicao: Database["public"]["Enums"]["posicao"] | null
           updated_at: string
         }
         Insert: {
+          altura?: number | null
           avatar_url?: string | null
+          celular?: string | null
+          cidade?: string | null
           cnpj?: string | null
           created_at?: string
+          data_nascimento?: string | null
           email: string
           id: string
           nome: string
           nome_clube?: string | null
+          pe?: Database["public"]["Enums"]["pe_dominante"] | null
+          peso?: number | null
+          posicao?: Database["public"]["Enums"]["posicao"] | null
           updated_at?: string
         }
         Update: {
+          altura?: number | null
           avatar_url?: string | null
+          celular?: string | null
+          cidade?: string | null
           cnpj?: string | null
           created_at?: string
+          data_nascimento?: string | null
           email?: string
           id?: string
           nome?: string
           nome_clube?: string | null
+          pe?: Database["public"]["Enums"]["pe_dominante"] | null
+          peso?: number | null
+          posicao?: Database["public"]["Enums"]["posicao"] | null
           updated_at?: string
         }
         Relationships: []
