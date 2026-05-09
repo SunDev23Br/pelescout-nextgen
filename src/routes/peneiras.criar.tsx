@@ -1,11 +1,25 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeft, CheckCircle2, Calculator, Lock, Globe2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Calculator, Lock, Globe2, Clock, CalendarIcon, Hash, Users } from "lucide-react";
+import { format as formatDate } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ScrollPicker, pad2, range } from "@/components/ScrollPicker";
+import { BR_STATES } from "@/lib/br-states";
+import { cn } from "@/lib/utils";
 import { calcularJogos, calcularVagas } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
@@ -144,13 +158,21 @@ function CriarPeneiraPage() {
                 />
               </Field>
               <Field label="Estado *" error={errors.estado}>
-                <Input
-                  value={form.estado}
-                  onChange={(e) => update("estado", e.target.value.toUpperCase())}
-                  placeholder="SP"
-                  maxLength={2}
-                  className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
-                />
+                <Select value={form.estado} onValueChange={(v) => update("estado", v)}>
+                  <SelectTrigger
+                    className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
+                    aria-label="Estado"
+                  >
+                    <SelectValue placeholder="Selecione o estado" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {BR_STATES.map((s) => (
+                      <SelectItem key={s.uf} value={s.uf}>
+                        {s.uf} — {s.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
               <Field label="Local *" full error={errors.local}>
                 <Input
@@ -183,47 +205,44 @@ function CriarPeneiraPage() {
                 />
               </Field>
               <Field label="Limite para inscrição *" error={errors.limiteInscricao}>
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
                   value={form.limiteInscricao}
-                  onChange={(e) => update("limiteInscricao", e.target.value)}
-                  className={errors.limiteInscricao ? "border-error ring-2 ring-error/40" : ""}
+                  onChange={(v) => update("limiteInscricao", v)}
+                  error={errors.limiteInscricao}
                 />
               </Field>
               <Field label="Início (campo disponível)">
-                <Input
-                  type="time"
+                <TimePicker
                   value={form.horaInicio}
-                  onChange={(e) => update("horaInicio", e.target.value)}
+                  onChange={(v) => update("horaInicio", v)}
+                  ariaLabel="Início do campo disponível"
                 />
               </Field>
               <Field label="Fim (campo disponível)">
-                <Input
-                  type="time"
+                <TimePicker
                   value={form.horaFim}
-                  onChange={(e) => update("horaFim", e.target.value)}
+                  onChange={(v) => update("horaFim", v)}
+                  ariaLabel="Fim do campo disponível"
                 />
               </Field>
               <Field label="Duração de cada jogo (min)">
-                <Input
-                  type="number"
-                  min={5}
-                  max={120}
+                <NumberPicker
+                  values={range(5, 120, 5)}
                   value={form.duracaoJogoMin}
-                  onChange={(e) =>
-                    update("duracaoJogoMin", Math.max(5, Number(e.target.value) || 0))
-                  }
+                  onChange={(v) => update("duracaoJogoMin", v)}
+                  ariaLabel="Duração em minutos"
+                  icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+                  suffix="min"
                 />
               </Field>
               <Field label="Participantes por jogo">
-                <Input
-                  type="number"
-                  min={2}
-                  max={30}
+                <NumberPicker
+                  values={range(2, 30, 1)}
                   value={form.participantesPorJogo}
-                  onChange={(e) =>
-                    update("participantesPorJogo", Math.max(2, Number(e.target.value) || 0))
-                  }
+                  onChange={(v) => update("participantesPorJogo", v)}
+                  ariaLabel="Participantes por jogo"
+                  icon={<Users className="h-4 w-4 text-muted-foreground" />}
+                  suffix="atletas"
                 />
               </Field>
             </Grid>
@@ -378,5 +397,194 @@ function VisOption({
       <p className="font-display font-bold text-foreground">{title}</p>
       <p className="text-xs">{desc}</p>
     </button>
+  );
+}
+
+function parseTime(v: string): { h: number; m: number } {
+  const [hStr, mStr] = (v || "00:00").split(":");
+  return { h: Number(hStr) || 0, m: Number(mStr) || 0 };
+}
+
+function TimePicker({
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+}) {
+  const { h, m } = parseTime(value);
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-start font-mono text-base"
+          aria-label={ariaLabel}
+        >
+          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+          {pad2(h)}:{pad2(m)}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-3 pointer-events-auto" align="start">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {ariaLabel}
+        </p>
+        <div className="flex items-center gap-2">
+          <ScrollPicker
+            values={range(0, 23)}
+            value={h}
+            onChange={(nh) => onChange(`${pad2(nh)}:${pad2(m)}`)}
+            ariaLabel="Hora"
+            format={pad2}
+            className="w-16"
+          />
+          <span className="font-display text-2xl font-bold text-muted-foreground">:</span>
+          <ScrollPicker
+            values={range(0, 55, 5)}
+            value={m - (m % 5)}
+            onChange={(nm) => onChange(`${pad2(h)}:${pad2(nm)}`)}
+            ariaLabel="Minuto"
+            format={pad2}
+            className="w-16"
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DateTimePicker({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  error?: boolean;
+}) {
+  const [datePart, timePart] = (value || "").split("T");
+  const date = datePart ? new Date(datePart + "T00:00:00") : undefined;
+  const { h, m } = parseTime(timePart || "12:00");
+
+  function setDate(d: Date | undefined) {
+    if (!d) return;
+    const dStr = formatDate(d, "yyyy-MM-dd");
+    onChange(`${dStr}T${pad2(h)}:${pad2(m)}`);
+  }
+  function setTime(nh: number, nm: number) {
+    const dStr = datePart || formatDate(new Date(), "yyyy-MM-dd");
+    onChange(`${dStr}T${pad2(nh)}:${pad2(nm)}`);
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+            error && "border-error ring-2 ring-error/40",
+          )}
+          aria-label="Limite para inscrição"
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? (
+            <span className="font-mono">
+              {date ? formatDate(date, "dd/MM/yyyy", { locale: ptBR }) : "—"} {pad2(h)}:{pad2(m)}
+            </span>
+          ) : (
+            <span>Escolha data e hora</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-3 pointer-events-auto" align="start">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            initialFocus
+            locale={ptBR}
+            className={cn("p-0 pointer-events-auto")}
+          />
+          <div className="flex flex-col">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Horário (24h)
+            </p>
+            <div className="flex items-center gap-2">
+              <ScrollPicker
+                values={range(0, 23)}
+                value={h}
+                onChange={(nh) => setTime(nh, m)}
+                ariaLabel="Hora"
+                format={pad2}
+                className="w-16"
+              />
+              <span className="font-display text-2xl font-bold text-muted-foreground">:</span>
+              <ScrollPicker
+                values={range(0, 55, 5)}
+                value={m - (m % 5)}
+                onChange={(nm) => setTime(h, nm)}
+                ariaLabel="Minuto"
+                format={pad2}
+                className="w-16"
+              />
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function NumberPicker({
+  values,
+  value,
+  onChange,
+  ariaLabel,
+  icon,
+  suffix,
+}: {
+  values: number[];
+  value: number;
+  onChange: (v: number) => void;
+  ariaLabel: string;
+  icon?: React.ReactNode;
+  suffix?: string;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-start font-mono text-base"
+          aria-label={ariaLabel}
+        >
+          {icon ?? <Hash className="h-4 w-4 text-muted-foreground" />}
+          <span className="ml-2">
+            {value}
+            {suffix ? ` ${suffix}` : ""}
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-3 pointer-events-auto" align="start">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {ariaLabel}
+        </p>
+        <ScrollPicker
+          values={values}
+          value={value}
+          onChange={onChange}
+          ariaLabel={ariaLabel}
+          className="w-24"
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
