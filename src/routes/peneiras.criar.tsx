@@ -39,6 +39,7 @@ export const Route = createFileRoute("/peneiras/criar")({
 function CriarPeneiraPage() {
   const { user } = useSession();
   const navigate = useNavigate();
+  const criarPeneiraFn = useServerFn(criarPeneira);
   const [form, setForm] = useState({
     titulo: "",
     cidade: "",
