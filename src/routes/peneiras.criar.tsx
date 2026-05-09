@@ -88,13 +88,13 @@ function CriarPeneiraPage() {
     }, 700);
   }
 
-  if (user && user.role !== "admin") {
+  if (user && user.role !== "admin" && user.role !== "clube") {
     return (
       <AppLayout>
         <div className="rounded-2xl border border-border bg-card p-12 text-center">
           <h2 className="font-display text-2xl font-bold">Acesso restrito</h2>
           <p className="mt-2 text-muted-foreground">
-            Apenas administradores podem criar peneiras.
+            Apenas administradores e clubes podem criar peneiras.
           </p>
         </div>
       </AppLayout>
