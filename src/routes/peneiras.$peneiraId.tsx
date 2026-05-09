@@ -72,6 +72,21 @@ function PeneiraDetalhe() {
   const navigate = useNavigate();
   const [inscrito, setInscrito] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+
+  const isAtleta = user?.role === "atleta";
+  const isMockPeneira = peneira.id.startsWith("p");
+
+  useEffect(() => {
+    if (!user || !isAtleta || isMockPeneira) return;
+    let cancel = false;
+    getMinhaInscricao(peneira.id).then((row) => {
+      if (!cancel && row) setInscrito(true);
+    });
+    return () => {
+      cancel = true;
+    };
+  }, [user, isAtleta, isMockPeneira, peneira.id]);
 
   const dataFmt = new Date(peneira.data + "T00:00:00").toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -92,9 +107,7 @@ function PeneiraDetalhe() {
 
   const totalJogos = peneira.jogos.length;
 
-  const isAtleta = user?.role === "atleta";
-
-  function inscrever() {
+  async function inscrever() {
     if (!user) {
       toast.error("Faça login como atleta para se inscrever.");
       navigate({ to: "/login" });
@@ -102,13 +115,31 @@ function PeneiraDetalhe() {
     }
     if (!isAtleta) {
       toast.error(
-        "Apenas atletas podem se inscrever em peneiras. Clubes e olheiros têm áreas próprias."
+        "Apenas atletas podem se inscrever em peneiras. Clubes e olheiros têm áreas próprias.",
       );
       return;
     }
-    // Atletas podem se inscrever em peneiras privadas normalmente
-    setInscrito(true);
-    toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
+    if (isMockPeneira) {
+      // Peneiras de demonstração (mock) — não persistem.
+      setInscrito(true);
+      toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
+      return;
+    }
+    setEnviando(true);
+    try {
+      await inscreverNaPeneira(peneira.id);
+      setInscrito(true);
+      toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao inscrever-se.";
+      if (msg.toLowerCase().includes("já está inscrito")) {
+        setInscrito(true);
+      }
+      toast.error(msg);
+    } finally {
+      setEnviando(false);
+      setConfirmando(false);
+    }
   }
 
   return (
