@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getMinhaInscricao, inscreverNaPeneira } from "@/lib/inscricoes";
 import {
@@ -70,6 +70,7 @@ function PeneiraDetalhe() {
   const { peneira } = Route.useLoaderData();
   const { user, ready } = useSession();
   const navigate = useNavigate();
+  const router = useRouter();
   const [inscrito, setInscrito] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -130,6 +131,7 @@ function PeneiraDetalhe() {
       await inscreverNaPeneira(peneira.id);
       setInscrito(true);
       toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
+      router.invalidate();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao inscrever-se.";
       if (msg.toLowerCase().includes("já está inscrito")) {
