@@ -1,48 +1,97 @@
 ## Objetivo
 
-Tornar o formulário de "Criar peneira" (`src/routes/peneiras.criar.tsx`) mais claro e acessível em dois cards:
+1. Substituir o campo **Idade** por **Data de nascimento** em todo o sistema (cadastro, perfil, listagens, cards, mocks e banco). A idade passa a ser **calculada automaticamente** a partir da data de nascimento sempre que precisar ser exibida ("17 anos").
+2. No cadastro de atleta, trocar os `Input` numéricos de **Altura (cm)** e **Peso (kg)** por **rolagens acessíveis** (componente `ScrollPicker` já existente), em formato semelhante ao usado no fluxo de "Criar peneira".
 
-1. **Informações básicas** — campo Estado vira `Select` com todas as 27 unidades federativas (incluindo DF).
-2. **Programação** — substituir os inputs nativos `time` / `datetime-local` / `number` por seletores roláveis acessíveis e padronizados em 24h.
+---
 
-## Mudanças
+## 1. Banco de dados (migration)
 
-### 1. Card "Informações básicas" — Estado
+Tabela `candidatos`:
+- Adicionar coluna `data_nascimento date` (nullable inicialmente, para backfill).
+- Backfill: para registros antigos, definir `data_nascimento = (current_date - (idade || ' years')::interval)::date` quando `idade` existir.
+- Tornar `data_nascimento` NOT NULL após backfill.
+- Manter a coluna `idade` por enquanto como **coluna gerada** (computed) ou removê-la. Plano: **remover** `idade` para evitar duplicidade e fonte única de verdade ser `data_nascimento`. Toda a UI calcula a idade a partir da data.
 
-Trocar o `Input` de Estado por um `Select` (shadcn) com as 27 UFs. Lista completa em ordem alfabética: AC, AL, AM, AP, BA, CE, **DF**, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO. Cada item mostra "UF — Nome do estado" para clareza, com o valor sendo a sigla. Inclui label, foco visível, navegação por teclado e leitura por screen reader (já garantidos pelo Radix Select usado pelo shadcn).
+> Como `idade` aparece em queries do front, todas as referências serão atualizadas no mesmo passo. Sem campo `idade` legado.
 
-### 2. Card "Programação" — seletores roláveis 24h
+---
 
-Criar um componente reutilizável `ScrollPicker` (lista vertical rolável com snap, foco por teclado ↑/↓, role="listbox" e items com `aria-selected`) e usá-lo dentro de `Popover` para os campos abaixo. Trigger é um `Button` mostrando o valor atual + ícone (Clock / Hash). Sempre formato 24h.
+## 2. Utilitário novo
 
-Campos afetados:
+`src/lib/date.ts`:
+- `calcularIdade(dataNascimento: string | Date): number` — calcula anos completos até hoje.
+- `formatarDataBR(data: string | Date): string` — formato `dd/mm/aaaa`.
+- `dataNascimentoMin/Max` para validar (ex.: 8 a 40 anos).
 
-- **Limite para inscrição** — Popover com:
-  - Calendário (shadcn `Calendar`) para a data
-  - Dois `ScrollPicker` lado a lado: horas (00–23) e minutos (00–59, passo 5)
-  - Valor armazenado continua no formato `YYYY-MM-DDTHH:mm` para compatibilidade com a validação existente.
-- **Início (campo disponível)** — Popover com `ScrollPicker` de horas (00–23) e minutos (00–59, passo 5). Valor `HH:mm`.
-- **Fim (campo disponível)** — idem.
-- **Duração de cada jogo (min)** — Popover com `ScrollPicker` único de 5 a 120 (passo 5).
-- **Participantes por jogo** — Popover com `ScrollPicker` único de 2 a 30.
+---
 
-### Acessibilidade do `ScrollPicker`
+## 3. Tipos e mock
 
-- `role="listbox"`, `aria-label` descritivo (ex.: "Hora", "Minuto", "Duração em minutos").
-- Cada opção é `role="option"` com `aria-selected` e `tabIndex={-1}`.
-- Container com `tabIndex={0}`; teclas ↑/↓ movem seleção, Home/End vão a extremos, Enter/Espaço confirmam, e o item ativo é centralizado via `scrollIntoView({ block: "center" })`.
-- Snap CSS (`snap-y snap-mandatory`) para a sensação rolável; altura fixa (~ 200px) com indicador da linha selecionada no centro.
-- Contraste forte no item selecionado (token `--primary`) e foco visível pelo design system.
+`src/lib/mock-data.ts`:
+- Trocar `idade: number` por `dataNascimento: string` (ISO `YYYY-MM-DD`) em `Candidato`.
+- Atualizar `mockCandidatos` para gerar `dataNascimento` a partir da idade atual (preservando os anos atuais).
+- Onde a UI lê `c.idade`, passar a usar `calcularIdade(c.dataNascimento)`.
 
-### Itens fora do escopo
+Arquivos afetados:
+- `src/components/evaluation/EvaluationCard.tsx` (prop `idade` continua, mas o consumidor passa `calcularIdade(...)`).
+- `src/routes/candidatos.index.tsx`, `src/routes/candidatos.$candidatoId.tsx`
+- `src/routes/clubes.tsx`, `src/routes/avaliacoes.tsx`
+- `src/routes/peneiras.$peneiraId.tsx`, `src/routes/peneiras.index.tsx`, `src/routes/dashboard.tsx` (se exibirem idade)
 
-- Card "Visibilidade" e painel lateral de cálculo permanecem inalterados.
-- Lógica de cálculo (`calcularJogos`, `calcularVagas`) e validação não mudam — apenas a UI dos campos.
-- Nenhuma alteração de schema/backend.
+---
 
-## Detalhes técnicos
+## 4. Cadastro de atleta (`src/routes/cadastro.tsx`)
 
-- Novo arquivo: `src/components/ScrollPicker.tsx` exportando `ScrollPicker` e helper `range(start, end, step)`.
-- Novo arquivo: `src/lib/br-states.ts` com a constante `BR_STATES` (27 entradas `{ uf, nome }`).
-- Edições em `src/routes/peneiras.criar.tsx`: imports, substituição dos campos descritos, manter estado e `update()` exatamente como hoje (strings `HH:mm`, `YYYY-MM-DD`, números).
-- Componentes shadcn já existentes: `Select`, `Popover`, `Calendar`, `Button`, `Label`. Verificar presença em `src/components/ui/` antes de implementar; instalar via padrão do projeto se faltar algum.
+- Remover campo **Idade**.
+- Adicionar campo **Data de nascimento**: usar `Popover` + `Calendar` (shadcn) com locale pt-BR, intervalo permitido entre 40 e 8 anos atrás, exibindo `dd/mm/aaaa` no botão.
+- Validar com Zod: `dataNascimento: z.string().refine(...)` calculando idade entre 8 e 40.
+- Substituir `Input` de **Altura (cm)** por `Popover` + `ScrollPicker` (range 120–230, passo 1, formato `"178 cm"`).
+- Substituir `Input` de **Peso (kg)** por `Popover` + `ScrollPicker` (range 25–150, passo 1, formato `"68 kg"`).
+- Ao submeter, gravar em `candidatos` o campo `data_nascimento` (e não mais `idade`).
+
+Componentes auxiliares no mesmo arquivo (ou em `src/components/`):
+- `HeightPicker`, `WeightPicker`, `BirthDatePicker` — wrappers finos sobre `ScrollPicker`/`Calendar` com `aria-label` descritivo.
+
+---
+
+## 5. Exibição em listas e cards
+
+Substituir todas as ocorrências de `${algo.idade} anos` por `${calcularIdade(algo.dataNascimento)} anos`:
+- `candidatos.index.tsx` (linhas 140, 215)
+- `candidatos.$candidatoId.tsx` (linha 86) — adicionar também bloco "Data de nascimento" na ficha.
+- `clubes.tsx` (linha 160)
+- `avaliacoes.tsx` (linhas 261, 288)
+
+`EvaluationCard` mantém a prop `idade` (já é só uma `number`); chamadores passam o valor calculado.
+
+---
+
+## 6. Perfil (`src/routes/perfil.tsx`)
+
+Atualmente `perfil.tsx` não edita idade — apenas nome, e-mail, avatar e senha. **Sem mudanças** necessárias, a não ser que o usuário queira editar data de nascimento depois (fora deste escopo, salvo pedido contrário).
+
+---
+
+## Fora de escopo
+
+- Tabela `profiles` (não tem idade hoje).
+- Schema/UI de "Criar peneira" (mexido na rodada anterior, não tem campo de idade).
+- Edição da data de nascimento na tela de Perfil (pode ser pedido em seguida).
+
+---
+
+## Resumo de arquivos
+
+Criados:
+- `src/lib/date.ts`
+
+Editados:
+- `src/lib/mock-data.ts`
+- `src/routes/cadastro.tsx`
+- `src/routes/candidatos.index.tsx`
+- `src/routes/candidatos.$candidatoId.tsx`
+- `src/routes/clubes.tsx`
+- `src/routes/avaliacoes.tsx`
+
+Migration: adiciona `data_nascimento` em `candidatos`, faz backfill, remove `idade`.
