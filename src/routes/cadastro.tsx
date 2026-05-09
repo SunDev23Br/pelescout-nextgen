@@ -48,7 +48,13 @@ const schema = z.object({
     .max(20, "Celular inválido")
     .regex(/[\d\s()+\-]+/, "Use apenas números e (), +, -"),
   senha: z.string().min(6, "A senha deve ter ao menos 6 caracteres").max(72),
-  idade: z.coerce.number().int().min(8, "Idade mínima 8").max(40, "Idade máxima 40"),
+  dataNascimento: z
+    .string()
+    .min(1, "Selecione sua data de nascimento")
+    .refine((v) => {
+      const idade = calcularIdade(v);
+      return idade >= IDADE_MIN && idade <= IDADE_MAX;
+    }, `Idade deve estar entre ${IDADE_MIN} e ${IDADE_MAX} anos`),
   altura: z.coerce.number().min(120, "Altura em cm").max(230),
   peso: z.coerce.number().min(25, "Peso em kg").max(150),
   posicao: z.string().min(1, "Selecione a posição"),
@@ -71,7 +77,7 @@ function CadastroPage() {
     email: "",
     celular: "",
     senha: "",
-    idade: "",
+    dataNascimento: "",
     altura: "",
     peso: "",
     posicao: "",
