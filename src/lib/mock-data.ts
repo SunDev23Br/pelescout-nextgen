@@ -62,7 +62,8 @@ export interface Avaliacao {
 export interface Candidato {
   id: string;
   nome: string;
-  idade: number;
+  /** Data de nascimento no formato ISO YYYY-MM-DD. */
+  dataNascimento: string;
   posicao: Posicao;
   cidade: string;
   altura: number; // cm
@@ -334,10 +335,14 @@ export const candidatos: Candidato[] = nomes.map((nome, i) => {
   const ddd = dddByCidade[cidade] ?? "11";
   const numero = `9${String(80000000 + i * 1234567).slice(0, 8)}`;
   const primeiroNome = nome.split(" ")[0].toLowerCase();
+  const idadeMock = 14 + (i % 7);
+  const hoje = new Date();
+  const dataNasc = new Date(hoje.getFullYear() - idadeMock, hoje.getMonth(), hoje.getDate());
+  const dataNascimento = `${dataNasc.getFullYear()}-${String(dataNasc.getMonth() + 1).padStart(2, "0")}-${String(dataNasc.getDate()).padStart(2, "0")}`;
   return {
     id: `c${i + 1}`,
     nome,
-    idade: 14 + (i % 7),
+    dataNascimento,
     posicao: posicoes[i % posicoes.length],
     cidade,
     altura: 165 + (i % 25),
