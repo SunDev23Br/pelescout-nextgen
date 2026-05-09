@@ -17,6 +17,7 @@ export interface SessionUser {
 export async function clearSession() {
   await supabase.auth.signOut();
   if (typeof window !== "undefined") {
+    sessionStorage.removeItem("png-selected-role");
     window.dispatchEvent(new Event("png-session"));
   }
 }
