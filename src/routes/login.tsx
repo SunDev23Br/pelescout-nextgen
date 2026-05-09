@@ -135,6 +135,9 @@ function LoginPage() {
       await supabase.auth.signOut();
       return;
     }
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("png-selected-role", role);
+    }
     toast.success("Bem-vindo!");
     navigate({ to: dest });
   }
