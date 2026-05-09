@@ -72,22 +72,24 @@ function CandidatosPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
-          {STATUS_TABS.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => setStatus(s.value)}
-              className={
-                "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors " +
-                (status === s.value
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground")
-              }
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        {!isClube && (
+          <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
+            {STATUS_TABS.map((s) => (
+              <button
+                key={s.value}
+                onClick={() => setStatus(s.value)}
+                className={
+                  "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors " +
+                  (status === s.value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground")
+                }
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
