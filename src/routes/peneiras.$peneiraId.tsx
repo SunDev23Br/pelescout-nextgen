@@ -234,124 +234,117 @@ function PeneiraDetalhe() {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-border bg-bg2 p-6">
-              {inscrito ? (
-                <div className="text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
-                    <CheckCircle2 className="h-7 w-7" />
+            {(!user || isAtleta) && (
+              <div className="rounded-2xl border border-border bg-bg2 p-6">
+                {inscrito ? (
+                  <div className="text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
+                      <CheckCircle2 className="h-7 w-7" />
+                    </div>
+                    <p className="mt-3 font-display text-lg font-bold">Inscrição confirmada!</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Você receberá os detalhes por e-mail. Chegue 30 minutos antes.
+                    </p>
+                    <Button asChild variant="outline" className="mt-4 w-full">
+                      <Link to="/manual">Ler manual do atleta</Link>
+                    </Button>
                   </div>
-                  <p className="mt-3 font-display text-lg font-bold">Inscrição confirmada!</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Você receberá os detalhes por e-mail. Chegue 30 minutos antes.
-                  </p>
-                  <Button asChild variant="outline" className="mt-4 w-full">
-                    <Link to="/manual">Ler manual do atleta</Link>
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Inscrição
-                  </p>
-                  <p className="mt-2 font-display text-2xl font-extrabold text-gradient-gold">
-                    Gratuita
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Limite: <span className="font-semibold text-foreground">{limiteFmt}</span>
-                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Inscrição
+                    </p>
+                    <p className="mt-2 font-display text-2xl font-extrabold text-gradient-gold">
+                      Gratuita
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Limite: <span className="font-semibold text-foreground">{limiteFmt}</span>
+                    </p>
 
-                  <Button
-                    onClick={() => {
-                      if (!user || !isAtleta) {
-                        inscrever();
-                        return;
+                    <Button
+                      onClick={() => {
+                        if (!user) {
+                          inscrever();
+                          return;
+                        }
+                        setConfirmando(true);
+                      }}
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:scale-[1.02] focus-visible:shadow-gold disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 rounded-md px-8 mt-5 w-full text-lg"
+                      size="lg"
+                      disabled={
+                        peneira.status === "encerrada" ||
+                        peneira.inscritos >= peneira.vagas
                       }
-                      setConfirmando(true);
-                    }}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:scale-[1.02] focus-visible:shadow-gold disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 rounded-md px-8 mt-5 w-full text-lg"
-                    size="lg"
-                    disabled={
-                      peneira.status === "encerrada" ||
-                      peneira.inscritos >= peneira.vagas ||
-                      (!!user && !isAtleta)
-                    }
-                  >
-                    {user && !isAtleta
-                      ? user.role === "clube"
-                        ? "Apenas atletas podem se inscrever"
-                        : "Olheiros não se inscrevem"
-                      : peneira.status === "encerrada"
+                    >
+                      {peneira.status === "encerrada"
                         ? "Peneira encerrada"
                         : peneira.inscritos >= peneira.vagas
                           ? "Vagas esgotadas"
-                            : !user
-                              ? "Entrar como atleta para se inscrever"
-                              : "Inscrever-se"}
-                  </Button>
+                          : !user
+                            ? "Entrar como atleta para se inscrever"
+                            : "Inscrever-se"}
+                    </Button>
 
-                  <AlertDialog open={confirmando} onOpenChange={setConfirmando}>
-                    <AlertDialogContent className="sm:max-w-md">
-                      <AlertDialogHeader>
-                        <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
-                          <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
-                        </div>
-                        <AlertDialogTitle className="text-center font-display text-xl">
-                          Confirmar inscrição
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center">
-                          Você está prestes a se inscrever em{" "}
-                          <span className="font-semibold text-foreground">
-                            {peneira.titulo}
-                          </span>
-                          . Confira os dados antes de confirmar.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
+                    <AlertDialog open={confirmando} onOpenChange={setConfirmando}>
+                      <AlertDialogContent className="sm:max-w-md">
+                        <AlertDialogHeader>
+                          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+                            <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+                          </div>
+                          <AlertDialogTitle className="text-center font-display text-xl">
+                            Confirmar inscrição
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-center">
+                            Você está prestes a se inscrever em{" "}
+                            <span className="font-semibold text-foreground">
+                              {peneira.titulo}
+                            </span>
+                            . Confira os dados antes de confirmar.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
 
-                      <div className="rounded-xl border border-border bg-bg2 p-4 text-sm">
-                        <div className="flex items-center justify-between gap-3 py-1">
-                          <span className="text-muted-foreground">Data</span>
-                          <span className="font-semibold">
-                            {new Date(peneira.data + "T00:00:00").toLocaleDateString("pt-BR")}
-                          </span>
+                        <div className="rounded-xl border border-border bg-bg2 p-4 text-sm">
+                          <div className="flex items-center justify-between gap-3 py-1">
+                            <span className="text-muted-foreground">Data</span>
+                            <span className="font-semibold">
+                              {new Date(peneira.data + "T00:00:00").toLocaleDateString("pt-BR")}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 py-1">
+                            <span className="text-muted-foreground">Horário</span>
+                            <span className="font-semibold">
+                              {peneira.horaInicio} – {peneira.horaFim}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 py-1">
+                            <span className="text-muted-foreground">Local</span>
+                            <span className="text-right font-semibold">
+                              {peneira.local} — {peneira.cidade}/{peneira.estado}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between gap-3 py-1">
-                          <span className="text-muted-foreground">Horário</span>
-                          <span className="font-semibold">
-                            {peneira.horaInicio} – {peneira.horaFim}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 py-1">
-                          <span className="text-muted-foreground">Local</span>
-                          <span className="text-right font-semibold">
-                            {peneira.local} — {peneira.cidade}/{peneira.estado}
-                          </span>
-                        </div>
-                      </div>
 
-                      <AlertDialogFooter className="gap-2 sm:gap-2">
-                        <AlertDialogCancel className="bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground border-0">
-                          Cancelar
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={inscrever}
-                          className="bg-success text-white hover:bg-success/90"
-                        >
-                          Confirmar inscrição
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                        <AlertDialogFooter className="gap-2 sm:gap-2">
+                          <AlertDialogCancel className="bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground border-0">
+                            Cancelar
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={inscrever}
+                            className="bg-success text-white hover:bg-success/90"
+                          >
+                            Confirmar inscrição
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
-                  <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                    {user && !isAtleta
-                      ? user.role === "clube"
-                        ? "Sua conta é de clube. Acesse a área de clubes para ver atletas aprovados."
-                        : "Sua conta é de olheiro/admin. Use a área de avaliações em tempo real."
-                      : "Ao se inscrever você concorda com os termos da Pelé Next Gen."}
-                  </p>
-                </>
-              )}
-            </div>
+                    <p className="mt-3 text-center text-[11px] text-muted-foreground">
+                      Ao se inscrever você concorda com os termos da Pelé Next Gen.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Link de convite para olheiros — só aparece para admins/clubes em peneiras privadas */}
             {peneira.visibilidade === "privada" && user && (user.role === "admin" || user.role === "clube") && (
