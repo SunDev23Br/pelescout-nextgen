@@ -56,7 +56,9 @@ function CandidatosPage() {
           Atletas inscritos
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Acompanhe os candidatos das peneiras ativas e suas avaliações.
+          {isClube
+            ? "Pré-visualização dos atletas aprovados. Para acessar os perfis completos e contatos, vá em \"Atletas aprovados\"."
+            : "Acompanhe os candidatos das peneiras ativas e suas avaliações."}
         </p>
       </header>
 
