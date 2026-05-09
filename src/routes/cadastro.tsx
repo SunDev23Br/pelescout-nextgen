@@ -279,32 +279,108 @@ function CadastroPage() {
             </Section>
 
             <Section title="Perfil esportivo">
-              <Field label="Idade" error={errors.idade}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.idade}
-                  onChange={(e) => update("idade", e.target.value)}
-                  placeholder="16"
-                />
+              <Field label="Data de nascimento" error={errors.dataNascimento}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.dataNascimento && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.dataNascimento ? (
+                        <>
+                          {formatarDataBR(form.dataNascimento)}
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({calcularIdade(form.dataNascimento)} anos)
+                          </span>
+                        </>
+                      ) : (
+                        <span>Selecione a data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.dataNascimento ? new Date(form.dataNascimento) : undefined}
+                      onSelect={(d) => d && update("dataNascimento", toISODate(d))}
+                      captionLayout="dropdown"
+                      fromYear={new Date().getFullYear() - IDADE_MAX}
+                      toYear={new Date().getFullYear() - IDADE_MIN}
+                      defaultMonth={
+                        form.dataNascimento
+                          ? new Date(form.dataNascimento)
+                          : new Date(new Date().getFullYear() - 16, 0, 1)
+                      }
+                      disabled={(date) => {
+                        const idade = calcularIdade(date);
+                        return idade < IDADE_MIN || idade > IDADE_MAX;
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
+
               <Field label="Altura (cm)" error={errors.altura}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.altura}
-                  onChange={(e) => update("altura", e.target.value)}
-                  placeholder="178"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.altura && "text-muted-foreground",
+                      )}
+                      aria-label="Selecionar altura em centímetros"
+                    >
+                      <Ruler className="mr-2 h-4 w-4" />
+                      {form.altura ? `${form.altura} cm` : <span>Selecione a altura</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="start">
+                    <ScrollPicker
+                      values={range(120, 230)}
+                      value={form.altura ? Number(form.altura) : 175}
+                      onChange={(v) => update("altura", String(v))}
+                      ariaLabel="Altura em centímetros"
+                      format={(v) => `${v} cm`}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
+
               <Field label="Peso (kg)" error={errors.peso}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.peso}
-                  onChange={(e) => update("peso", e.target.value)}
-                  placeholder="68"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.peso && "text-muted-foreground",
+                      )}
+                      aria-label="Selecionar peso em quilogramas"
+                    >
+                      <Weight className="mr-2 h-4 w-4" />
+                      {form.peso ? `${form.peso} kg` : <span>Selecione o peso</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="start">
+                    <ScrollPicker
+                      values={range(25, 150)}
+                      value={form.peso ? Number(form.peso) : 70}
+                      onChange={(v) => update("peso", String(v))}
+                      ariaLabel="Peso em quilogramas"
+                      format={(v) => `${v} kg`}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
 
               <Field label="Posição" error={errors.posicao}>
