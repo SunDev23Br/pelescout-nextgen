@@ -162,6 +162,9 @@ function LoginPage() {
         setLoading(false);
         return;
       }
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("png-selected-role", role);
+      }
       navigate({ to: dest });
     }
     setLoading(false);
