@@ -84,12 +84,16 @@ export function FootProfile({ data, onChange }: FootProfileProps) {
     { key: "drible", label: "Drible" },
   ];
 
-  const bilateralValues = [data.bilateral.passe, data.bilateral.finalizacao, data.bilateral.dominio, data.bilateral.drible];
-  const bilateralFilled = bilateralValues.filter((v) => v > 0);
-  const bilateralAvg = bilateralFilled.length ? bilateralFilled.reduce((a, b) => a + b, 0) / bilateralFilled.length : 0;
-  const usoVal = data.usoNaoDominante;
-  const mediaParts = [usoVal, bilateralAvg].filter((v) => v > 0);
-  const mediaPerna = mediaParts.length ? mediaParts.reduce((a, b) => a + b, 0) / mediaParts.length : 0;
+  const valores = [
+    data.usoNaoDominante,
+    data.bilateral.passe,
+    data.bilateral.finalizacao,
+    data.bilateral.dominio,
+    data.bilateral.drible,
+  ].filter((v) => v > 0);
+  const mediaPerna = valores.length
+    ? valores.reduce((a, b) => a + b, 0) / valores.length
+    : 0;
 
   const mediaColor = mediaPerna >= 4
     ? "text-success border-success/30 bg-success/10"
