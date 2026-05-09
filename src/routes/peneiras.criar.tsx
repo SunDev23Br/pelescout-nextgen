@@ -97,12 +97,36 @@ function CriarPeneiraPage() {
     }
     setErrors({});
     setLoading(true);
-    setTimeout(() => {
-      toast.success(
-        `Peneira "${form.titulo}" criada com ${totalJogos} jogos e ${totalVagas} vagas!`,
-      );
-      navigate({ to: "/peneiras" });
-    }, 700);
+    (async () => {
+      try {
+        await criarPeneiraFn({
+          data: {
+            titulo: form.titulo,
+            cidade: form.cidade,
+            estado: form.estado,
+            local: form.local,
+            data: form.data,
+            horaInicio: form.horaInicio,
+            horaFim: form.horaFim,
+            duracaoJogoMin: form.duracaoJogoMin,
+            participantesPorJogo: form.participantesPorJogo,
+            limiteInscricao: form.limiteInscricao,
+            visibilidade: form.visibilidade,
+            descricao: form.descricao,
+          },
+        });
+        toast.success(
+          `Peneira "${form.titulo}" criada com ${totalJogos} jogos e ${totalVagas} vagas!`,
+        );
+        navigate({ to: "/peneiras" });
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err instanceof Error ? err.message : "Falha ao criar peneira.",
+        );
+        setLoading(false);
+      }
+    })();
   }
 
   if (user && user.role !== "admin" && user.role !== "clube") {
