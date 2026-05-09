@@ -1,11 +1,25 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeft, CheckCircle2, Calculator, Lock, Globe2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Calculator, Lock, Globe2, Clock, CalendarIcon, Hash, Users } from "lucide-react";
+import { format as formatDate } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ScrollPicker, pad2, range } from "@/components/ScrollPicker";
+import { BR_STATES } from "@/lib/br-states";
+import { cn } from "@/lib/utils";
 import { calcularJogos, calcularVagas } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
