@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { CheckCircle2, Lock, Mail, MapPin, Phone, Search, ShieldCheck } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
@@ -38,11 +38,15 @@ const STATUS_TABS = [
 const PRECO_DESBLOQUEIO = 49.99;
 
 function CandidatosPage() {
-  const { user } = useSession();
+  const { user, ready } = useSession();
   const isClube = user?.role === "clube";
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
-  const effectiveStatus = isClube ? "aprovado" : status;
+  const effectiveStatus = status;
+
+  if (ready && isClube) {
+    return <Navigate to="/clubes" />;
+  }
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
