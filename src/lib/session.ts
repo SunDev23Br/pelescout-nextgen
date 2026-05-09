@@ -48,13 +48,20 @@ async function loadSessionUser(userId: string): Promise<SessionUser | null> {
 
   // Determine role priority: suporte > admin > clube > atleta
   const roleSet = new Set((roles ?? []).map((r) => r.role as Role));
-  const role: Role = roleSet.has("suporte")
-    ? "suporte"
-    : roleSet.has("admin")
-      ? "admin"
-      : roleSet.has("clube")
-        ? "clube"
-        : "atleta";
+  const selected =
+    typeof window !== "undefined"
+      ? (sessionStorage.getItem("png-selected-role") as Role | null)
+      : null;
+  const role: Role =
+    selected && roleSet.has(selected)
+      ? selected
+      : roleSet.has("suporte")
+        ? "suporte"
+        : roleSet.has("admin")
+          ? "admin"
+          : roleSet.has("clube")
+            ? "clube"
+            : "atleta";
 
   let contatosDesbloqueados: string[] | undefined;
   if (role === "clube") {
