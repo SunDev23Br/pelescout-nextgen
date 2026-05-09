@@ -131,6 +131,7 @@ function PeneiraDetalhe() {
       await inscreverNaPeneira(peneira.id);
       setInscrito(true);
       toast.success("Inscrição confirmada! Boa sorte na peneira. ⚽");
+      router.invalidate();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao inscrever-se.";
       if (msg.toLowerCase().includes("já está inscrito")) {
