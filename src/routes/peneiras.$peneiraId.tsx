@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getMinhaInscricao, inscreverNaPeneira } from "@/lib/inscricoes";
 import {
   ArrowLeft,
   Calendar,
