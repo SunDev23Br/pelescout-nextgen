@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Lock, Shield, User, Building2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { type Role } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
