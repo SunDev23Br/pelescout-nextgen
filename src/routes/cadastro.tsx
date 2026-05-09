@@ -5,6 +5,7 @@ import { Logo } from "@/components/Logo";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -258,8 +259,7 @@ function CadastroPage() {
                 />
               </Field>
               <Field label="Senha" error={errors.senha} className="sm:col-span-2">
-                <Input
-                  type="password"
+                <PasswordInput
                   value={form.senha}
                   onChange={(e) => update("senha", e.target.value)}
                   placeholder="Mínimo 6 caracteres"

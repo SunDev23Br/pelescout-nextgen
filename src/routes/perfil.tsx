@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
@@ -354,8 +355,7 @@ function PerfilPage() {
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Senha atual</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="password"
+              <PasswordInput
                 value={currentPassword}
                 onChange={(e) => {
                   setCurrentPassword(e.target.value);
@@ -413,8 +413,7 @@ function PerfilPage() {
           >
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Nova senha</Label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
@@ -423,8 +422,7 @@ function PerfilPage() {
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Confirmar nova senha</Label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repita a nova senha"
