@@ -305,17 +305,20 @@ function PeneiraDetalhe() {
                       className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:scale-[1.02] focus-visible:shadow-gold disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 rounded-md px-8 mt-5 w-full text-lg"
                       size="lg"
                       disabled={
+                        enviando ||
                         peneira.status === "encerrada" ||
                         peneira.inscritos >= peneira.vagas
                       }
                     >
-                      {peneira.status === "encerrada"
-                        ? "Peneira encerrada"
-                        : peneira.inscritos >= peneira.vagas
-                          ? "Vagas esgotadas"
-                          : !user
-                            ? "Entrar como atleta para se inscrever"
-                            : "Inscrever-se"}
+                      {enviando
+                        ? "Inscrevendo..."
+                        : peneira.status === "encerrada"
+                          ? "Peneira encerrada"
+                          : peneira.inscritos >= peneira.vagas
+                            ? "Vagas esgotadas"
+                            : !user
+                              ? "Entrar como atleta para se inscrever"
+                              : "Inscrever-se"}
                     </Button>
 
                     <AlertDialog open={confirmando} onOpenChange={setConfirmando}>
