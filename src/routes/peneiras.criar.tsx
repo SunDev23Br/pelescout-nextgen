@@ -158,13 +158,21 @@ function CriarPeneiraPage() {
                 />
               </Field>
               <Field label="Estado *" error={errors.estado}>
-                <Input
-                  value={form.estado}
-                  onChange={(e) => update("estado", e.target.value.toUpperCase())}
-                  placeholder="SP"
-                  maxLength={2}
-                  className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
-                />
+                <Select value={form.estado} onValueChange={(v) => update("estado", v)}>
+                  <SelectTrigger
+                    className={errors.estado ? "border-error ring-2 ring-error/40" : ""}
+                    aria-label="Estado"
+                  >
+                    <SelectValue placeholder="Selecione o estado" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {BR_STATES.map((s) => (
+                      <SelectItem key={s.uf} value={s.uf}>
+                        {s.uf} — {s.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
               <Field label="Local *" full error={errors.local}>
                 <Input
