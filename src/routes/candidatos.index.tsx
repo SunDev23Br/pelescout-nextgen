@@ -111,18 +111,34 @@ function CandidatosPage() {
                 className="border-t border-border transition-colors hover:bg-bg2"
               >
                 <td className="px-5 py-3">
-                  <Link
-                    to="/candidatos/$candidatoId"
-                    params={{ candidatoId: c.id }}
-                    className="flex items-center gap-3 font-semibold hover:text-primary"
-                  >
-                    <AthleteAvatar
-                      src={c.avatar}
-                      alt={c.nome}
-                      className="h-9 w-9 border border-border"
-                    />
-                    {c.nome}
-                  </Link>
+                  {isClube ? (
+                    <div
+                      className="flex items-center gap-3 font-semibold text-muted-foreground"
+                      aria-label="Acesso restrito — pré-visualização"
+                      title="Pré-visualização. Acesse via Atletas aprovados."
+                    >
+                      <AthleteAvatar
+                        src={c.avatar}
+                        alt={c.nome}
+                        className="h-9 w-9 border border-border opacity-70"
+                      />
+                      <span className="blur-[3px] select-none">{c.nome}</span>
+                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <Link
+                      to="/candidatos/$candidatoId"
+                      params={{ candidatoId: c.id }}
+                      className="flex items-center gap-3 font-semibold hover:text-primary"
+                    >
+                      <AthleteAvatar
+                        src={c.avatar}
+                        alt={c.nome}
+                        className="h-9 w-9 border border-border"
+                      />
+                      {c.nome}
+                    </Link>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
                 <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">
