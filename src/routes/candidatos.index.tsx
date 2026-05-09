@@ -39,13 +39,14 @@ const PRECO_DESBLOQUEIO = 49.99;
 
 function CandidatosPage() {
   const { user, ready } = useSession();
-  if (ready && user?.role === "clube") {
-    return <Navigate to="/clubes" />;
-  }
-  const isClube = false;
+  const isClube = user?.role === "clube";
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
   const effectiveStatus = status;
+
+  if (ready && isClube) {
+    return <Navigate to="/clubes" />;
+  }
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
