@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { useSession } from "@/lib/session";
 import {
   Trophy,
   Users,
@@ -121,6 +122,12 @@ const desempenhoData = [
 ];
 
 function Dashboard() {
+  const { user, ready } = useSession();
+
+  if (ready && user && user.role !== "admin" && user.role !== "suporte") {
+    return <Navigate to={user.role === "clube" ? "/clubes" : "/peneiras"} />;
+  }
+
   const total = candidatos.length;
   const aprovados = candidatos.filter((c) => c.status === "aprovado").length;
   const pendentes = candidatos.filter((c) => c.status === "pendente").length;
