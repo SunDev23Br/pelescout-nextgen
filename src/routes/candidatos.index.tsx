@@ -140,15 +140,19 @@ function CandidatosPage() {
                     </Link>
                   )}
                 </td>
-                <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
+                <td className="px-5 py-3 text-muted-foreground">
+                  <span className={isClube ? "blur-[3px] select-none" : ""}>{c.posicao}</span>
+                </td>
                 <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">
-                  {c.idade} anos
+                  <span className={isClube ? "blur-[3px] select-none" : ""}>{c.idade} anos</span>
                 </td>
                 <td className="hidden px-5 py-3 text-muted-foreground lg:table-cell">
-                  {c.cidade}
+                  <span className={isClube ? "blur-[3px] select-none" : ""}>{c.cidade}</span>
                 </td>
                 <td className="px-5 py-3 font-bold text-gradient-gold">
-                  {c.notaGeral?.toFixed(1) ?? "—"}
+                  <span className={isClube ? "blur-[3px] select-none" : ""}>
+                    {c.notaGeral?.toFixed(1) ?? "—"}
+                  </span>
                 </td>
                 <td className="px-5 py-3">
                   <CandStatus status={c.status} />
