@@ -35,6 +35,7 @@ import { OverallRating } from "@/components/evaluation/OverallRating";
 import { EvaluationCard } from "@/components/evaluation/EvaluationCard";
 import { FootProfile, EMPTY_FOOT_DATA, computeFootBonus, type FootData } from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/avaliacoes")({
   head: () => ({
