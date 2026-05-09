@@ -1,53 +1,60 @@
 ## Objetivo
 
-Hoje a tela `/peneiras` lista somente peneiras do mock (`src/lib/mock-data.ts`). Quando o usuário cria uma peneira, ela vai pro banco mas não aparece na listagem. Vamos puxar as peneiras do banco e misturá-las com as do mock para que apareçam.
+Quando um atleta clicar em "Inscrever-se" numa peneira, criar um registro na tabela `candidatos` ligado ao `peneira_id` e ao `user_id` do atleta logado, e mostrar essa inscrição na UI (botão "Inscrito" + lista de candidatos da peneira para clube/admin). E-mail fica para depois.
 
-## Como vai funcionar
+## Mudanças no banco
 
-1. Criar `src/lib/peneiras.db.ts` com `fetchPeneirasFromDb()` que lê a tabela `peneiras` (já protegida por RLS) e converte cada linha para o tipo `Peneira` do mock — usando `mkPeneira`-like para gerar `jogos`/`vagas`/`horario` a partir de `hora_inicio`, `hora_fim`, `duracao_jogo_min`, `participantes_por_jogo`.
+Migration `1` — estender perfil do atleta para conseguir popular `candidatos` automaticamente:
 
-2. Em `src/routes/peneiras.index.tsx`:
-   - Carregar peneiras do banco com `useEffect` + `useState` (e re-buscar no `png-session` event ou após delete).
-   - Exibir `[...mockPeneiras, ...peneirasDoBanco]` na lista, ordenando por `data` ascendente.
-   - Mostrar imagem default (placeholder) caso `imagem` venha `null`.
+```
+ALTER TABLE public.profiles
+  ADD COLUMN celular text,
+  ADD COLUMN data_nascimento date,
+  ADD COLUMN posicao posicao,
+  ADD COLUMN cidade text,
+  ADD COLUMN altura integer,
+  ADD COLUMN peso integer,
+  ADD COLUMN pe pe_dominante;
+```
 
-3. Em `src/routes/peneiras.$peneiraId.tsx`:
-   - Se `getPeneira(id)` (mock) não achar, buscar no banco por id.
-   - Renderiza com mesmos campos.
+(`posicao` e `pe_dominante` já existem como enums no schema. `cidade` é opcional — se a `cidade` não estiver no cadastro, fica `null`/"—" por enquanto.)
 
-4. Após `criarPeneira()` em `peneiras.criar.tsx`, ao redirecionar pra `/peneiras`, a listagem busca novamente — já cobre.
+Atualizar `handle_new_user()` para também copiar `celular`, `data_nascimento`, `altura`, `peso`, `posicao`, `pe` de `raw_user_meta_data` no signUp.
 
-5. O delete em `peneiras.index.tsx` continua chamando `supabase.from("peneiras").delete()` (já existe). Adicionar refresh após delete.
+Migration `2` — garantir que um atleta não se inscreve duas vezes na mesma peneira:
 
-## Mapeamento DB → Peneira
+```
+CREATE UNIQUE INDEX candidatos_user_peneira_unique
+  ON public.candidatos (user_id, peneira_id)
+  WHERE user_id IS NOT NULL;
+```
 
-| Coluna DB | Campo Peneira |
-|---|---|
-| `id` | `id` |
-| `titulo` | `titulo` |
-| `cidade`, `estado`, `local` | mesmos |
-| `data` | `data` |
-| `hora_inicio`/`hora_fim` | `horaInicio`/`horaFim` |
-| `duracao_jogo_min` | `duracaoJogoMin` |
-| `participantes_por_jogo` | `participantesPorJogo` |
-| `limite_inscricao` (timestamptz) | `limiteInscricao` (string ISO) |
-| `inscritos` | `inscritos` |
-| `categorias` | `categorias` |
-| `status` | `status` |
-| `visibilidade` | `visibilidade` |
-| `invite_token` | `inviteToken` |
-| `imagem` | `imagem` (fallback placeholder unsplash) |
-| `descricao` | `descricao` (fallback "") |
-| `organizador` | `organizador` |
+## Mudanças no frontend
 
-`vagas`, `jogos` e `horario` são derivados (mesma lógica do `mkPeneira`).
+1. `src/routes/cadastro.tsx`
+   - Incluir `celular`, `data_nascimento`, `altura`, `peso`, `posicao`, `pe` no `options.data` do `signUp` para que o trigger `handle_new_user` salve no perfil.
 
-## Fora de escopo
+2. `src/lib/inscricoes.ts` (novo) — helpers de inscrição via supabase client (RLS já permite `atleta self insert`):
+   - `inscreverNaPeneira(peneiraId)`: lê `auth.uid()`, lê `profiles` do usuário, faz `insert` em `candidatos` com `user_id`, `peneira_id`, `nome`, `email`, `celular`, `data_nascimento`, `posicao`, `cidade`, `altura`, `peso`, `pe`, `status: 'pendente'`. Retorna `{ id }` ou erro.
+   - `getMinhaInscricao(peneiraId)`: busca `candidatos` por `user_id + peneira_id`.
+   - `listarCandidatosDaPeneira(peneiraId)`: lista para clube/admin.
 
-- Não migrar mocks pro banco. Mocks continuam aparecendo junto com os do DB (demo).
-- Inscrições/avaliações por peneira do banco — fica para depois.
+3. `src/routes/peneiras.$peneiraId.tsx`
+   - No `useEffect`, chamar `getMinhaInscricao(peneira.id)` quando `user?.role === "atleta"` e popular `inscrito`.
+   - Em `inscrever()`, chamar `inscreverNaPeneira(peneira.id)`. Em sucesso: `setInscrito(true)`, toast. Em erro de unique constraint: marcar como já inscrito.
+   - Validar que o perfil do atleta está completo (campos obrigatórios para o `insert`); se faltar, redirecionar para uma página/aviso para completar perfil. Como esses dados agora vêm do cadastro, novos atletas terão tudo. Para usuários existentes mostrar toast: "Complete seu perfil de atleta antes de se inscrever."
+
+4. `src/routes/peneiras.$peneiraId.tsx` (mesma rota, seção do clube/admin)
+   - Substituir a lista de candidatos do mock pela lista do banco quando a peneira for do banco. Manter mock quando o id começar com `p` (peneiras de demonstração).
+
+## Out of scope
+
+- Envio de e-mail (será feito depois).
+- Edição de perfil do atleta após cadastro (só o trigger no signUp por enquanto).
+- Avaliação dos candidatos do banco.
 
 ## Arquivos
 
-- criar: `src/lib/peneiras.db.ts`
-- editar: `src/routes/peneiras.index.tsx`, `src/routes/peneiras.$peneiraId.tsx`
+- migration: estender `profiles` + atualizar `handle_new_user` + unique index em `candidatos`
+- criar: `src/lib/inscricoes.ts`
+- editar: `src/routes/cadastro.tsx`, `src/routes/peneiras.$peneiraId.tsx`
