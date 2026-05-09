@@ -205,47 +205,44 @@ function CriarPeneiraPage() {
                 />
               </Field>
               <Field label="Limite para inscrição *" error={errors.limiteInscricao}>
-                <Input
-                  type="datetime-local"
+                <DateTimePicker
                   value={form.limiteInscricao}
-                  onChange={(e) => update("limiteInscricao", e.target.value)}
-                  className={errors.limiteInscricao ? "border-error ring-2 ring-error/40" : ""}
+                  onChange={(v) => update("limiteInscricao", v)}
+                  error={errors.limiteInscricao}
                 />
               </Field>
               <Field label="Início (campo disponível)">
-                <Input
-                  type="time"
+                <TimePicker
                   value={form.horaInicio}
-                  onChange={(e) => update("horaInicio", e.target.value)}
+                  onChange={(v) => update("horaInicio", v)}
+                  ariaLabel="Início do campo disponível"
                 />
               </Field>
               <Field label="Fim (campo disponível)">
-                <Input
-                  type="time"
+                <TimePicker
                   value={form.horaFim}
-                  onChange={(e) => update("horaFim", e.target.value)}
+                  onChange={(v) => update("horaFim", v)}
+                  ariaLabel="Fim do campo disponível"
                 />
               </Field>
               <Field label="Duração de cada jogo (min)">
-                <Input
-                  type="number"
-                  min={5}
-                  max={120}
+                <NumberPicker
+                  values={range(5, 120, 5)}
                   value={form.duracaoJogoMin}
-                  onChange={(e) =>
-                    update("duracaoJogoMin", Math.max(5, Number(e.target.value) || 0))
-                  }
+                  onChange={(v) => update("duracaoJogoMin", v)}
+                  ariaLabel="Duração em minutos"
+                  icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+                  suffix="min"
                 />
               </Field>
               <Field label="Participantes por jogo">
-                <Input
-                  type="number"
-                  min={2}
-                  max={30}
+                <NumberPicker
+                  values={range(2, 30, 1)}
                   value={form.participantesPorJogo}
-                  onChange={(e) =>
-                    update("participantesPorJogo", Math.max(2, Number(e.target.value) || 0))
-                  }
+                  onChange={(v) => update("participantesPorJogo", v)}
+                  ariaLabel="Participantes por jogo"
+                  icon={<Users className="h-4 w-4 text-muted-foreground" />}
+                  suffix="atletas"
                 />
               </Field>
             </Grid>
