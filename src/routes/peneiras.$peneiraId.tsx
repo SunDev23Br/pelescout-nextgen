@@ -28,12 +28,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getPeneira } from "@/lib/mock-data";
+import { fetchPeneiraById } from "@/lib/peneiras.db";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/peneiras/$peneiraId")({
-  loader: ({ params }) => {
-    const peneira = getPeneira(params.peneiraId);
+  loader: async ({ params }) => {
+    const peneira = getPeneira(params.peneiraId) ?? (await fetchPeneiraById(params.peneiraId));
     if (!peneira) throw notFound();
     return { peneira };
   },

@@ -1,67 +1,53 @@
 ## Objetivo
 
-Atualmente, ao publicar uma peneira no formulário "Criar peneira", o código apenas mostra um toast e redireciona — nada é salvo. Vamos persistir a peneira na tabela `peneiras` do banco (já existente).
+Hoje a tela `/peneiras` lista somente peneiras do mock (`src/lib/mock-data.ts`). Quando o usuário cria uma peneira, ela vai pro banco mas não aparece na listagem. Vamos puxar as peneiras do banco e misturá-las com as do mock para que apareçam.
 
 ## Como vai funcionar
 
-1. No `submit` de `src/routes/peneiras.criar.tsx`, em vez de `setTimeout` mock, chamar uma server function `criarPeneira` que insere no banco.
-2. A inserção respeita a RLS existente: usuários `clube` (com `created_by = auth.uid()`) e `admin` podem criar.
-3. Após sucesso, redireciona para `/peneiras` com toast.
+1. Criar `src/lib/peneiras.db.ts` com `fetchPeneirasFromDb()` que lê a tabela `peneiras` (já protegida por RLS) e converte cada linha para o tipo `Peneira` do mock — usando `mkPeneira`-like para gerar `jogos`/`vagas`/`horario` a partir de `hora_inicio`, `hora_fim`, `duracao_jogo_min`, `participantes_por_jogo`.
 
-## Mapeamento dos campos do formulário → coluna da tabela `peneiras`
+2. Em `src/routes/peneiras.index.tsx`:
+   - Carregar peneiras do banco com `useEffect` + `useState` (e re-buscar no `png-session` event ou após delete).
+   - Exibir `[...mockPeneiras, ...peneirasDoBanco]` na lista, ordenando por `data` ascendente.
+   - Mostrar imagem default (placeholder) caso `imagem` venha `null`.
 
-| Form | Coluna |
+3. Em `src/routes/peneiras.$peneiraId.tsx`:
+   - Se `getPeneira(id)` (mock) não achar, buscar no banco por id.
+   - Renderiza com mesmos campos.
+
+4. Após `criarPeneira()` em `peneiras.criar.tsx`, ao redirecionar pra `/peneiras`, a listagem busca novamente — já cobre.
+
+5. O delete em `peneiras.index.tsx` continua chamando `supabase.from("peneiras").delete()` (já existe). Adicionar refresh após delete.
+
+## Mapeamento DB → Peneira
+
+| Coluna DB | Campo Peneira |
 |---|---|
+| `id` | `id` |
 | `titulo` | `titulo` |
-| `cidade` | `cidade` |
-| `estado` | `estado` |
-| `local` | `local` |
-| `data` (YYYY-MM-DD) | `data` |
-| `horaInicio` | `hora_inicio` |
-| `horaFim` | `hora_fim` |
-| `duracaoJogoMin` | `duracao_jogo_min` |
-| `participantesPorJogo` | `participantes_por_jogo` |
-| `limiteInscricao` (ISO local) | `limite_inscricao` (timestamptz) |
+| `cidade`, `estado`, `local` | mesmos |
+| `data` | `data` |
+| `hora_inicio`/`hora_fim` | `horaInicio`/`horaFim` |
+| `duracao_jogo_min` | `duracaoJogoMin` |
+| `participantes_por_jogo` | `participantesPorJogo` |
+| `limite_inscricao` (timestamptz) | `limiteInscricao` (string ISO) |
+| `inscritos` | `inscritos` |
+| `categorias` | `categorias` |
+| `status` | `status` |
 | `visibilidade` | `visibilidade` |
-| `descricao` | `descricao` |
-| — | `created_by = auth.uid()` |
-| — | `categorias = []` (default), `status = 'aberta'` (default), `inscritos = 0` (default), `organizador` (default) |
+| `invite_token` | `inviteToken` |
+| `imagem` | `imagem` (fallback placeholder unsplash) |
+| `descricao` | `descricao` (fallback "") |
+| `organizador` | `organizador` |
 
-`invite_token` é gerado quando `visibilidade = 'privada'` (UUID aleatório).
+`vagas`, `jogos` e `horario` são derivados (mesma lógica do `mkPeneira`).
 
-## Implementação técnica
+## Fora de escopo
 
-**Novo arquivo `src/lib/peneiras.functions.ts`** com:
-
-```ts
-export const criarPeneira = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ ...campos... }))
-  .handler(async ({ context, data }) => {
-    const { supabase, userId } = context;
-    const insert = {
-      ...data,
-      created_by: userId,
-      invite_token: data.visibilidade === "privada" ? crypto.randomUUID() : null,
-    };
-    const { data: row, error } = await supabase
-      .from("peneiras").insert(insert).select("id").single();
-    if (error) throw new Error(error.message);
-    return { id: row.id };
-  });
-```
-
-**Editar `src/routes/peneiras.criar.tsx`:**
-- Substituir o `setTimeout` mock por `await criarPeneira({ data: ... })` via `useServerFn`.
-- Tratar erro com `toast.error`.
-
-## Fora de escopo (não muda agora)
-
-- A listagem em `/peneiras` continua lendo o mock — só a criação é persistida. Se quiser que a lista também leia do banco, é um próximo passo.
-- Imagem da peneira (`imagem`) — campo não existe no formulário atual; fica `null`.
-- Categorias (`categorias`) — campo não existe no formulário atual; fica `[]`.
+- Não migrar mocks pro banco. Mocks continuam aparecendo junto com os do DB (demo).
+- Inscrições/avaliações por peneira do banco — fica para depois.
 
 ## Arquivos
 
-- criar: `src/lib/peneiras.functions.ts`
-- editar: `src/routes/peneiras.criar.tsx`
+- criar: `src/lib/peneiras.db.ts`
+- editar: `src/routes/peneiras.index.tsx`, `src/routes/peneiras.$peneiraId.tsx`
