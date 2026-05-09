@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { ArrowLeft, CheckCircle2, Camera, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Camera, Trash2, CalendarIcon, Ruler, Weight } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ScrollPicker, range } from "@/components/ScrollPicker";
+import { calcularIdade, formatarDataBR, toISODate, IDADE_MIN, IDADE_MAX } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
