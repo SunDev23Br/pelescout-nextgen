@@ -70,6 +70,7 @@ function PeneiraDetalhe() {
   const { peneira } = Route.useLoaderData();
   const { user, ready } = useSession();
   const navigate = useNavigate();
+  const router = useRouter();
   const [inscrito, setInscrito] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
