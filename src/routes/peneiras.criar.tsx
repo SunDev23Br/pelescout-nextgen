@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { calcularJogos, calcularVagas } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 import { criarPeneira } from "@/lib/peneiras.functions";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/peneiras/criar")({
