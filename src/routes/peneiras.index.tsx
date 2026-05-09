@@ -40,24 +40,41 @@ function PeneirasPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [dbPeneiras, setDbPeneiras] = useState<Peneira[]>([]);
 
   const { user } = useSession();
   const isSuporte = user?.role === "suporte";
+
+  async function loadDb() {
+    const list = await fetchPeneirasFromDb();
+    setDbPeneiras(list);
+  }
+
+  useEffect(() => {
+    loadDb();
+  }, []);
 
   async function handleDelete(id: string, titulo: string) {
     if (!confirm(`Excluir a peneira "${titulo}"? Esta ação não pode ser desfeita.`)) return;
     setHiddenIds((prev) => new Set(prev).add(id));
     const { error } = await supabase.from("peneiras").delete().eq("id", id);
     if (error && !error.message.toLowerCase().includes("0 rows")) {
-      // erro real; manter exclusão visual mas avisar
       toast.error(`Erro ao excluir no banco: ${error.message}`);
       return;
     }
     toast.success("Peneira excluída.");
+    loadDb();
   }
 
   const list = useMemo(() => {
-    return peneiras.filter((p) => {
+    const merged: Peneira[] = [...dbPeneiras, ...mockPeneiras];
+    const seen = new Set<string>();
+    const unique = merged.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+    return unique.filter((p) => {
       if (hiddenIds.has(p.id)) return false;
       if (filter !== "todas" && p.status !== filter) return false;
       if (!q.trim()) return true;
@@ -68,7 +85,7 @@ function PeneirasPage() {
         p.estado.toLowerCase().includes(term)
       );
     });
-  }, [q, filter, hiddenIds]);
+  }, [q, filter, hiddenIds, dbPeneiras]);
 
   return (
     <AppLayout>
