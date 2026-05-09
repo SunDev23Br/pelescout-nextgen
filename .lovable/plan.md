@@ -1,19 +1,22 @@
 ## Objetivo
-Adicionar um ícone de olho (mostrar/ocultar) em todos os campos de senha do app.
+Adicionar uma etapa de confirmação ao se inscrever em uma peneira. Ao clicar em "Inscrever-se", o botão é substituído por dois: **Confirmar inscrição** (verde) e **Cancelar** (vermelho).
 
-## Abordagem
-Criar um componente reutilizável `PasswordInput` em `src/components/ui/password-input.tsx` que envolve o `Input` do shadcn com um botão à direita (ícones `Eye` / `EyeOff` do `lucide-react`) para alternar `type="password" | "text"`. Mantém todas as props do `Input`.
+## Arquivo
+`src/routes/peneiras.$peneiraId.tsx`
 
-## Arquivos a alterar
-1. **Criar** `src/components/ui/password-input.tsx` — componente com toggle de visibilidade, acessível (aria-label, focus ring), padding direito para acomodar o ícone.
-2. **Substituir** `Input type="password"` por `PasswordInput` em:
-   - `src/routes/login.tsx` (1 campo)
-   - `src/routes/cadastro.tsx` (1 campo)
-   - `src/routes/registro-admin.tsx` (2 campos: senha + confirmar)
-   - `src/routes/registro-clube.tsx` (2 campos: senha + confirmar)
-   - `src/routes/perfil.tsx` (3 campos: senha atual, nova, confirmar)
+## Mudanças
+1. **Novo estado** `confirmando` (boolean) no componente `PeneiraDetalhe`.
+2. **Comportamento do botão atual "Inscrever-se":**
+   - Quando clicado por um atleta logado e elegível, em vez de já inscrever, define `confirmando = true`.
+   - As outras condições (não logado, clube, olheiro, encerrada, sem vagas) seguem inalteradas.
+3. **Quando `confirmando === true`**, ocultar o botão atual e renderizar dois botões lado a lado:
+   - **Confirmar inscrição** — fundo verde (`bg-success` / `hover:bg-success/90`, texto branco), chama `inscrever()` (que mantém o `setInscrito(true)` + toast de sucesso).
+   - **Cancelar** — fundo vermelho (`bg-destructive` / `hover:bg-destructive/90`), apenas faz `confirmando = false`.
+4. Após confirmar, o fluxo segue para a tela de "Inscrição confirmada!" já existente.
 
-## Detalhes
-- Cada campo tem seu próprio estado de visibilidade (independente).
-- Visual coerente com o design system existente (mesma altura/borda do `Input`).
-- Sem mudanças de lógica/validação — apenas UI.
+## Detalhes visuais
+- Layout: `grid grid-cols-2 gap-2 mt-5` para os dois botões.
+- Manter mesma altura (`h-10` / `size="lg"`) e tipografia do botão original.
+- Usar tokens semânticos do design system (`success`, `destructive`) — sem cores hardcoded.
+
+Sem alterações em lógica de negócio, dados ou outras rotas.
