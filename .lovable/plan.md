@@ -1,20 +1,18 @@
-## Objetivo
-Ocultar completamente a área de inscrição na página de detalhe da peneira (`/peneiras/$peneiraId`) quando o usuário está logado como **clube** ou **admin** (e também **suporte/olheiro**, que caem no mesmo grupo "não-atleta").
+## Problema
 
-## Arquivo
-`src/routes/peneiras.$peneiraId.tsx`
+O card de inscrição aparece para usuários logados como **clube** e **admin** ao carregar a página, mesmo já existindo a condição `(!user || isAtleta)`.
 
-## Comportamento atual
-O card lateral "Inscrição" sempre aparece. Para usuários não-atletas, o botão fica desabilitado com texto tipo "Apenas atletas podem se inscrever" / "Olheiros não se inscrevem", e abaixo há um aviso explicando o motivo.
+**Causa:** o hook `useSession()` começa com `user = null` enquanto a sessão do Supabase ainda está carregando. Nesse intervalo, `!user` é `true` e o card aparece — só some depois que a sessão termina de carregar (e aí o React re-renderiza com o role correto). Para clube/admin isso significa "flash" do card no carregamento.
 
-## Mudança
-Renderizar o card inteiro de inscrição (preço "Gratuita", limite, botão "Inscrever-se", AlertDialog de confirmação e o aviso de termos) **somente quando**:
-- não houver usuário logado (visitante), **ou**
-- o usuário logado for **atleta**.
+## Correção
 
-Para `clube`, `admin` (e demais não-atletas), o card de inscrição não aparece. O restante da página (hero, "Sobre a peneira", cronograma, "O que levar", e — para admin/clube em peneiras privadas — o card de "Link de convite para olheiros") continua igual.
+Em `src/routes/peneiras.$peneiraId.tsx`:
 
-## Detalhes
-- Envolver o bloco do card de inscrição em `{(!user || isAtleta) && (...)}`.
-- Remover os textos condicionais "Apenas atletas podem se inscrever" / "Olheiros não se inscrevem" e o aviso correspondente, que ficam obsoletos.
-- Sem alteração na lógica de inscrição para atletas nem no modal de confirmação.
+1. Ler também o `ready` do hook: `const { user, ready } = useSession();`
+2. Trocar a condição que envolve o card de inscrição (linha 237):
+   - **De:** `{(!user || isAtleta) && (...)}`
+   - **Para:** `{ready && (!user || isAtleta) && (...)}`
+
+Assim, enquanto a sessão carrega, nada é renderizado no lugar do card; quando resolve, o card só aparece para visitantes não logados ou atletas. Clube e admin nunca veem o card (nem em flash).
+
+Nenhuma outra alteração é necessária — o restante da página (hero, "Sobre", cronograma, "O que levar", e o card de link de convite para olheiros) continua igual.

@@ -66,7 +66,7 @@ export const Route = createFileRoute("/peneiras/$peneiraId")({
 
 function PeneiraDetalhe() {
   const { peneira } = Route.useLoaderData();
-  const { user } = useSession();
+  const { user, ready } = useSession();
   const navigate = useNavigate();
   const [inscrito, setInscrito] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
@@ -234,7 +234,7 @@ function PeneiraDetalhe() {
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            {(!user || isAtleta) && (
+            {ready && (!user || isAtleta) && (
               <div className="rounded-2xl border border-border bg-bg2 p-6">
                 {inscrito ? (
                   <div className="text-center">
