@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
 import { candidatos } from "@/lib/mock-data";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/candidatos/")({
   head: () => ({
@@ -24,12 +25,17 @@ const STATUS_TABS = [
 ] as const;
 
 function CandidatosPage() {
+  const { user } = useSession();
+  const isClube = user?.role === "clube";
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
+  const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>(
+    isClube ? "aprovado" : "todos",
+  );
+  const effectiveStatus = isClube ? "aprovado" : status;
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
-      if (status !== "todos" && c.status !== status) return false;
+      if (effectiveStatus !== "todos" && c.status !== effectiveStatus) return false;
       if (!q.trim()) return true;
       const t = q.toLowerCase();
       return (
@@ -38,7 +44,7 @@ function CandidatosPage() {
         c.cidade.toLowerCase().includes(t)
       );
     });
-  }, [q, status]);
+  }, [q, effectiveStatus]);
 
   return (
     <AppLayout>
