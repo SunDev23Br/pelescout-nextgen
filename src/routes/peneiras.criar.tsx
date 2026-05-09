@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { calcularJogos, calcularVagas } from "@/lib/mock-data";
 import { useSession } from "@/lib/session";
 import { criarPeneira } from "@/lib/peneiras.functions";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/peneiras/criar")({
@@ -39,7 +38,7 @@ export const Route = createFileRoute("/peneiras/criar")({
 function CriarPeneiraPage() {
   const { user } = useSession();
   const navigate = useNavigate();
-  const criarPeneiraFn = useServerFn(criarPeneira);
+  
   const [form, setForm] = useState({
     titulo: "",
     cidade: "",
@@ -99,21 +98,19 @@ function CriarPeneiraPage() {
     setLoading(true);
     (async () => {
       try {
-        await criarPeneiraFn({
-          data: {
-            titulo: form.titulo,
-            cidade: form.cidade,
-            estado: form.estado,
-            local: form.local,
-            data: form.data,
-            horaInicio: form.horaInicio,
-            horaFim: form.horaFim,
-            duracaoJogoMin: form.duracaoJogoMin,
-            participantesPorJogo: form.participantesPorJogo,
-            limiteInscricao: form.limiteInscricao,
-            visibilidade: form.visibilidade,
-            descricao: form.descricao,
-          },
+        await criarPeneira({
+          titulo: form.titulo,
+          cidade: form.cidade,
+          estado: form.estado,
+          local: form.local,
+          data: form.data,
+          horaInicio: form.horaInicio,
+          horaFim: form.horaFim,
+          duracaoJogoMin: form.duracaoJogoMin,
+          participantesPorJogo: form.participantesPorJogo,
+          limiteInscricao: form.limiteInscricao,
+          visibilidade: form.visibilidade,
+          descricao: form.descricao,
         });
         toast.success(
           `Peneira "${form.titulo}" criada com ${totalJogos} jogos e ${totalVagas} vagas!`,
