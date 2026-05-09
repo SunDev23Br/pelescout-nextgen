@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
 import { candidatos } from "@/lib/mock-data";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/candidatos/")({
   head: () => ({
@@ -24,12 +25,17 @@ const STATUS_TABS = [
 ] as const;
 
 function CandidatosPage() {
+  const { user } = useSession();
+  const isClube = user?.role === "clube";
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
+  const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>(
+    isClube ? "aprovado" : "todos",
+  );
+  const effectiveStatus = isClube ? "aprovado" : status;
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
-      if (status !== "todos" && c.status !== status) return false;
+      if (effectiveStatus !== "todos" && c.status !== effectiveStatus) return false;
       if (!q.trim()) return true;
       const t = q.toLowerCase();
       return (
@@ -38,7 +44,7 @@ function CandidatosPage() {
         c.cidade.toLowerCase().includes(t)
       );
     });
-  }, [q, status]);
+  }, [q, effectiveStatus]);
 
   return (
     <AppLayout>
@@ -50,7 +56,9 @@ function CandidatosPage() {
           Atletas inscritos
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Acompanhe os candidatos das peneiras ativas e suas avaliações.
+          {isClube
+            ? "Pré-visualização dos atletas aprovados. Para acessar os perfis completos e contatos, vá em \"Atletas aprovados\"."
+            : "Acompanhe os candidatos das peneiras ativas e suas avaliações."}
         </p>
       </header>
 
@@ -64,22 +72,24 @@ function CandidatosPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
-          {STATUS_TABS.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => setStatus(s.value)}
-              className={
-                "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors " +
-                (status === s.value
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground")
-              }
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        {!isClube && (
+          <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-bg2 p-1">
+            {STATUS_TABS.map((s) => (
+              <button
+                key={s.value}
+                onClick={() => setStatus(s.value)}
+                className={
+                  "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors " +
+                  (status === s.value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground")
+                }
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
@@ -101,18 +111,34 @@ function CandidatosPage() {
                 className="border-t border-border transition-colors hover:bg-bg2"
               >
                 <td className="px-5 py-3">
-                  <Link
-                    to="/candidatos/$candidatoId"
-                    params={{ candidatoId: c.id }}
-                    className="flex items-center gap-3 font-semibold hover:text-primary"
-                  >
-                    <AthleteAvatar
-                      src={c.avatar}
-                      alt={c.nome}
-                      className="h-9 w-9 border border-border"
-                    />
-                    {c.nome}
-                  </Link>
+                  {isClube ? (
+                    <div
+                      className="flex items-center gap-3 font-semibold text-muted-foreground"
+                      aria-label="Acesso restrito — pré-visualização"
+                      title="Pré-visualização. Acesse via Atletas aprovados."
+                    >
+                      <AthleteAvatar
+                        src={c.avatar}
+                        alt={c.nome}
+                        className="h-9 w-9 border border-border opacity-70"
+                      />
+                      <span className="blur-[3px] select-none">{c.nome}</span>
+                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <Link
+                      to="/candidatos/$candidatoId"
+                      params={{ candidatoId: c.id }}
+                      className="flex items-center gap-3 font-semibold hover:text-primary"
+                    >
+                      <AthleteAvatar
+                        src={c.avatar}
+                        alt={c.nome}
+                        className="h-9 w-9 border border-border"
+                      />
+                      {c.nome}
+                    </Link>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
                 <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">
