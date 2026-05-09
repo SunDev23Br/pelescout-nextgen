@@ -27,6 +27,7 @@ import {
   PRECO_CONTATO_BRL,
   type Candidato,
 } from "@/lib/mock-data";
+import { calcularIdade } from "@/lib/date";
 import { unlockContato, useSession } from "@/lib/session";
 import { toast } from "sonner";
 
@@ -157,7 +158,7 @@ function ClubesPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate font-display font-bold">{c.nome}</h3>
                     <p className="text-xs text-muted-foreground">
-                      {c.posicao} · {c.idade} anos · {c.cidade}
+                      {c.posicao} · {calcularIdade(c.dataNascimento)} anos · {c.cidade}
                     </p>
                     <span className="mt-1.5 inline-flex rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">
                       Aprovado

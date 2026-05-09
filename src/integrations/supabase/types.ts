@@ -102,9 +102,9 @@ export type Database = {
           cidade: string
           comentario: string | null
           created_at: string
+          data_nascimento: string
           email: string
           id: string
-          idade: number
           nome: string
           nota_geral: number | null
           pe: Database["public"]["Enums"]["pe_dominante"]
@@ -122,9 +122,9 @@ export type Database = {
           cidade: string
           comentario?: string | null
           created_at?: string
+          data_nascimento: string
           email: string
           id?: string
-          idade: number
           nome: string
           nota_geral?: number | null
           pe?: Database["public"]["Enums"]["pe_dominante"]
@@ -142,9 +142,9 @@ export type Database = {
           cidade?: string
           comentario?: string | null
           created_at?: string
+          data_nascimento?: string
           email?: string
           id?: string
-          idade?: number
           nome?: string
           nota_geral?: number | null
           pe?: Database["public"]["Enums"]["pe_dominante"]

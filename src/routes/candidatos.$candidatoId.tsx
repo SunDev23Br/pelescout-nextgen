@@ -13,6 +13,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
 import { getCandidato, getPeneira } from "@/lib/mock-data";
+import { calcularIdade, formatarDataBR } from "@/lib/date";
 
 export const Route = createFileRoute("/candidatos/$candidatoId")({
   loader: ({ params }) => {
@@ -83,7 +84,10 @@ function CandidatoDetalhe() {
             </div>
             <h1 className="mt-4 font-display text-2xl font-extrabold">{candidato.nome}</h1>
             <p className="text-sm text-muted-foreground">
-              {candidato.posicao} · {candidato.idade} anos
+              {candidato.posicao} · {calcularIdade(candidato.dataNascimento)} anos
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Nascimento: {formatarDataBR(candidato.dataNascimento)}
             </p>
 
             <div className="mt-6 grid w-full grid-cols-3 gap-2">

@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getCandidatosDoJogo, peneiras } from "@/lib/mock-data";
+import { calcularIdade } from "@/lib/date";
 import { toast } from "sonner";
 
 import { QuickScoreSelector } from "@/components/evaluation/QuickScoreSelector";
@@ -258,7 +259,7 @@ function AvaliacoesPageInner() {
                   <AthleteAvatar src={c.avatar} alt={c.nome} className="h-8 w-8 border border-border" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold">{c.nome}</p>
-                    <p className="text-[10px] text-muted-foreground">{c.posicao} · {c.idade}a</p>
+                    <p className="text-[10px] text-muted-foreground">{c.posicao} · {calcularIdade(c.dataNascimento)}a</p>
                   </div>
                   {dec === "aprovado" && <ThumbsUp className="h-3.5 w-3.5 text-success" />}
                   {dec === "reprovado" && <ThumbsDown className="h-3.5 w-3.5 text-destructive" />}
@@ -285,7 +286,7 @@ function AvaliacoesPageInner() {
               <EvaluationCard
                 nome={selected.nome}
                 posicao={selected.posicao}
-                idade={selected.idade}
+                idade={calcularIdade(selected.dataNascimento)}
                 avatar={selected.avatar}
               />
               <OverallRating scores={scores} bonus={footBonus} />

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { ArrowLeft, CheckCircle2, Camera, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Camera, Trash2, CalendarIcon, Ruler, Weight } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ScrollPicker, range } from "@/components/ScrollPicker";
+import { calcularIdade, formatarDataBR, toISODate, IDADE_MIN, IDADE_MAX } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -43,7 +48,13 @@ const schema = z.object({
     .max(20, "Celular inválido")
     .regex(/[\d\s()+\-]+/, "Use apenas números e (), +, -"),
   senha: z.string().min(6, "A senha deve ter ao menos 6 caracteres").max(72),
-  idade: z.coerce.number().int().min(8, "Idade mínima 8").max(40, "Idade máxima 40"),
+  dataNascimento: z
+    .string()
+    .min(1, "Selecione sua data de nascimento")
+    .refine((v) => {
+      const idade = calcularIdade(v);
+      return idade >= IDADE_MIN && idade <= IDADE_MAX;
+    }, `Idade deve estar entre ${IDADE_MIN} e ${IDADE_MAX} anos`),
   altura: z.coerce.number().min(120, "Altura em cm").max(230),
   peso: z.coerce.number().min(25, "Peso em kg").max(150),
   posicao: z.string().min(1, "Selecione a posição"),
@@ -66,7 +77,7 @@ function CadastroPage() {
     email: "",
     celular: "",
     senha: "",
-    idade: "",
+    dataNascimento: "",
     altura: "",
     peso: "",
     posicao: "",
@@ -268,32 +279,108 @@ function CadastroPage() {
             </Section>
 
             <Section title="Perfil esportivo">
-              <Field label="Idade" error={errors.idade}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.idade}
-                  onChange={(e) => update("idade", e.target.value)}
-                  placeholder="16"
-                />
+              <Field label="Data de nascimento" error={errors.dataNascimento}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.dataNascimento && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.dataNascimento ? (
+                        <>
+                          {formatarDataBR(form.dataNascimento)}
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({calcularIdade(form.dataNascimento)} anos)
+                          </span>
+                        </>
+                      ) : (
+                        <span>Selecione a data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.dataNascimento ? new Date(form.dataNascimento) : undefined}
+                      onSelect={(d) => d && update("dataNascimento", toISODate(d))}
+                      captionLayout="dropdown"
+                      fromYear={new Date().getFullYear() - IDADE_MAX}
+                      toYear={new Date().getFullYear() - IDADE_MIN}
+                      defaultMonth={
+                        form.dataNascimento
+                          ? new Date(form.dataNascimento)
+                          : new Date(new Date().getFullYear() - 16, 0, 1)
+                      }
+                      disabled={(date) => {
+                        const idade = calcularIdade(date);
+                        return idade < IDADE_MIN || idade > IDADE_MAX;
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
+
               <Field label="Altura (cm)" error={errors.altura}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.altura}
-                  onChange={(e) => update("altura", e.target.value)}
-                  placeholder="178"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.altura && "text-muted-foreground",
+                      )}
+                      aria-label="Selecionar altura em centímetros"
+                    >
+                      <Ruler className="mr-2 h-4 w-4" />
+                      {form.altura ? `${form.altura} cm` : <span>Selecione a altura</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="start">
+                    <ScrollPicker
+                      values={range(120, 230)}
+                      value={form.altura ? Number(form.altura) : 175}
+                      onChange={(v) => update("altura", String(v))}
+                      ariaLabel="Altura em centímetros"
+                      format={(v) => `${v} cm`}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
+
               <Field label="Peso (kg)" error={errors.peso}>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={form.peso}
-                  onChange={(e) => update("peso", e.target.value)}
-                  placeholder="68"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.peso && "text-muted-foreground",
+                      )}
+                      aria-label="Selecionar peso em quilogramas"
+                    >
+                      <Weight className="mr-2 h-4 w-4" />
+                      {form.peso ? `${form.peso} kg` : <span>Selecione o peso</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3" align="start">
+                    <ScrollPicker
+                      values={range(25, 150)}
+                      value={form.peso ? Number(form.peso) : 70}
+                      onChange={(v) => update("peso", String(v))}
+                      ariaLabel="Peso em quilogramas"
+                      format={(v) => `${v} kg`}
+                    />
+                  </PopoverContent>
+                </Popover>
               </Field>
 
               <Field label="Posição" error={errors.posicao}>

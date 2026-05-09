@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { candidatos, type Candidato } from "@/lib/mock-data";
+import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
 
@@ -137,7 +138,7 @@ function CandidatosPage() {
                     </Link>
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
-                  <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">{c.idade} anos</td>
+                  <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">{calcularIdade(c.dataNascimento)} anos</td>
                   <td className="hidden px-5 py-3 text-muted-foreground lg:table-cell">{c.cidade}</td>
                   <td className="px-5 py-3 font-bold text-gradient-gold">
                     {c.notaGeral?.toFixed(1) ?? "—"}
@@ -212,7 +213,7 @@ function ClubeCardsView({ list }: { list: Candidato[] }) {
                     {c.nome}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    {c.posicao} · {c.idade} anos · {c.altura}cm
+                    {c.posicao} · {calcularIdade(c.dataNascimento)} anos · {c.altura}cm
                   </p>
                   <Badge className="mt-1 bg-success/15 text-success hover:bg-success/15">
                     <CheckCircle2 className="mr-1 h-3 w-3" /> Aprovado
