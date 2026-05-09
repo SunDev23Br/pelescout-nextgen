@@ -31,7 +31,7 @@ const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "suporte"] },
   { to: "/peneiras", label: "Peneiras", icon: Trophy, roles: ["admin", "atleta", "clube", "suporte"] },
   { to: "/peneiras/criar", label: "Criar peneira", icon: PlusCircle, roles: ["admin", "clube"] },
-  { to: "/candidatos", label: "Candidatos", icon: Users, roles: ["admin", "suporte", "clube"] },
+  { to: "/candidatos", label: "Candidatos", icon: Users, roles: ["admin", "suporte"] },
   { to: "/avaliacoes", label: "Avaliações ao vivo", icon: ClipboardCheck, roles: ["admin"] },
   { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
