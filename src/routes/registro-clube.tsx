@@ -4,6 +4,7 @@ import { ArrowLeft, Building2, Mail, Lock, User, CheckCircle2, FileText } from "
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -214,8 +215,7 @@ function CadastroClubePage() {
           <Field label="Senha" error={errors.senha}>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.senha}
                 onChange={(e) => update("senha", e.target.value)}
                 placeholder="••••••••"
@@ -227,8 +227,7 @@ function CadastroClubePage() {
           <Field label="Confirmar senha" error={errors.confirmarSenha}>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="password"
+              <PasswordInput
                 value={form.confirmarSenha}
                 onChange={(e) => update("confirmarSenha", e.target.value)}
                 placeholder="••••••••"
