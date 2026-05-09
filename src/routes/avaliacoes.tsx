@@ -60,6 +60,23 @@ type Scores = {
 type Decision = "aprovado" | "reprovado" | "reavaliar";
 
 function AvaliacoesPage() {
+  const { user, ready } = useSession();
+  if (ready && user?.role === "clube") {
+    return (
+      <AppLayout>
+        <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+          <h1 className="font-display text-2xl font-extrabold">Acesso restrito</h1>
+          <p className="mt-2 text-muted-foreground">
+            A avaliação ao vivo não está disponível para clubes.
+          </p>
+        </div>
+      </AppLayout>
+    );
+  }
+  return <AvaliacoesPageInner />;
+}
+
+function AvaliacoesPageInner() {
   const [peneiraId, setPeneiraId] = useState(peneiras[0].id);
   const peneiraSel = useMemo(() => peneiras.find((p) => p.id === peneiraId)!, [peneiraId]);
   const [jogoNumero, setJogoNumero] = useState<number>(peneiraSel.jogos[0]?.numero ?? 1);
