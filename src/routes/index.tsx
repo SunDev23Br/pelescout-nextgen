@@ -94,17 +94,33 @@ function Landing() {
                 className="h-[520px] w-full object-cover"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/80 to-transparent p-6">
-                <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-card/90 p-4 backdrop-blur">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-gold">
-                    <Trophy className="h-6 w-6 text-primary-foreground" />
+                {proxima ? (
+                  <Link
+                    to="/peneiras/$peneiraId"
+                    params={{ peneiraId: proxima.id }}
+                    className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-card/90 p-4 backdrop-blur transition-all hover:border-primary hover:shadow-gold"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-gold">
+                      <Trophy className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-display font-bold">Próxima peneira</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {proxima.titulo} · {proxima.cidade}/{proxima.estado} · {formatProxData(proxima.data)}
+                      </p>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-card/90 p-4 backdrop-blur">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-gold">
+                      <Trophy className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-display font-bold">Próxima peneira</p>
+                      <p className="text-sm text-muted-foreground">Em breve</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-display font-bold">Próxima peneira</p>
-                    <p className="text-sm text-muted-foreground">
-                      Sub-17 · Santos/SP · 18 mai
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
