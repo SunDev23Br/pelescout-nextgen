@@ -1,23 +1,17 @@
 ## Objetivo
 
-Manter a coluna `peneiras.inscritos` sincronizada automaticamente com o número real de candidatos inscritos no banco, para que o contador apareça corretamente em todos os lugares do sistema (cards da listagem, página de detalhe, etc.).
-
-Hoje a coluna existe e é exibida em `PeneiraCard` e na página de detalhe, mas começa em `0` e nunca é atualizada quando um atleta se inscreve — por isso peneiras criadas pelo sistema mostram `0/vagas` mesmo com inscrições reais.
+No card "Próxima peneira" da home (`src/routes/index.tsx`), substituir o texto fixo ("Sub-17 · Santos/SP · 18 mai") pelos dados da peneira mais próxima registrada no banco, e transformar o card em um link que leva para a página de detalhe dessa peneira.
 
 ## Mudanças
 
-### 1. Migração de banco (Supabase)
+### `src/routes/index.tsx`
 
-- Criar função `public.tg_candidatos_count()` (SECURITY DEFINER) que, em `INSERT`, faz `peneiras.inscritos = inscritos + 1` para o `peneira_id` novo; em `DELETE`, decrementa; em `UPDATE` que mude `peneira_id`, decrementa o antigo e incrementa o novo.
-- Criar trigger `candidatos_count_trg` em `AFTER INSERT OR DELETE OR UPDATE OF peneira_id ON public.candidatos`.
-- Backfill único: `UPDATE peneiras SET inscritos = (SELECT COUNT(*) FROM candidatos c WHERE c.peneira_id = peneiras.id);` para corrigir os contadores atuais.
-
-### 2. Frontend
-
-- Após inscrição bem-sucedida em `src/routes/peneiras.$peneiraId.tsx`, atualizar o estado local incrementando `peneira.inscritos` para refletir imediatamente, sem precisar recarregar (o banco já estará correto via trigger).
-- Nenhuma outra alteração visual: os componentes (`PeneiraCard`, página de detalhe) já leem `peneira.inscritos` da base.
+- Converter `Landing` para buscar peneiras via `fetchPeneirasFromDb()` (já existe em `src/lib/peneiras.db.ts`) usando `useEffect` + `useState`.
+- Selecionar a "próxima peneira": primeira peneira com `status === "aberta"` ordenada por `data` ascendente (a query do helper já ordena por data). Se não houver, fallback para a primeira da lista; se a lista estiver vazia, esconder o card ou mostrar um placeholder discreto ("Em breve").
+- Envolver o card com um `<Link to="/peneiras/$peneiraId" params={{ peneiraId: proxima.id }}>` para navegar ao detalhe.
+- Substituir o título e subtítulo pelos campos reais: `proxima.titulo` (ou primeira categoria + cidade) e `formatDate(proxima.data)` no padrão já usado em `PeneiraCard`.
 
 ## Fora do escopo
 
-- Não altera RLS, não mexe em `profiles`, não envia e-mail.
-- Não altera a aparência dos cards.
+- Não muda layout, cores, ou outros textos da home.
+- Não altera `PeneiraCard`, rotas, RLS ou banco.
