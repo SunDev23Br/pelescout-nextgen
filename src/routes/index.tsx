@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Trophy, Sparkles, Target } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
+import type { Peneira } from "@/lib/mock-data";
+
+function formatProxData(iso: string) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  });
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
