@@ -28,6 +28,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [proxima, setProxima] = useState<Peneira | null>(null);
+
+  useEffect(() => {
+    fetchPeneirasFromDb().then((list) => {
+      const aberta = list.find((p) => p.status === "aberta") ?? list[0] ?? null;
+      setProxima(aberta);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen overflow-hidden">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
