@@ -623,3 +623,96 @@ function NumberPicker({
     </Popover>
   );
 }
+
+const CATEGORIAS = [
+  "Sub-11",
+  "Sub-13",
+  "Sub-15",
+  "Sub-17",
+  "Sub-20",
+  "Profissional",
+] as const;
+
+function CategoriasSelector({
+  value,
+  onChange,
+  error,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  error?: boolean;
+}) {
+  function toggle(cat: string) {
+    if (value.includes(cat)) {
+      onChange(value.filter((c) => c !== cat));
+    } else {
+      onChange([...value, cat]);
+    }
+  }
+  return (
+    <fieldset
+      aria-describedby="categorias-help"
+      aria-invalid={error || undefined}
+    >
+      <legend className="sr-only">Categorias da peneira</legend>
+      <p
+        id="categorias-help"
+        className={cn(
+          "mb-3 text-sm",
+          error ? "text-error" : "text-muted-foreground",
+        )}
+      >
+        Selecione uma ou mais categorias contempladas nesta peneira.
+      </p>
+      <div
+        role="group"
+        aria-label="Categorias"
+        className="flex flex-wrap gap-2"
+      >
+        {CATEGORIAS.map((cat) => {
+          const active = value.includes(cat);
+          return (
+            <button
+              key={cat}
+              type="button"
+              role="checkbox"
+              aria-checked={active}
+              onClick={() => toggle(cat)}
+              onKeyDown={(e) => {
+                if (e.key === " " || e.key === "Enter") {
+                  e.preventDefault();
+                  toggle(cat);
+                }
+              }}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                active
+                  ? "border-primary bg-primary/15 text-foreground shadow-[inset_0_0_0_1px_var(--gold)]"
+                  : "border-border bg-bg2 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "inline-flex h-4 w-4 items-center justify-center rounded-sm border",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background",
+                )}
+              >
+                {active && <CheckCircle2 className="h-3 w-3" />}
+              </span>
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+      {error && (
+        <p className="mt-2 text-xs font-medium text-error">
+          Selecione ao menos uma categoria.
+        </p>
+      )}
+    </fieldset>
+  );
+}
