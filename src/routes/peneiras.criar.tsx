@@ -52,6 +52,7 @@ function CriarPeneiraPage() {
     limiteInscricao: "",
     visibilidade: "publica" as "publica" | "privada",
     descricao: "",
+    categorias: [] as string[],
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
@@ -85,6 +86,7 @@ function CriarPeneiraPage() {
     if (!form.local) newErrors.local = true;
     if (!form.data) newErrors.data = true;
     if (!form.limiteInscricao) newErrors.limiteInscricao = true;
+    if (form.categorias.length === 0) newErrors.categorias = true;
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       toast.error("Preencha os campos obrigatórios.");
@@ -111,6 +113,7 @@ function CriarPeneiraPage() {
           limiteInscricao: form.limiteInscricao,
           visibilidade: form.visibilidade,
           descricao: form.descricao,
+          categorias: form.categorias,
         });
         toast.success(
           `Peneira "${form.titulo}" criada com ${totalJogos} jogos e ${totalVagas} vagas!`,
