@@ -62,6 +62,23 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
           </div>
         </div>
 
+        {peneira.categorias.length > 0 && (
+          <ul
+            role="list"
+            aria-label="Categorias da peneira"
+            className="flex flex-wrap gap-1.5"
+          >
+            {peneira.categorias.map((c) => (
+              <li
+                key={c}
+                className="rounded-full border border-border bg-bg2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+              >
+                {c}
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className="h-1.5 overflow-hidden rounded-full bg-bg3">
           <div
             className="h-full rounded-full bg-gradient-gold transition-all"
