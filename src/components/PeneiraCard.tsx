@@ -71,7 +71,7 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
             {peneira.categorias.map((c) => (
               <li
                 key={c}
-                className="rounded-full border border-border bg-bg2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                className="rounded-full border border-border bg-bg2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-50"
               >
                 {c}
               </li>
