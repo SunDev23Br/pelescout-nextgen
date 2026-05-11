@@ -13,6 +13,7 @@ export interface CriarPeneiraInput {
   limiteInscricao: string; // "YYYY-MM-DDTHH:mm" local
   visibilidade: "publica" | "privada";
   descricao?: string;
+  categorias: string[];
 }
 
 export async function criarPeneira(input: CriarPeneiraInput): Promise<{ id: string }> {
@@ -35,6 +36,7 @@ export async function criarPeneira(input: CriarPeneiraInput): Promise<{ id: stri
     limite_inscricao: limiteISO,
     visibilidade: input.visibilidade,
     descricao: input.descricao || null,
+    categorias: input.categorias,
     created_by: userId,
     invite_token:
       input.visibilidade === "privada"
