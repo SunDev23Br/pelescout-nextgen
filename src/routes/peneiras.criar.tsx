@@ -221,6 +221,14 @@ function CriarPeneiraPage() {
             </Grid>
           </Card>
 
+          <Card title="Categorias">
+            <CategoriasSelector
+              value={form.categorias}
+              onChange={(v) => update("categorias", v)}
+              error={errors.categorias}
+            />
+          </Card>
+
           <Card title="Programação">
             <Grid>
               <Field label="Data da peneira *" error={errors.data}>
