@@ -625,6 +625,7 @@ function NumberPicker({
 }
 
 const CATEGORIAS = [
+  "Sub-9",
   "Sub-11",
   "Sub-13",
   "Sub-15",
