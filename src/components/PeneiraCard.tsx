@@ -34,16 +34,6 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
             </span>
           )}
         </div>
-        <div className="absolute right-4 top-4 flex max-w-[60%] flex-wrap justify-end gap-1">
-          {peneira.categorias.map((c) => (
-            <span
-              key={c}
-              className="rounded-full bg-background/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur"
-            >
-              {c}
-            </span>
-          ))}
-        </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
