@@ -17,6 +17,7 @@ import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ClubesRouteImport } from './routes/clubes'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AvaliacoesRouteImport } from './routes/avaliacoes'
 import { Route as IndexRouteImport } from './routes/index'
@@ -66,6 +67,11 @@ const ClubesRoute = ClubesRouteImport.update({
   path: '/clubes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
   '/cadastro': typeof CadastroRoute
+  '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
   '/cadastro': typeof CadastroRoute
+  '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
   '/cadastro': typeof CadastroRoute
+  '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/avaliacoes'
     | '/cadastro'
+    | '/chat'
     | '/clubes'
     | '/dashboard'
     | '/login'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/avaliacoes'
     | '/cadastro'
+    | '/chat'
     | '/clubes'
     | '/dashboard'
     | '/login'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/avaliacoes'
     | '/cadastro'
+    | '/chat'
     | '/clubes'
     | '/dashboard'
     | '/login'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AvaliacoesRoute: typeof AvaliacoesRoute
   CadastroRoute: typeof CadastroRoute
+  ChatRoute: typeof ChatRoute
   ClubesRoute: typeof ClubesRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClubesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cadastro': {
       id: '/cadastro'
       path: '/cadastro'
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AvaliacoesRoute: AvaliacoesRoute,
   CadastroRoute: CadastroRoute,
+  ChatRoute: ChatRoute,
   ClubesRoute: ClubesRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
