@@ -165,6 +165,65 @@ export type Database = {
           },
         ]
       }
+      chat_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      chat_reports: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          motivo: string
+          reported_id: string
+          reporter_id: string
+          status: Database["public"]["Enums"]["report_status"]
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          motivo: string
+          reported_id: string
+          reporter_id: string
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          motivo?: string
+          reported_id?: string
+          reporter_id?: string
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_reports_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clube_requests: {
         Row: {
           created_at: string
@@ -223,6 +282,83 @@ export type Database = {
             columns: ["candidato_id"]
             isOneToOne: false
             referencedRelation: "candidatos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          atleta_id: string
+          created_at: string
+          id: string
+          iniciador_id: string
+          last_message_at: string
+          last_message_preview: string | null
+          last_sender_id: string | null
+        }
+        Insert: {
+          atleta_id: string
+          created_at?: string
+          id?: string
+          iniciador_id: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          last_sender_id?: string | null
+        }
+        Update: {
+          atleta_id?: string
+          created_at?: string
+          id?: string
+          iniciador_id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          last_sender_id?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["message_kind"]
+          media_mime: string | null
+          media_path: string | null
+          media_size: number | null
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["message_kind"]
+          media_mime?: string | null
+          media_path?: string | null
+          media_size?: number | null
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["message_kind"]
+          media_mime?: string | null
+          media_path?: string | null
+          media_size?: number | null
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -356,6 +492,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_presence: {
+        Row: {
+          is_online: boolean
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          is_online?: boolean
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          is_online?: boolean
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -397,6 +551,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_conversation_participant: {
+        Args: { _conv_id: string; _user_id: string }
+        Returns: boolean
+      }
       reject_admin_request: {
         Args: { _request_id: string }
         Returns: undefined
@@ -405,10 +563,12 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      users_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
     }
     Enums: {
       admin_request_status: "pending" | "approved" | "rejected"
       app_role: "atleta" | "admin" | "clube" | "suporte"
+      message_kind: "text" | "image" | "video" | "file"
       pe_dominante: "Destro" | "Canhoto"
       posicao:
         | "Goleiro"
@@ -417,6 +577,7 @@ export type Database = {
         | "Volante"
         | "Meia"
         | "Atacante"
+      report_status: "open" | "reviewed" | "dismissed"
       status_candidato: "pendente" | "avaliado" | "aprovado" | "reprovado"
       status_peneira: "aberta" | "em_andamento" | "encerrada"
       visibilidade: "publica" | "privada"
@@ -549,6 +710,7 @@ export const Constants = {
     Enums: {
       admin_request_status: ["pending", "approved", "rejected"],
       app_role: ["atleta", "admin", "clube", "suporte"],
+      message_kind: ["text", "image", "video", "file"],
       pe_dominante: ["Destro", "Canhoto"],
       posicao: [
         "Goleiro",
@@ -558,6 +720,7 @@ export const Constants = {
         "Meia",
         "Atacante",
       ],
+      report_status: ["open", "reviewed", "dismissed"],
       status_candidato: ["pendente", "avaliado", "aprovado", "reprovado"],
       status_peneira: ["aberta", "em_andamento", "encerrada"],
       visibilidade: ["publica", "privada"],
