@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
+import { FileIcon, ImageIcon, FilmIcon, ExternalLink } from "lucide-react";
 import { getSignedMediaUrl } from "@/lib/chat";
+
+const BROWSER_IMAGE_MIMES = new Set([
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
+  "image/bmp", "image/svg+xml", "image/x-icon",
+]);
+const BROWSER_VIDEO_MIMES = new Set([
+  "video/mp4", "video/webm", "video/ogg", "video/x-m4v",
+]);
 
 export function ChatMedia({
   path,
@@ -26,7 +35,14 @@ export function ChatMedia({
       <div className="h-32 w-48 animate-pulse rounded-lg bg-bg3" aria-hidden="true" />
     );
   }
-  if (kind === "image") {
+
+  const fileName = path.split("/").pop() ?? "arquivo";
+  const mimeLower = (mime ?? "").toLowerCase();
+  const previewable =
+    (kind === "image" && BROWSER_IMAGE_MIMES.has(mimeLower)) ||
+    (kind === "video" && BROWSER_VIDEO_MIMES.has(mimeLower));
+
+  if (kind === "image" && previewable) {
     return (
       <a href={url} target="_blank" rel="noreferrer">
         <img
@@ -37,7 +53,7 @@ export function ChatMedia({
       </a>
     );
   }
-  if (kind === "video") {
+  if (kind === "video" && previewable) {
     return (
       <video
         src={url}
@@ -47,15 +63,30 @@ export function ChatMedia({
       />
     );
   }
+
+  // Fallback card for unsupported (HEIC, MKV, MOV, AVI, etc.) and generic files
+  const Icon = kind === "image" ? ImageIcon : kind === "video" ? FilmIcon : FileIcon;
+  const label =
+    kind === "image" ? "Imagem" : kind === "video" ? "Vídeo" : "Arquivo";
+
   return (
     <a
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center gap-2 rounded-lg border border-border bg-bg3 px-3 py-2 text-sm hover:bg-bg2"
+      download={fileName}
+      className="flex max-w-xs items-center gap-3 rounded-lg border border-border bg-bg3 px-3 py-2.5 text-sm transition hover:bg-bg2"
     >
-      📎 <span className="truncate">{path.split("/").pop()}</span>
-      <span className="text-xs text-muted-foreground">{mime ?? ""}</span>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate font-medium">{fileName}</div>
+        <div className="truncate text-[11px] text-muted-foreground">
+          {label}{mime ? ` · ${mime}` : ""}
+        </div>
+      </div>
+      <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
     </a>
   );
 }
