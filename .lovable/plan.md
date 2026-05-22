@@ -1,99 +1,63 @@
-# Plano: Sistema de Chat Profissional
+## Objetivo
 
-Integração de um chat realtime ao app atual, respeitando os papéis existentes (`atleta`, `admin`/olheiro, `clube`, `suporte`) e a stack TanStack Start + Lovable Cloud (Supabase) já em uso.
+1. Permitir envio de **qualquer formato de imagem e vídeo** no chat (incluindo HEIC, AVIF, MKV, MOV, AVI, etc.).
+2. Corrigir o bug em que o atleta vê o nome do olheiro/clube como **"Usuário"** em vez do nome real.
 
-## Regras de produto
+---
 
-- **Quem inicia conversa:** apenas `admin` (olheiro) e `clube`.
-- **Atleta:** só responde em conversas existentes. UI esconde botão "Nova conversa".
-- **Verificação:** clubes precisam ter `clube_requests.status = 'approved'` (já existe). Para olheiros usamos `user_roles.role = 'admin'` (já é aprovado por suporte). Sem verificação → bloqueado para iniciar.
-- **Anti-spam:** limite de N mensagens/minuto por remetente; limite de M conversas novas/dia por olheiro/clube; bloqueio impede envio em ambos sentidos.
+## 1. Suporte completo a mídias
 
-## Backend (migration Supabase)
+**Problema atual:** O composer já usa `accept="image/*"` e `accept="video/*"`, o que tecnicamente cobre todos os formatos, mas o bucket `chat-media` pode rejeitar mimes não-padrão, e o `ChatMedia` só renderiza inline `<img>`/`<video>` (formatos como HEIC ou MKV ficam quebrados sem fallback).
 
-Tabelas novas em `public`:
+**Mudanças:**
 
-- `conversations` — `id`, `iniciador_id` (olheiro/clube), `atleta_id`, `created_at`, `last_message_at`, `last_message_preview`, índice único (iniciador, atleta).
-- `messages` — `id`, `conversation_id`, `sender_id`, `kind` (`text|image|video|file`), `content` (texto), `media_url`, `media_mime`, `media_size`, `created_at`, `read_at`.
-- `message_reads` — marca leitura por usuário (para "visualizado").
-- `typing_status` — `conversation_id`, `user_id`, `updated_at` (presença de digitação via Realtime broadcast — sem persistir longamente).
-- `user_presence` — `user_id`, `last_seen_at`, `is_online` (atualizado por heartbeat do cliente).
-- `chat_blocks` — `blocker_id`, `blocked_id`, `created_at`.
-- `chat_reports` — `reporter_id`, `reported_id`, `conversation_id`, `motivo`, `created_at`, `status`.
-- `chat_rate_limits` — contagens por janela (ou função SQL que consulta `messages`/`conversations`).
+- **`src/lib/chat.ts` → `uploadChatMedia`**: detectar mime corretamente quando `file.type` vier vazio (caso comum com HEIC/AVI no navegador) usando a extensão como fallback. Manter o limite de 20 MB.
+- **`src/components/chat/ChatMedia.tsx`**:
+  - Manter preview inline quando o browser suportar o mime (jpg/png/webp/gif/avif e mp4/webm/ogg).
+  - Para formatos não-previsualizáveis (HEIC, TIFF, MKV, MOV, AVI, FLV, etc.), exibir um card de mídia com ícone, nome do arquivo, mime e botão **"Abrir / Baixar"** usando a URL assinada — assim o upload e o compartilhamento funcionam mesmo sem preview nativo.
+- **Bucket `chat-media`**: o bucket já é privado sem restrição de mime (verifiquei a configuração atual), então nenhuma migração é necessária.
 
-RLS:
-- Ler `conversations`/`messages` apenas se `auth.uid()` ∈ {iniciador, atleta} da conversa.
-- Inserir `conversations`: somente se `has_role(auth.uid(),'admin')` ou `has_role(auth.uid(),'clube')` **e** o alvo for atleta (`has_role(target,'atleta')`) **e** não houver bloqueio.
-- Inserir `messages`: usuário precisa ser parte da conversa, não estar bloqueado, e respeitar rate limit (checado em trigger `BEFORE INSERT`).
-- `chat_blocks`/`chat_reports`: qualquer usuário autenticado pode criar como `blocker_id = auth.uid()`.
+## 2. Corrigir nome do remetente exibido como "Usuário"
 
-Trigger anti-spam (PL/pgSQL) em `messages`:
-- Rejeita se >30 mensagens nos últimos 60s pelo mesmo `sender_id`.
-- Rejeita se houver bloqueio entre as partes.
+**Causa raiz:** A RLS atual da tabela `profiles` só permite que cada usuário leia o **próprio** perfil (`auth.uid() = id`) ou que admins/suporte leiam todos. Quando o atleta abre uma conversa iniciada por um olheiro (`admin`) ou clube, o `SELECT` em `profiles` para buscar nome/avatar do peer retorna vazio → o código cai no fallback `"Usuário"`.
 
-Trigger pós-insert: atualiza `conversations.last_message_at` e `last_message_preview`.
+**Solução:** adicionar uma política de leitura em `profiles` que permita a um usuário ler o perfil de **qualquer pessoa com quem ele compartilhe uma conversa** (já existe a função `is_conversation_participant` e podemos cruzar via `conversations`).
 
-Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE messages, conversations, typing_status, user_presence;`
+**Migração SQL (uma policy nova, sem alterar as existentes):**
 
-Storage: novo bucket privado `chat-media` com policies que permitem upload/leitura apenas aos participantes da conversa (path = `{conversation_id}/{uuid}`).
+```sql
+CREATE POLICY "chat peer profile read"
+ON public.profiles
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.conversations c
+    WHERE (c.iniciador_id = auth.uid() AND c.atleta_id = profiles.id)
+       OR (c.atleta_id    = auth.uid() AND c.iniciador_id = profiles.id)
+  )
+);
+```
 
-## Server functions (TanStack `createServerFn`)
+Isso resolve nos dois sentidos: atleta vê o nome do olheiro/clube, e olheiro/clube continua vendo o nome do atleta. Nenhum dado adicional é exposto além de `nome`, `email`, `avatar_url` para usuários que já estão em conversa direta.
 
-Arquivo `src/lib/chat.functions.ts`, todos com `requireSupabaseAuth`:
+**Bônus:** o `NewConversationDialog` (olheiros/clubes buscando atletas) já depende de `searchAtletas`, que filtra por role e usa o SELECT em `profiles`. Como olheiros e clubes precisam descobrir atletas antes de iniciar conversa, vou também adicionar uma policy permitindo que `admin`/`clube` leiam perfis de atletas (necessário para a busca funcionar de forma consistente — caso contrário só funciona pela query atual por causa do RLS bypass via service role, o que não é o caso aqui).
 
-- `startConversation({ atletaId })` — valida papel (admin/clube), verificação, bloqueio, cria/retorna conversa.
-- `sendMessage({ conversationId, kind, content?, mediaPath? })` — valida participação + rate limit (defesa em profundidade além do trigger).
-- `listConversations()` — lista do usuário com último preview, contagem de não lidas, dados do outro participante.
-- `listMessages({ conversationId, before?, limit })` — paginação cursor.
-- `markRead({ conversationId })`.
-- `searchUsers({ q })` — apenas olheiros/clubes podem buscar atletas; atletas só veem suas conversas existentes.
-- `blockUser({ userId })` / `unblockUser({ userId })`.
-- `reportUser({ userId, conversationId?, motivo })`.
-- `heartbeatPresence()` — chamado a cada ~30s pelo cliente ativo.
-- `inviteToPeneira({ conversationId, peneiraId })` — envia mensagem `kind='text'` com payload estruturado (link interno).
+```sql
+CREATE POLICY "scouts read atleta profiles"
+ON public.profiles
+FOR SELECT
+USING (
+  (public.has_role(auth.uid(), 'admin') OR public.has_role(auth.uid(), 'clube'))
+  AND public.has_role(profiles.id, 'atleta')
+);
+```
 
-## Frontend
+---
 
-Nova rota `/_authenticated/chat` (e `/_authenticated/chat/$conversationId`) com layout próprio dentro do `AppLayout`:
+## Arquivos afetados
 
-- **Sidebar de conversas** (esquerda em desktop, full-screen em mobile): busca, lista ordenada por `last_message_at`, badge de não lidas, status online.
-- **Área de chat**:
-  - Header com avatar, nome, status (online/último acesso), menu (bloquear, denunciar, ver perfil, **Convidar para peneira**).
-  - Lista de mensagens com agrupamento por data, bolhas estilo WhatsApp, ticks de entregue/visto.
-  - Composer com texto, upload de imagem/vídeo/arquivo, indicador "digitando…" via Realtime broadcast.
-- **Botão "Nova conversa"** visível só para `admin`/`clube`. Modal com busca de atletas → `startConversation`.
-- Item de menu **"Chat"** adicionado ao `AppLayout` para todos os papéis (atleta vê só caixa de entrada).
-- Notificações: toast (`sonner`) ao chegar mensagem fora da conversa aberta; título da aba com contador.
-- Hooks: `useConversations`, `useMessages(conversationId)`, `usePresence(userId)`, `useTyping(conversationId)` baseados em React Query + canais Supabase Realtime.
+- **Migração nova** (2 policies em `profiles`)
+- `src/lib/chat.ts` — fallback de mime no upload
+- `src/components/chat/ChatMedia.tsx` — renderização robusta para formatos não-previsualizáveis
 
-## Design
-
-- Reaproveita tokens já existentes (`bg-bg2`, `bg-bg3`, `border-border`, `text-primary` dourado). Tema escuro já é padrão do app — nada de cores hardcoded.
-- Bolhas: enviado = `bg-primary/15` com borda dourada sutil; recebido = `bg-bg3`. Radius `rounded-2xl`, sombras suaves.
-- Animações: framer-motion para entrada de mensagens e modal de nova conversa.
-- Mobile-first: sidebar vira drawer; composer fixo no rodapé com `safe-area`.
-
-## Segurança / limites
-
-- Rate limit no trigger (30 msg/60s) + limite de 20 novas conversas/dia por iniciador.
-- Validação Zod em todos os `inputValidator`.
-- Tamanho máximo de upload: 20 MB (imagem/vídeo/arquivo) verificado no client e via policy de bucket.
-- Bloqueio mútuo impede envio nos dois sentidos.
-
-## Entregáveis em ordem
-
-1. Migration SQL (tabelas, RLS, triggers, bucket, publicação Realtime).
-2. `src/lib/chat.functions.ts` + helpers de upload.
-3. Hooks de Realtime e presença.
-4. Rotas `/chat` e `/chat/$conversationId` + componentes (`ConversationList`, `MessageThread`, `MessageComposer`, `NewConversationDialog`, `ChatHeader`).
-5. Entrada "Chat" no `AppLayout` para todos os papéis.
-6. Botão "Convidar para peneira" integrado a `peneiras`.
-7. QA: testar como atleta (não vê "Nova conversa"), olheiro e clube (podem iniciar), bloqueio, denúncia, rate limit.
-
-## Fora do escopo (a confirmar se necessário)
-
-- Chamadas de voz/vídeo.
-- Mensagens de voz (áudio gravado).
-- E2E encryption.
-- Push notifications nativas (web push pode ser adicionado depois).
+Sem alterações em outras partes da plataforma.
