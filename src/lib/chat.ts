@@ -168,14 +168,29 @@ export async function uploadChatMedia(
   const uid = auth.user?.id;
   if (!uid) throw new Error("Faça login.");
   if (file.size > 20 * 1024 * 1024) throw new Error("Arquivo maior que 20 MB.");
-  const ext = file.name.split(".").pop() || "bin";
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+  const mime = file.type && file.type.length > 0 ? file.type : guessMimeFromExt(ext);
   const path = `${conversationId}/${uid}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("chat-media").upload(path, file, {
-    contentType: file.type,
+    contentType: mime,
     upsert: false,
   });
   if (error) throw new Error(error.message);
-  return { path, mime: file.type, size: file.size };
+  return { path, mime, size: file.size };
+}
+
+function guessMimeFromExt(ext: string): string {
+  const map: Record<string, string> = {
+    jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif",
+    webp: "image/webp", avif: "image/avif", bmp: "image/bmp", svg: "image/svg+xml",
+    heic: "image/heic", heif: "image/heif", tif: "image/tiff", tiff: "image/tiff",
+    ico: "image/x-icon",
+    mp4: "video/mp4", m4v: "video/x-m4v", webm: "video/webm", ogv: "video/ogg",
+    mov: "video/quicktime", avi: "video/x-msvideo", mkv: "video/x-matroska",
+    flv: "video/x-flv", wmv: "video/x-ms-wmv", "3gp": "video/3gpp", "3g2": "video/3gpp2",
+    mpeg: "video/mpeg", mpg: "video/mpeg", ts: "video/mp2t",
+  };
+  return map[ext] ?? "application/octet-stream";
 }
 
 export async function getSignedMediaUrl(path: string): Promise<string | null> {
