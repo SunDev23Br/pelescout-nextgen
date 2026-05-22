@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileIcon, ImageIcon, FilmIcon, Download, X } from "lucide-react";
+import { FileIcon, ImageIcon, FilmIcon, Download } from "lucide-react";
 import { getSignedMediaUrl } from "@/lib/chat";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
