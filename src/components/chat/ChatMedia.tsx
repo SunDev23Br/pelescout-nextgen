@@ -121,11 +121,8 @@ function MediaLightbox({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-[95vw] border-border bg-bg1/95 p-0 sm:max-w-4xl"
-        showCloseButton={false}
-      >
-        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
+      <DialogContent className="max-w-[95vw] border-border bg-bg1/95 p-0 sm:max-w-4xl">
+        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5 pr-12">
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{fileName}</div>
             {mime && <div className="truncate text-[11px] text-muted-foreground">{mime}</div>}
@@ -140,14 +137,6 @@ function MediaLightbox({
           >
             <Download className="h-4 w-4" />
           </a>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-bg2"
-            aria-label="Fechar"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
         <div className="flex max-h-[80vh] items-center justify-center bg-black/40 p-2">
           {kind === "image" ? (
