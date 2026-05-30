@@ -79,9 +79,7 @@ function AthleteProfilePage() {
     if (!user) return;
     setStarting(true);
     try {
-      const id = await startConversation(atletaId);
-      navigate({ to: "/chat", search: { c: id } as never });
-      void id;
+      await startConversation(atletaId);
       navigate({ to: "/chat" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro";
