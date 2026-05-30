@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_videos: {
+        Row: {
+          atleta_id: string
+          created_at: string
+          id: string
+          mime: string | null
+          path: string
+          size: number | null
+          titulo: string | null
+        }
+        Insert: {
+          atleta_id: string
+          created_at?: string
+          id?: string
+          mime?: string | null
+          path: string
+          size?: number | null
+          titulo?: string | null
+        }
+        Update: {
+          atleta_id?: string
+          created_at?: string
+          id?: string
+          mime?: string | null
+          path?: string
+          size?: number | null
+          titulo?: string | null
+        }
+        Relationships: []
+      }
       avaliacoes: {
         Row: {
           avaliador_id: string | null
@@ -543,6 +573,15 @@ export type Database = {
       approve_clube_request: {
         Args: { _request_id: string }
         Returns: undefined
+      }
+      get_conversation_peers: {
+        Args: { _conv_ids: string[] }
+        Returns: {
+          avatar_url: string
+          conversation_id: string
+          nome: string
+          peer_id: string
+        }[]
       }
       has_role: {
         Args: {

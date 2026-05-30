@@ -46,18 +46,22 @@ export async function listConversations(): Promise<ConversationWithPeer[]> {
   if (error) throw error;
   if (!convs || convs.length === 0) return [];
 
-  const peerIds = Array.from(
-    new Set(convs.map((c) => (c.iniciador_id === uid ? c.atleta_id : c.iniciador_id))),
-  );
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, nome, avatar_url")
-    .in("id", peerIds);
+  const convIds = convs.map((c) => c.id);
 
-  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  // Resolve peer names via a SECURITY DEFINER RPC to avoid RLS edge cases on profiles.
+  const { data: peerRows } = await supabase.rpc("get_conversation_peers", {
+    _conv_ids: convIds,
+  });
+  const peerMap = new Map<string, { id: string; nome: string; avatar_url: string | null }>();
+  (peerRows ?? []).forEach((r: { conversation_id: string; peer_id: string; nome: string; avatar_url: string | null }) => {
+    peerMap.set(r.conversation_id, {
+      id: r.peer_id,
+      nome: r.nome,
+      avatar_url: r.avatar_url,
+    });
+  });
 
   // unread count per conversation: messages not sent by me, read_at null
-  const convIds = convs.map((c) => c.id);
   const { data: unreadRows } = await supabase
     .from("messages")
     .select("conversation_id")
@@ -71,11 +75,11 @@ export async function listConversations(): Promise<ConversationWithPeer[]> {
 
   return convs.map((c) => {
     const peerId = c.iniciador_id === uid ? c.atleta_id : c.iniciador_id;
-    const p = profileMap.get(peerId);
+    const p = peerMap.get(c.id);
     return {
       ...c,
       peer: {
-        id: peerId,
+        id: p?.id ?? peerId,
         nome: p?.nome ?? "Usuário",
         avatar_url: p?.avatar_url ?? null,
       },

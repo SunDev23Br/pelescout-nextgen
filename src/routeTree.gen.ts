@@ -26,6 +26,7 @@ import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
 import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
+import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
 
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
@@ -112,6 +113,11 @@ const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
   path: '/candidatos/$candidatoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtletasAtletaIdRoute = AtletasAtletaIdRouteImport.update({
+  id: '/atletas/$atletaId',
+  path: '/atletas/$atletaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
+  '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
+  '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
+  '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
+    | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
+    | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
+    | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
   SuporteRoute: typeof SuporteRoute
+  AtletasAtletaIdRoute: typeof AtletasAtletaIdRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   PeneirasCriarRoute: typeof PeneirasCriarRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atletas/$atletaId': {
+      id: '/atletas/$atletaId'
+      path: '/atletas/$atletaId'
+      fullPath: '/atletas/$atletaId'
+      preLoaderRoute: typeof AtletasAtletaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
   SuporteRoute: SuporteRoute,
+  AtletasAtletaIdRoute: AtletasAtletaIdRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   PeneirasCriarRoute: PeneirasCriarRoute,
@@ -397,12 +418,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

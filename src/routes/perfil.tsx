@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "r
 import { Camera, CheckCircle2, KeyRound, Loader2, Lock, Mail, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
+import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -447,6 +448,12 @@ function PerfilPage() {
             </Button>
           </div>
         </form>
+
+        {user.role === "atleta" && (
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
+            <AthleteVideoGallery atletaId={user.id} canManage />
+          </section>
+        )}
       </div>
     </AppLayout>
   );

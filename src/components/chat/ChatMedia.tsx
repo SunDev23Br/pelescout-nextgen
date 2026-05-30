@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FileIcon, ImageIcon, FilmIcon, Download } from "lucide-react";
-import { getSignedMediaUrl } from "@/lib/chat";
+import { FileIcon, ImageIcon, FilmIcon, Download, Maximize2 } from "lucide-react";
+import { getSignedUrl } from "@/lib/storage";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const BROWSER_IMAGE_MIMES = new Set([
@@ -15,23 +15,25 @@ export function ChatMedia({
   path,
   mime,
   kind,
+  bucket = "chat-media",
 }: {
   path: string;
   mime: string | null;
   kind: "image" | "video" | "file";
+  bucket?: string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    getSignedMediaUrl(path).then((u) => {
+    getSignedUrl(bucket, path).then((u) => {
       if (!cancelled) setUrl(u);
     });
     return () => {
       cancelled = true;
     };
-  }, [path]);
+  }, [bucket, path]);
 
   if (!url) {
     return (
@@ -67,17 +69,31 @@ export function ChatMedia({
 
   if (kind === "video" && previewable) {
     return (
-      <video
-        src={url}
-        controls
-        playsInline
-        className="max-h-72 max-w-xs rounded-lg bg-black"
-        preload="metadata"
-      />
+      <>
+        <div className="group relative max-w-xs overflow-hidden rounded-lg bg-black">
+          <video
+            src={url}
+            controls
+            playsInline
+            preload="metadata"
+            className="max-h-72 w-full"
+          />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white opacity-90 transition hover:bg-black/80"
+            aria-label="Expandir vídeo"
+            title="Expandir vídeo"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
+        </div>
+        <MediaLightbox open={open} onOpenChange={setOpen} url={url} fileName={fileName} kind="video" mime={mime} />
+      </>
     );
   }
 
-  // Fallback card: also opens inline lightbox (image) / no preview (file)
+  // Fallback card: also opens inline lightbox
   const Icon = kind === "image" ? ImageIcon : kind === "video" ? FilmIcon : FileIcon;
   const label =
     kind === "image" ? "Imagem" : kind === "video" ? "Vídeo" : "Arquivo";
@@ -104,7 +120,7 @@ export function ChatMedia({
   );
 }
 
-function MediaLightbox({
+export function MediaLightbox({
   open,
   onOpenChange,
   url,
@@ -119,6 +135,8 @@ function MediaLightbox({
   kind: "image" | "video" | "file";
   mime?: string | null;
 }) {
+  const mimeLower = (mime ?? "").toLowerCase();
+  const canPreviewVideo = kind === "video" && (mimeLower === "" || BROWSER_VIDEO_MIMES.has(mimeLower));
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] border-border bg-bg1/95 p-0 sm:max-w-4xl">
@@ -142,7 +160,13 @@ function MediaLightbox({
           {kind === "image" ? (
             <img src={url} alt={fileName} className="max-h-[78vh] max-w-full object-contain" />
           ) : kind === "video" ? (
-            <video src={url} controls autoPlay playsInline className="max-h-[78vh] max-w-full" />
+            canPreviewVideo ? (
+              <video src={url} controls autoPlay playsInline className="max-h-[78vh] max-w-full" />
+            ) : (
+              <div className="p-12 text-center text-sm text-muted-foreground">
+                Este formato de vídeo não é suportado pelo navegador. Use o botão de download.
+              </div>
+            )
           ) : (
             <div className="p-12 text-center text-sm text-muted-foreground">
               Pré-visualização não disponível para este formato.
