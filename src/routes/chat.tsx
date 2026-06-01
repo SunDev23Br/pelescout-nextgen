@@ -356,17 +356,41 @@ function ActiveConversation({
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{peerName}</p>
-          <p className="text-xs text-muted-foreground">
-            {peerTyping ? (
-              <span className="text-primary">digitando…</span>
-            ) : (
-              statusLabel
-            )}
-          </p>
-        </div>
+        {canViewProfile ? (
+          <Link
+            to="/atletas/$atletaId"
+            params={{ atletaId: peerId }}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
+            onContextMenu={(e) => e.stopPropagation()}
+            title="Ver perfil do atleta"
+          >
+            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
+              <p className="text-xs text-muted-foreground">
+                {peerTyping ? (
+                  <span className="text-primary">digitando…</span>
+                ) : (
+                  statusLabel
+                )}
+              </p>
+            </div>
+          </Link>
+        ) : (
+          <>
+            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{peerName}</p>
+              <p className="text-xs text-muted-foreground">
+                {peerTyping ? (
+                  <span className="text-primary">digitando…</span>
+                ) : (
+                  statusLabel
+                )}
+              </p>
+            </div>
+          </>
+        )}
         {canInvite && (
           <Button size="sm" variant="outline" onClick={onInvite}>
             <Trophy className="mr-1 h-4 w-4" />
@@ -381,6 +405,13 @@ function ActiveConversation({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {canViewProfile && (
+              <DropdownMenuItem asChild>
+                <Link to="/atletas/$atletaId" params={{ atletaId: peerId }}>
+                  <UserCircle className="mr-2 h-4 w-4" /> Ver perfil do atleta
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onBlock}>
               <Ban className="mr-2 h-4 w-4" /> Bloquear
             </DropdownMenuItem>
