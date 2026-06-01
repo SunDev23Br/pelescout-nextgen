@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getMinhaInscricao, inscreverNaPeneira } from "@/lib/inscricoes";
+import { supabase } from "@/integrations/supabase/client";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import {
   ArrowLeft,
   Calendar,
