@@ -159,10 +159,19 @@ function ChatPage() {
                     <button
                       type="button"
                       onClick={() => setActiveId(c.id)}
+                      onContextMenu={(e) => {
+                        if (!canStart) return;
+                        e.preventDefault();
+                        navigate({
+                          to: "/atletas/$atletaId",
+                          params: { atletaId: c.peer.id },
+                        });
+                      }}
                       className={cn(
                         "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-bg3",
                         c.id === activeId && "bg-primary/10",
                       )}
+                      title={canStart ? "Clique para abrir · botão direito p/ ver perfil" : undefined}
                     >
                       <AthleteAvatar
                         src={c.peer.avatar_url}
