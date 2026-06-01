@@ -228,6 +228,7 @@ function ChatPage() {
               }}
               onInvite={() => setInviteOpen(true)}
               canInvite={canStart === true}
+              canViewProfile={canStart === true}
             />
           ) : (
             <div className="text-center text-sm text-muted-foreground">
