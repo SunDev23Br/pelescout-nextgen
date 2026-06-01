@@ -417,7 +417,7 @@ function PeneiraDetalhe() {
           </aside>
         </div>
 
-        {user && (user.role === "admin" || user.role === "clube" || user.id === peneira.createdBy) && !isMockPeneira && (
+        {user && (user.role === "admin" || user.role === "clube") && !isMockPeneira && (
           <div className="border-t border-border p-6 sm:p-8">
             <InscritosSection peneiraId={peneira.id} />
           </div>
