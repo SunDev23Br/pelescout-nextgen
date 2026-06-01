@@ -301,6 +301,7 @@ interface ActiveProps {
   onBlock: () => void;
   onInvite: () => void;
   canInvite: boolean;
+  canViewProfile: boolean;
 }
 
 function ActiveConversation({
@@ -314,6 +315,7 @@ function ActiveConversation({
   onBlock,
   onInvite,
   canInvite,
+  canViewProfile,
 }: ActiveProps) {
   const { messages, loading } = useMessages(conversationId);
   const presence = usePresence(peerId);
