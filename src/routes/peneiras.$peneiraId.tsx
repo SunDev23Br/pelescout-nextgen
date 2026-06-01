@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getMinhaInscricao, inscreverNaPeneira } from "@/lib/inscricoes";
+import { supabase } from "@/integrations/supabase/client";
+import { AthleteAvatar } from "@/components/AthleteAvatar";
 import {
   ArrowLeft,
   Calendar,
@@ -416,6 +418,12 @@ function PeneiraDetalhe() {
             )}
           </aside>
         </div>
+
+        {user && (user.role === "admin" || user.role === "clube") && !isMockPeneira && (
+          <div className="border-t border-border p-6 sm:p-8">
+            <InscritosSection peneiraId={peneira.id} />
+          </div>
+        )}
       </div>
     </AppLayout>
   );
@@ -461,5 +469,113 @@ function Info({
         <p className="mt-0.5 text-sm font-semibold">{value}</p>
       </div>
     </div>
+  );
+}
+
+type InscritoRow = {
+  id: string;
+  user_id: string | null;
+  nome: string;
+  posicao: string;
+  cidade: string;
+  status: string;
+  avatar: string | null;
+};
+
+function InscritosSection({ peneiraId }: { peneiraId: string }) {
+  const [rows, setRows] = useState<InscritoRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    supabase
+      .from("candidatos")
+      .select("id, user_id, nome, posicao, cidade, status, avatar")
+      .eq("peneira_id", peneiraId)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (cancel) return;
+        if (error) setError(error.message);
+        else setRows((data ?? []) as InscritoRow[]);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [peneiraId]);
+
+  return (
+    <section aria-labelledby="inscritos-titulo">
+      <div className="mb-4 flex items-end justify-between gap-2">
+        <div>
+          <h2 id="inscritos-titulo" className="font-display text-xl font-bold">
+            Inscritos
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Clique no atleta para abrir o perfil completo.
+          </p>
+        </div>
+        {rows && (
+          <span className="rounded-full bg-bg2 px-3 py-1 text-xs font-semibold text-muted-foreground">
+            {rows.length} {rows.length === 1 ? "atleta" : "atletas"}
+          </span>
+        )}
+      </div>
+
+      {error && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          Não foi possível carregar os inscritos: {error}
+        </p>
+      )}
+
+      {!rows && !error && (
+        <p className="text-sm text-muted-foreground">Carregando inscritos…</p>
+      )}
+
+      {rows && rows.length === 0 && (
+        <p className="rounded-xl border border-dashed border-border bg-bg2 p-6 text-center text-sm text-muted-foreground">
+          Nenhum atleta inscrito ainda.
+        </p>
+      )}
+
+      {rows && rows.length > 0 && (
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {rows.map((r) => {
+            const inner = (
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-bg2 p-3 transition-colors hover:border-primary/40 hover:bg-bg3">
+                <AthleteAvatar
+                  src={r.avatar}
+                  alt={r.nome}
+                  className="h-11 w-11 shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{r.nome}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {r.posicao} · {r.cidade}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  {r.status}
+                </span>
+              </div>
+            );
+            return (
+              <li key={r.id}>
+                {r.user_id ? (
+                  <Link
+                    to="/atletas/$atletaId"
+                    params={{ atletaId: r.user_id }}
+                    className="block"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  inner
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }

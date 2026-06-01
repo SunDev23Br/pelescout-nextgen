@@ -1,71 +1,38 @@
-## Objetivos
+## Objetivo
 
-1. Criar **perfil personalizado do atleta** com upload e player de vídeos em qualquer formato, abertos dentro da plataforma.
-2. Corrigir o chat ainda mostrando o olheiro/clube como **"Usuário"** para o atleta.
-3. Permitir abrir o **vídeo do chat em tela ampliada inline** (sem sair da página).
+Permitir que admin e clube acessem o perfil público do atleta (`/atletas/$atletaId`) a partir de três pontos da plataforma.
 
----
+## 1. No chat — clicar no atleta abre o perfil
 
-## 1. Perfil do atleta com vídeos
+Em `src/routes/chat.tsx`:
+- Na **lista de conversas** (sidebar), envolver o avatar/nome do peer com um link para `/atletas/$atletaId` quando o usuário logado for `admin` ou `clube` (o peer é sempre o atleta nesse caso). Manter o clique no restante do item para abrir a conversa.
+- No **header da conversa ativa** (`ActiveConversation`), tornar o avatar + nome do atleta clicáveis (link para o perfil) quando o usuário for admin/clube. Adicionar também um item “Ver perfil do atleta” no `DropdownMenu` (três pontos) — funciona como menu de contexto acessível, sem depender de botão direito.
+- Adicional: habilitar **menu de contexto nativo** (`onContextMenu`) no item da lista e no header que navega para o perfil — atende ao “botão direito” pedido pelo usuário, mas sem quebrar mobile (que continua usando o link/menu).
 
-### Banco (migração)
+## 2. Na área de jogadores
 
-- Nova tabela `public.athlete_videos`:
-  - `id`, `atleta_id` (uuid, FK lógico para `profiles.id`), `path` (text, no bucket), `mime` (text), `size` (int), `titulo` (text), `created_at`.
-- GRANTs para `authenticated`/`service_role`; RLS:
-  - **SELECT**: o próprio atleta, qualquer `admin`/`clube`, e qualquer usuário que compartilhe uma conversa com o atleta.
-  - **INSERT/DELETE**: apenas o próprio atleta (`auth.uid() = atleta_id` e role `atleta`).
-- Novo **bucket privado `athlete-videos`** (sem restrição de mime, limite 100 MB por arquivo via app):
-  - Policies de storage: upload/delete só pelo dono (`(storage.foldername(name))[1] = auth.uid()`); SELECT via URL assinada gerada no servidor → liberar SELECT para `authenticated` (URLs assinadas já protegem por tempo).
+Verificar quais rotas já listam atletas para admin/clube (provavelmente `src/routes/candidatos.index.tsx` e/ou uma listagem de atletas). Em cada card/linha de atleta:
+- Tornar nome/avatar um `<Link to="/atletas/$atletaId" params={{ atletaId: c.user_id }}>`.
+- Manter ações existentes (avaliar, desbloquear contato, etc.) intactas.
 
-### Frontend
+Se o item da lista referencia `candidato` (não atleta direto), usar `candidato.user_id` como `atletaId` — pular o link quando `user_id` for nulo (inscrição manual sem conta).
 
-- **`src/routes/perfil.tsx`** (apenas para `atleta`): adicionar uma seção "Meus vídeos":
-  - Lista em grid com thumbnail/placeholder, título, botão remover.
-  - Botão "Enviar vídeo" (input `accept="video/*"`, qualquer formato, 100 MB max).
-  - Player inline (modal Dialog) reutilizando o padrão de `ChatMedia` — abre na própria página.
-- **`src/routes/atletas.$atletaId.tsx`** (nova rota pública para olheiros/clubes e o próprio atleta):
-  - Mostra dados do perfil (nome, posição, cidade, idade, altura, peso, pé) + galeria de vídeos com player inline.
-  - Botão "Iniciar conversa" (só visível para `admin`/`clube`).
-- Reutilizar a lógica de URL assinada de `src/lib/chat.ts` em um helper genérico `getSignedUrl(bucket, path)` em `src/lib/storage.ts` para servir o bucket `athlete-videos`.
-- Suporte universal de formatos: mesma estratégia de `ChatMedia` — se o navegador não suportar (MKV, MOV exótico, AVI), mostrar card com download/abrir em nova aba; formatos comuns (mp4, webm, mov padrão) tocam inline.
+## 3. Inscritos da peneira
 
-### Navegação
+Em `src/routes/peneiras.$peneiraId.tsx`:
+- Se admin/clube, mostrar a lista de inscritos (`candidatos` da peneira) já existente ou adicionar uma seção “Inscritos”. Cada inscrito vira link para `/atletas/$atletaId` (via `user_id`), seguindo o mesmo padrão acima.
+- Reaproveitar a query existente de candidatos da peneira; caso não exista, criar consulta simples filtrada por `peneira_id` respeitando RLS (admin já tem acesso total; clube terá acesso aos campos públicos do perfil via política `scouts read atleta profiles`).
 
-- Link "Ver perfil" no card do candidato (apenas para `admin`/`clube`) e no avatar do atleta dentro do chat.
+## Sem mudanças de backend
 
----
+- A política RLS `scouts read atleta profiles` já permite que admin/clube leiam perfis de atletas.
+- A rota `/atletas/$atletaId` já existe e exibe vídeos + dados.
+- Não há migrações nem novos endpoints.
 
-## 2. Corrigir nome do peer ("Usuário") no chat
+## Arquivos a editar
 
-A policy `chat peer profile read` já existe, mas o `SELECT` em `profiles` está intermitente porque depende de uma subquery em `conversations` que, dependendo do plano do PostgREST, pode retornar vazio antes do realtime atualizar o cache.
+- `src/routes/chat.tsx` (link + onContextMenu + item no dropdown)
+- `src/routes/candidatos.index.tsx` (link nos cards) — confirmar caminho ao explorar
+- `src/routes/peneiras.$peneiraId.tsx` (links nos inscritos, talvez nova seção quando admin/clube)
 
-**Solução robusta:** trocar o `select` direto por uma **função RPC SECURITY DEFINER** `public.get_conversation_peers(_conv_ids uuid[])` que retorna `(conversation_id, peer_id, nome, avatar_url)` apenas para conversas em que `auth.uid()` participa. Isso elimina o problema de RLS na join e é mais rápido.
-
-- Migração: criar a função.
-- `src/lib/chat.ts` → `listConversations`: substituir a consulta a `profiles` pela RPC nova; manter fallback `"Usuário"` apenas se a RPC falhar.
-
----
-
-## 3. Vídeo do chat em tela ampliada inline
-
-Hoje `ChatMedia` toca vídeos pequenos dentro da bolha de mensagem, sem botão de expandir. Mudanças em **`src/components/chat/ChatMedia.tsx`**:
-
-- Para `kind === "video"` previsualizável: além do `<video>` inline, adicionar um botão "Expandir" sobre o player que abre o mesmo `MediaLightbox` já usado para imagens — vídeo em tela grande, ainda dentro da página do chat.
-- Garantir `playsInline`, `controls`, `preload="metadata"` nos dois (bolha e lightbox).
-- Para vídeos não-previsualizáveis pelo browser, manter o card e abrir lightbox com mensagem clara + botão "Baixar".
-
----
-
-## Arquivos afetados
-
-- Migração nova: tabela `athlete_videos` + policies, bucket `athlete-videos` + policies, função RPC `get_conversation_peers`.
-- `src/lib/storage.ts` (novo) — helper genérico de signed URL.
-- `src/lib/chat.ts` — usar RPC nova para nomes dos peers.
-- `src/lib/athlete-videos.ts` (novo) — CRUD de vídeos do atleta.
-- `src/components/chat/ChatMedia.tsx` — botão expandir para vídeo.
-- `src/routes/perfil.tsx` — seção "Meus vídeos".
-- `src/routes/atletas.$atletaId.tsx` (novo) — perfil público do atleta com galeria.
-- Link "Ver perfil" no card do atleta no chat / candidatos.
-
-Sem alterações no restante da plataforma.
+Sem alterações em componentes compartilhados ou no schema.

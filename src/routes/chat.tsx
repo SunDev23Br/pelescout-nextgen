@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   MoreVertical,
   Search,
   Trophy,
+  UserCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -158,10 +159,19 @@ function ChatPage() {
                     <button
                       type="button"
                       onClick={() => setActiveId(c.id)}
+                      onContextMenu={(e) => {
+                        if (!canStart) return;
+                        e.preventDefault();
+                        navigate({
+                          to: "/atletas/$atletaId",
+                          params: { atletaId: c.peer.id },
+                        });
+                      }}
                       className={cn(
                         "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-bg3",
                         c.id === activeId && "bg-primary/10",
                       )}
+                      title={canStart ? "Clique para abrir · botão direito p/ ver perfil" : undefined}
                     >
                       <AthleteAvatar
                         src={c.peer.avatar_url}
@@ -218,6 +228,7 @@ function ChatPage() {
               }}
               onInvite={() => setInviteOpen(true)}
               canInvite={canStart === true}
+              canViewProfile={canStart === true}
             />
           ) : (
             <div className="text-center text-sm text-muted-foreground">
@@ -290,6 +301,7 @@ interface ActiveProps {
   onBlock: () => void;
   onInvite: () => void;
   canInvite: boolean;
+  canViewProfile: boolean;
 }
 
 function ActiveConversation({
@@ -303,6 +315,7 @@ function ActiveConversation({
   onBlock,
   onInvite,
   canInvite,
+  canViewProfile,
 }: ActiveProps) {
   const { messages, loading } = useMessages(conversationId);
   const presence = usePresence(peerId);
@@ -343,17 +356,41 @@ function ActiveConversation({
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{peerName}</p>
-          <p className="text-xs text-muted-foreground">
-            {peerTyping ? (
-              <span className="text-primary">digitando…</span>
-            ) : (
-              statusLabel
-            )}
-          </p>
-        </div>
+        {canViewProfile ? (
+          <Link
+            to="/atletas/$atletaId"
+            params={{ atletaId: peerId }}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
+            onContextMenu={(e) => e.stopPropagation()}
+            title="Ver perfil do atleta"
+          >
+            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
+              <p className="text-xs text-muted-foreground">
+                {peerTyping ? (
+                  <span className="text-primary">digitando…</span>
+                ) : (
+                  statusLabel
+                )}
+              </p>
+            </div>
+          </Link>
+        ) : (
+          <>
+            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{peerName}</p>
+              <p className="text-xs text-muted-foreground">
+                {peerTyping ? (
+                  <span className="text-primary">digitando…</span>
+                ) : (
+                  statusLabel
+                )}
+              </p>
+            </div>
+          </>
+        )}
         {canInvite && (
           <Button size="sm" variant="outline" onClick={onInvite}>
             <Trophy className="mr-1 h-4 w-4" />
@@ -368,6 +405,13 @@ function ActiveConversation({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {canViewProfile && (
+              <DropdownMenuItem asChild>
+                <Link to="/atletas/$atletaId" params={{ atletaId: peerId }}>
+                  <UserCircle className="mr-2 h-4 w-4" /> Ver perfil do atleta
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onBlock}>
               <Ban className="mr-2 h-4 w-4" /> Bloquear
             </DropdownMenuItem>
