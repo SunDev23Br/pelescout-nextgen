@@ -53,13 +53,31 @@ const PRECO_DESBLOQUEIO = 49.99;
 function CandidatosPage() {
   const { user, ready } = useSession();
   const isClube = user?.role === "clube";
+  const isAdmin = user?.role === "admin";
+  const canScout = isAdmin || isClube;
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
+  const [startingChat, setStartingChat] = useState<string | null>(null);
   const effectiveStatus = status;
+
+  async function handleStartChat(c: Candidato) {
+    if (!c.userId) return;
+    setStartingChat(c.id);
+    try {
+      await startConversation(c.userId);
+      navigate({ to: "/chat" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao iniciar conversa");
+    } finally {
+      setStartingChat(null);
+    }
+  }
 
   if (ready && isClube) {
     return <Navigate to="/clubes" />;
   }
+
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
