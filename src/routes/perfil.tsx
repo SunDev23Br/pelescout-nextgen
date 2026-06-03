@@ -277,6 +277,51 @@ function PerfilPage() {
     window.dispatchEvent(new Event("png-session"));
   }
 
+  async function salvarAtleta(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setSavingAtleta(true);
+    const cleanedHist = historico
+      .map((h) => ({
+        clube: (h.clube ?? "").trim(),
+        periodo: (h.periodo ?? "").trim() || undefined,
+        descricao: (h.descricao ?? "").trim() || undefined,
+      }))
+      .filter((h) => h.clube.length > 0);
+    const cleanedStats: AthleteStats = {
+      jogos: stats.jogos != null && !Number.isNaN(stats.jogos) ? Number(stats.jogos) : null,
+      gols: stats.gols != null && !Number.isNaN(stats.gols) ? Number(stats.gols) : null,
+      assistencias:
+        stats.assistencias != null && !Number.isNaN(stats.assistencias)
+          ? Number(stats.assistencias)
+          : null,
+      titulos:
+        stats.titulos != null && !Number.isNaN(stats.titulos) ? Number(stats.titulos) : null,
+    };
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        bio: bio.trim() || null,
+        historico_clubes: cleanedHist,
+        stats: cleanedStats,
+      })
+      .eq("id", user.id);
+    setSavingAtleta(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setHistorico(cleanedHist);
+    setStats(cleanedStats);
+    toast.success("Perfil de atleta atualizado!");
+  }
+
+  function setStatField(k: keyof AthleteStats, v: string) {
+    const n = v === "" ? null : Number(v);
+    setStats((s) => ({ ...s, [k]: n }));
+  }
+
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-3xl space-y-8">
