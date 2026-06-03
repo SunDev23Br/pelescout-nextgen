@@ -1,6 +1,16 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Lock, Mail, MapPin, Phone, Search, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  Lock,
+  Mail,
+  MapPin,
+  MessageSquarePlus,
+  Phone,
+  Search,
+  ShieldCheck,
+  UserCircle2,
+} from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
@@ -17,7 +27,9 @@ import {
 import { candidatos, type Candidato } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
+import { startConversation } from "@/lib/chat";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/candidatos/")({
   head: () => ({
