@@ -547,10 +547,167 @@ function PerfilPage() {
         </form>
 
         {user.role === "atleta" && (
+          <form
+            onSubmit={salvarAtleta}
+            className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+          >
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+                <UserCircle2 className="h-5 w-5" /> Perfil de atleta
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Conte sua história, estatísticas e clubes por onde passou. Essas
+                informações aparecem no seu perfil público.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold" htmlFor="bio">
+                Sobre mim
+              </Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Fale um pouco da sua trajetória, estilo de jogo e objetivos."
+                rows={5}
+                maxLength={2000}
+                disabled={loadingAtleta}
+              />
+            </div>
+
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold">Estatísticas</legend>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatInput
+                  label="Jogos"
+                  value={stats.jogos}
+                  onChange={(v) => setStatField("jogos", v)}
+                />
+                <StatInput
+                  label="Gols"
+                  value={stats.gols}
+                  onChange={(v) => setStatField("gols", v)}
+                />
+                <StatInput
+                  label="Assistências"
+                  value={stats.assistencias}
+                  onChange={(v) => setStatField("assistencias", v)}
+                />
+                <StatInput
+                  label="Títulos"
+                  value={stats.titulos}
+                  onChange={(v) => setStatField("titulos", v)}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <div className="flex items-center justify-between">
+                <legend className="flex items-center gap-2 text-sm font-semibold">
+                  <Trophy className="h-4 w-4 text-primary" aria-hidden /> Histórico de
+                  clubes
+                </legend>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setHistorico((h) => [...h, { clube: "", periodo: "", descricao: "" }])
+                  }
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Adicionar
+                </Button>
+              </div>
+
+              {historico.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                  Nenhum clube adicionado ainda.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {historico.map((h, i) => (
+                    <li
+                      key={i}
+                      className="space-y-2 rounded-2xl border border-border bg-bg2 p-3"
+                    >
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input
+                          aria-label={`Nome do clube ${i + 1}`}
+                          placeholder="Clube"
+                          value={h.clube}
+                          onChange={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i ? { ...x, clube: e.target.value } : x,
+                              ),
+                            )
+                          }
+                        />
+                        <Input
+                          aria-label={`Período no clube ${i + 1}`}
+                          placeholder="Período (ex.: 2022–2024)"
+                          value={h.periodo ?? ""}
+                          onChange={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i ? { ...x, periodo: e.target.value } : x,
+                              ),
+                            )
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        aria-label={`Descrição do clube ${i + 1}`}
+                        placeholder="O que você fez nesse clube?"
+                        rows={2}
+                        value={h.descricao ?? ""}
+                        onChange={(e) =>
+                          setHistorico((arr) =>
+                            arr.map((x, j) =>
+                              j === i ? { ...x, descricao: e.target.value } : x,
+                            ),
+                          )
+                        }
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Remover clube ${i + 1}`}
+                          onClick={() =>
+                            setHistorico((arr) => arr.filter((_, j) => j !== i))
+                          }
+                        >
+                          <Trash2 className="mr-1 h-4 w-4" /> Remover
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </fieldset>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingAtleta}>
+                {savingAtleta ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                )}
+                Salvar perfil de atleta
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {user.role === "atleta" && (
           <section className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
+
       </div>
     </AppLayout>
   );
