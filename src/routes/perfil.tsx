@@ -712,3 +712,26 @@ function PerfilPage() {
     </AppLayout>
   );
 }
+
+function StatInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null | undefined;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="space-y-1 text-xs font-semibold text-muted-foreground">
+      <span>{label}</span>
+      <Input
+        type="number"
+        min={0}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+      />
+    </label>
+  );
+}
