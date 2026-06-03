@@ -114,7 +114,10 @@ export function AthleteVideoGallery({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {videos.map((v) => (
-            <div key={v.id} className="space-y-2 rounded-2xl border border-border bg-card p-3">
+            <div
+              key={v.id}
+              className="space-y-2 rounded-2xl border border-border bg-card p-3"
+            >
               <ChatMedia bucket="athlete-videos" path={v.path} mime={v.mime} kind="video" />
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -125,14 +128,24 @@ export function AthleteVideoGallery({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    aria-label={`Remover vídeo ${v.titulo ?? ""}`.trim()}
                     onClick={() => handleDelete(v)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
+              {showCaptions && (
+                <p className="text-xs text-muted-foreground">
+                  Vídeo enviado pelo atleta em{" "}
+                  {new Date(v.created_at).toLocaleDateString("pt-BR")}.
+                  {v.mime ? ` Formato ${v.mime}.` : ""} Use os controles do player
+                  para reproduzir, pausar e ajustar o volume.
+                </p>
+              )}
             </div>
           ))}
+
         </div>
       )}
     </div>
