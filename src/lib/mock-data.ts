@@ -74,6 +74,8 @@ export interface Candidato {
   email: string;
   celular: string;
   peneiraId: string;
+  /** ID do usuário no Supabase (auth.users.id), quando o candidato tem conta. */
+  userId?: string;
   avaliacao?: Avaliacao;
   notaGeral?: number;
   comentario?: string;
