@@ -302,9 +302,10 @@ function PerfilPage() {
       .from("profiles")
       .update({
         bio: bio.trim() || null,
-        historico_clubes: cleanedHist,
-        stats: cleanedStats,
+        historico_clubes: cleanedHist as unknown as never,
+        stats: cleanedStats as unknown as never,
       })
+
       .eq("id", user.id);
     setSavingAtleta(false);
     if (error) {
