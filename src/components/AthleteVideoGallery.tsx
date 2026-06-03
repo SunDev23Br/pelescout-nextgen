@@ -13,9 +13,11 @@ import { ChatMedia } from "@/components/chat/ChatMedia";
 export function AthleteVideoGallery({
   atletaId,
   canManage,
+  showCaptions = false,
 }: {
   atletaId: string;
   canManage: boolean;
+  showCaptions?: boolean;
 }) {
   const [videos, setVideos] = useState<AthleteVideo[]>([]);
   const [loading, setLoading] = useState(true);
