@@ -67,6 +67,13 @@ function PerfilPage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
 
+  // Athlete extended profile
+  const [bio, setBio] = useState("");
+  const [stats, setStats] = useState<AthleteStats>({});
+  const [historico, setHistorico] = useState<ClubeHist[]>([]);
+  const [savingAtleta, setSavingAtleta] = useState(false);
+  const [loadingAtleta, setLoadingAtleta] = useState(false);
+
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
     if (user) {
@@ -75,6 +82,25 @@ function PerfilPage() {
       setAvatarUrl(user.avatarUrl ?? null);
     }
   }, [user, ready, navigate]);
+
+  useEffect(() => {
+    if (!user || user.role !== "atleta") return;
+    setLoadingAtleta(true);
+    supabase
+      .from("profiles")
+      .select("bio, historico_clubes, stats")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setBio(data.bio ?? "");
+          setHistorico(((data.historico_clubes as ClubeHist[] | null) ?? []));
+          setStats(((data.stats as AthleteStats | null) ?? {}));
+        }
+        setLoadingAtleta(false);
+      });
+  }, [user]);
+
 
   if (!ready || !user) {
     return (
