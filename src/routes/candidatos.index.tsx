@@ -152,6 +152,7 @@ function CandidatosPage() {
                 <th className="hidden px-5 py-3 lg:table-cell">Cidade</th>
                 <th className="px-5 py-3">Nota</th>
                 <th className="px-5 py-3">Status</th>
+                {canScout && <th className="px-5 py-3 text-right">Ações</th>}
               </tr>
             </thead>
             <tbody>
@@ -176,16 +177,54 @@ function CandidatosPage() {
                   <td className="px-5 py-3">
                     <CandStatus status={c.status} />
                   </td>
+                  {canScout && (
+                    <td className="px-5 py-3">
+                      {c.userId ? (
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Ver perfil de ${c.nome}`}
+                          >
+                            <Link
+                              to="/atletas/$atletaId"
+                              params={{ atletaId: c.userId }}
+                            >
+                              <UserCircle2 className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Iniciar conversa com ${c.nome}`}
+                            disabled={startingChat === c.id}
+                            onClick={() => handleStartChat(c)}
+                          >
+                            <MessageSquarePlus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="block text-right text-xs text-muted-foreground">
+                          Sem cadastro
+                        </span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground">
+                  <td
+                    colSpan={canScout ? 7 : 6}
+                    className="px-5 py-12 text-center text-muted-foreground"
+                  >
                     Nenhum candidato encontrado.
                   </td>
                 </tr>
               )}
             </tbody>
+
           </table>
         </div>
       )}
