@@ -1,16 +1,41 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Camera, CheckCircle2, KeyRound, Loader2, Lock, Mail, Trash2 } from "lucide-react";
+import {
+  Camera,
+  CheckCircle2,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Plus,
+  Trash2,
+  Trophy,
+  UserCircle2,
+} from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
+
+interface ClubeHist {
+  clube: string;
+  periodo?: string;
+  descricao?: string;
+}
+interface AthleteStats {
+  jogos?: number | null;
+  gols?: number | null;
+  assistencias?: number | null;
+  titulos?: number | null;
+}
+
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
