@@ -191,3 +191,23 @@
 @utility shadow-card {
   box-shadow: var(--shadow-card);
 }
+
+/* Accessibility — high contrast override scoped to a container */
+.a11y-high-contrast {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(1 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.92 0 0);
+  --border: oklch(1 0 0 / 60%);
+  --primary: oklch(0.92 0.18 95);
+  --primary-foreground: oklch(0 0 0);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.a11y-high-contrast :where(a, button):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+

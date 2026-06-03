@@ -1,6 +1,16 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Lock, Mail, MapPin, Phone, Search, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  Lock,
+  Mail,
+  MapPin,
+  MessageSquarePlus,
+  Phone,
+  Search,
+  ShieldCheck,
+  UserCircle2,
+} from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Input } from "@/components/ui/input";
@@ -17,7 +27,9 @@ import {
 import { candidatos, type Candidato } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
+import { startConversation } from "@/lib/chat";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/candidatos/")({
   head: () => ({
@@ -41,13 +53,31 @@ const PRECO_DESBLOQUEIO = 49.99;
 function CandidatosPage() {
   const { user, ready } = useSession();
   const isClube = user?.role === "clube";
+  const isAdmin = user?.role === "admin";
+  const canScout = isAdmin || isClube;
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
+  const [startingChat, setStartingChat] = useState<string | null>(null);
   const effectiveStatus = status;
+
+  async function handleStartChat(c: Candidato) {
+    if (!c.userId) return;
+    setStartingChat(c.id);
+    try {
+      await startConversation(c.userId);
+      navigate({ to: "/chat" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao iniciar conversa");
+    } finally {
+      setStartingChat(null);
+    }
+  }
 
   if (ready && isClube) {
     return <Navigate to="/clubes" />;
   }
+
 
   const list = useMemo(() => {
     return candidatos.filter((c) => {
@@ -122,6 +152,7 @@ function CandidatosPage() {
                 <th className="hidden px-5 py-3 lg:table-cell">Cidade</th>
                 <th className="px-5 py-3">Nota</th>
                 <th className="px-5 py-3">Status</th>
+                {canScout && <th className="px-5 py-3 text-right">Ações</th>}
               </tr>
             </thead>
             <tbody>
@@ -146,16 +177,54 @@ function CandidatosPage() {
                   <td className="px-5 py-3">
                     <CandStatus status={c.status} />
                   </td>
+                  {canScout && (
+                    <td className="px-5 py-3">
+                      {c.userId ? (
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Ver perfil de ${c.nome}`}
+                          >
+                            <Link
+                              to="/atletas/$atletaId"
+                              params={{ atletaId: c.userId }}
+                            >
+                              <UserCircle2 className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Iniciar conversa com ${c.nome}`}
+                            disabled={startingChat === c.id}
+                            onClick={() => handleStartChat(c)}
+                          >
+                            <MessageSquarePlus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="block text-right text-xs text-muted-foreground">
+                          Sem cadastro
+                        </span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground">
+                  <td
+                    colSpan={canScout ? 7 : 6}
+                    className="px-5 py-12 text-center text-muted-foreground"
+                  >
                     Nenhum candidato encontrado.
                   </td>
                 </tr>
               )}
             </tbody>
+
           </table>
         </div>
       )}

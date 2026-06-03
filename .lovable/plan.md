@@ -1,38 +1,53 @@
-## Objetivo
+## 1. Aba Candidatos → perfil do atleta + chat
 
-Permitir que admin e clube acessem o perfil público do atleta (`/atletas/$atletaId`) a partir de três pontos da plataforma.
+Em `src/routes/candidatos.index.tsx`:
 
-## 1. No chat — clicar no atleta abre o perfil
+- Em cada linha/card do candidato, se `c.user_id` existir, transformar nome/avatar em `<Link to="/atletas/$atletaId" params={{ atletaId: c.user_id }}>`. Sem `user_id`, manter o nome como texto puro (sem link, sem botão de chat) — conforme escolhido.
+- Adicionar uma nova coluna "Ações" na tabela (visível só para `admin`/`clube`) com:
+  - Botão **Ver perfil** → `/atletas/$atletaId`
+  - Botão **Chat** (ícone `MessageSquarePlus`, `aria-label="Iniciar conversa"`) que chama `startConversation(user_id)` de `src/lib/chat.ts` e navega para `/chat`. Reaproveita a lógica já usada em `atletas.$atletaId.tsx`.
+- Mesma dupla de ações nos cards do `ClubeCardsView` (apenas quando `user_id` existe). Manter o fluxo de "Desbloquear contato" intacto.
 
-Em `src/routes/chat.tsx`:
-- Na **lista de conversas** (sidebar), envolver o avatar/nome do peer com um link para `/atletas/$atletaId` quando o usuário logado for `admin` ou `clube` (o peer é sempre o atleta nesse caso). Manter o clique no restante do item para abrir a conversa.
-- No **header da conversa ativa** (`ActiveConversation`), tornar o avatar + nome do atleta clicáveis (link para o perfil) quando o usuário for admin/clube. Adicionar também um item “Ver perfil do atleta” no `DropdownMenu` (três pontos) — funciona como menu de contexto acessível, sem depender de botão direito.
-- Adicional: habilitar **menu de contexto nativo** (`onContextMenu`) no item da lista e no header que navega para o perfil — atende ao “botão direito” pedido pelo usuário, mas sem quebrar mobile (que continua usando o link/menu).
+Sem mudanças de backend — `conversations` já só aceita iniciador admin/clube, então a restrição de papéis fica garantida tanto no UI quanto na RLS.
 
-## 2. Na área de jogadores
+## 2. Perfil do atleta — novos campos
 
-Verificar quais rotas já listam atletas para admin/clube (provavelmente `src/routes/candidatos.index.tsx` e/ou uma listagem de atletas). Em cada card/linha de atleta:
-- Tornar nome/avatar um `<Link to="/atletas/$atletaId" params={{ atletaId: c.user_id }}>`.
-- Manter ações existentes (avaliar, desbloquear contato, etc.) intactas.
+Migração no Supabase adicionando colunas opcionais em `public.profiles`:
 
-Se o item da lista referencia `candidato` (não atleta direto), usar `candidato.user_id` como `atletaId` — pular o link quando `user_id` for nulo (inscrição manual sem conta).
+- `bio text`
+- `historico_clubes jsonb default '[]'::jsonb` — array de `{ clube, periodo, descricao }`
+- `stats jsonb default '{}'::jsonb` — `{ jogos, gols, assistencias, titulos }`
 
-## 3. Inscritos da peneira
+Sem novas tabelas, sem novas policies (as existentes em `profiles` já cobrem leitura por dono, peer de chat, admin/clube e suporte).
 
-Em `src/routes/peneiras.$peneiraId.tsx`:
-- Se admin/clube, mostrar a lista de inscritos (`candidatos` da peneira) já existente ou adicionar uma seção “Inscritos”. Cada inscrito vira link para `/atletas/$atletaId` (via `user_id`), seguindo o mesmo padrão acima.
-- Reaproveitar a query existente de candidatos da peneira; caso não exista, criar consulta simples filtrada por `peneira_id` respeitando RLS (admin já tem acesso total; clube terá acesso aos campos públicos do perfil via política `scouts read atleta profiles`).
+### UI
 
-## Sem mudanças de backend
+`src/routes/atletas.$atletaId.tsx` (visualização pública):
+- Nova seção **Sobre** com a bio (texto longo) quando preenchida.
+- Nova seção **Estatísticas** em grid (Jogos / Gols / Assistências / Títulos).
+- Nova seção **Histórico de clubes** em lista vertical (clube + período + descrição).
 
-- A política RLS `scouts read atleta profiles` já permite que admin/clube leiam perfis de atletas.
-- A rota `/atletas/$atletaId` já existe e exibe vídeos + dados.
-- Não há migrações nem novos endpoints.
+`src/routes/perfil.tsx` (edição pelo próprio atleta):
+- Textarea para bio.
+- Inputs numéricos para as 4 stats.
+- Editor simples de histórico de clubes (lista com adicionar/remover linha).
+- Salva via `supabase.from("profiles").update(...)`.
 
-## Arquivos a editar
+## 3. Acessibilidade
 
-- `src/routes/chat.tsx` (link + onContextMenu + item no dropdown)
-- `src/routes/candidatos.index.tsx` (link nos cards) — confirmar caminho ao explorar
-- `src/routes/peneiras.$peneiraId.tsx` (links nos inscritos, talvez nova seção quando admin/clube)
+Novo componente `src/components/AccessibilityControls.tsx` exibido no topo do perfil do atleta (`atletas.$atletaId.tsx`) com 3 controles persistidos em `localStorage`:
 
-Sem alterações em componentes compartilhados ou no schema.
+- **Tamanho da fonte**: botões `A-` / `A` / `A+` aplicando classe `text-base|text-lg|text-xl` no container principal do perfil.
+- **Alto contraste**: toggle que adiciona a classe `a11y-high-contrast` no container — definida em `src/styles.css` sobrescrevendo `--background`, `--foreground`, `--card`, `--border`, `--primary` para tokens de máximo contraste.
+- **Legendas/descrição em vídeos**: toggle que, quando ativo, faz `AthleteVideoGallery` mostrar título + descrição abaixo de cada vídeo, garante `controls` e `tabIndex={0}` no `<video>`, e adiciona `aria-label` descritivo. Estado lido via prop ou contexto leve.
+
+Ajustes de a11y adicionais no perfil:
+- Botão "Voltar" com `aria-label`.
+- Garantir `alt` no avatar (já vem do componente).
+- Tap targets dos botões de ação ≥ 44px (`min-h-11`).
+
+## Arquivos
+
+- **Editar**: `src/routes/candidatos.index.tsx`, `src/routes/atletas.$atletaId.tsx`, `src/routes/perfil.tsx`, `src/components/AthleteVideoGallery.tsx`, `src/styles.css`, `src/integrations/supabase/types.ts` (regenerado após migração).
+- **Criar**: `src/components/AccessibilityControls.tsx`.
+- **Migração**: adicionar `bio`, `historico_clubes`, `stats` em `public.profiles`.

@@ -1,16 +1,41 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Camera, CheckCircle2, KeyRound, Loader2, Lock, Mail, Trash2 } from "lucide-react";
+import {
+  Camera,
+  CheckCircle2,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Plus,
+  Trash2,
+  Trophy,
+  UserCircle2,
+} from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
+
+interface ClubeHist {
+  clube: string;
+  periodo?: string;
+  descricao?: string;
+}
+interface AthleteStats {
+  jogos?: number | null;
+  gols?: number | null;
+  assistencias?: number | null;
+  titulos?: number | null;
+}
+
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -42,6 +67,13 @@ function PerfilPage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
 
+  // Athlete extended profile
+  const [bio, setBio] = useState("");
+  const [stats, setStats] = useState<AthleteStats>({});
+  const [historico, setHistorico] = useState<ClubeHist[]>([]);
+  const [savingAtleta, setSavingAtleta] = useState(false);
+  const [loadingAtleta, setLoadingAtleta] = useState(false);
+
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
     if (user) {
@@ -50,6 +82,25 @@ function PerfilPage() {
       setAvatarUrl(user.avatarUrl ?? null);
     }
   }, [user, ready, navigate]);
+
+  useEffect(() => {
+    if (!user || user.role !== "atleta") return;
+    setLoadingAtleta(true);
+    supabase
+      .from("profiles")
+      .select("bio, historico_clubes, stats")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setBio(data.bio ?? "");
+          setHistorico(((data.historico_clubes as ClubeHist[] | null) ?? []));
+          setStats(((data.stats as AthleteStats | null) ?? {}));
+        }
+        setLoadingAtleta(false);
+      });
+  }, [user]);
+
 
   if (!ready || !user) {
     return (
@@ -225,6 +276,52 @@ function PerfilPage() {
     toast.success("Verifique o novo e-mail para confirmar a alteração.");
     window.dispatchEvent(new Event("png-session"));
   }
+
+  async function salvarAtleta(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setSavingAtleta(true);
+    const cleanedHist = historico
+      .map((h) => ({
+        clube: (h.clube ?? "").trim(),
+        periodo: (h.periodo ?? "").trim() || undefined,
+        descricao: (h.descricao ?? "").trim() || undefined,
+      }))
+      .filter((h) => h.clube.length > 0);
+    const cleanedStats: AthleteStats = {
+      jogos: stats.jogos != null && !Number.isNaN(stats.jogos) ? Number(stats.jogos) : null,
+      gols: stats.gols != null && !Number.isNaN(stats.gols) ? Number(stats.gols) : null,
+      assistencias:
+        stats.assistencias != null && !Number.isNaN(stats.assistencias)
+          ? Number(stats.assistencias)
+          : null,
+      titulos:
+        stats.titulos != null && !Number.isNaN(stats.titulos) ? Number(stats.titulos) : null,
+    };
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        bio: bio.trim() || null,
+        historico_clubes: cleanedHist as unknown as never,
+        stats: cleanedStats as unknown as never,
+      })
+
+      .eq("id", user.id);
+    setSavingAtleta(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setHistorico(cleanedHist);
+    setStats(cleanedStats);
+    toast.success("Perfil de atleta atualizado!");
+  }
+
+  function setStatField(k: keyof AthleteStats, v: string) {
+    const n = v === "" ? null : Number(v);
+    setStats((s) => ({ ...s, [k]: n }));
+  }
+
 
   return (
     <AppLayout>
@@ -450,11 +547,191 @@ function PerfilPage() {
         </form>
 
         {user.role === "atleta" && (
+          <form
+            onSubmit={salvarAtleta}
+            className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+          >
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-lg font-bold">
+                <UserCircle2 className="h-5 w-5" /> Perfil de atleta
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Conte sua história, estatísticas e clubes por onde passou. Essas
+                informações aparecem no seu perfil público.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold" htmlFor="bio">
+                Sobre mim
+              </Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Fale um pouco da sua trajetória, estilo de jogo e objetivos."
+                rows={5}
+                maxLength={2000}
+                disabled={loadingAtleta}
+              />
+            </div>
+
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold">Estatísticas</legend>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatInput
+                  label="Jogos"
+                  value={stats.jogos}
+                  onChange={(v) => setStatField("jogos", v)}
+                />
+                <StatInput
+                  label="Gols"
+                  value={stats.gols}
+                  onChange={(v) => setStatField("gols", v)}
+                />
+                <StatInput
+                  label="Assistências"
+                  value={stats.assistencias}
+                  onChange={(v) => setStatField("assistencias", v)}
+                />
+                <StatInput
+                  label="Títulos"
+                  value={stats.titulos}
+                  onChange={(v) => setStatField("titulos", v)}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <div className="flex items-center justify-between">
+                <legend className="flex items-center gap-2 text-sm font-semibold">
+                  <Trophy className="h-4 w-4 text-primary" aria-hidden /> Histórico de
+                  clubes
+                </legend>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setHistorico((h) => [...h, { clube: "", periodo: "", descricao: "" }])
+                  }
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Adicionar
+                </Button>
+              </div>
+
+              {historico.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                  Nenhum clube adicionado ainda.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {historico.map((h, i) => (
+                    <li
+                      key={i}
+                      className="space-y-2 rounded-2xl border border-border bg-bg2 p-3"
+                    >
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input
+                          aria-label={`Nome do clube ${i + 1}`}
+                          placeholder="Clube"
+                          value={h.clube}
+                          onChange={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i ? { ...x, clube: e.target.value } : x,
+                              ),
+                            )
+                          }
+                        />
+                        <Input
+                          aria-label={`Período no clube ${i + 1}`}
+                          placeholder="Período (ex.: 2022–2024)"
+                          value={h.periodo ?? ""}
+                          onChange={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i ? { ...x, periodo: e.target.value } : x,
+                              ),
+                            )
+                          }
+                        />
+                      </div>
+                      <Textarea
+                        aria-label={`Descrição do clube ${i + 1}`}
+                        placeholder="O que você fez nesse clube?"
+                        rows={2}
+                        value={h.descricao ?? ""}
+                        onChange={(e) =>
+                          setHistorico((arr) =>
+                            arr.map((x, j) =>
+                              j === i ? { ...x, descricao: e.target.value } : x,
+                            ),
+                          )
+                        }
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Remover clube ${i + 1}`}
+                          onClick={() =>
+                            setHistorico((arr) => arr.filter((_, j) => j !== i))
+                          }
+                        >
+                          <Trash2 className="mr-1 h-4 w-4" /> Remover
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </fieldset>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingAtleta}>
+                {savingAtleta ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                )}
+                Salvar perfil de atleta
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {user.role === "atleta" && (
           <section className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
+
       </div>
     </AppLayout>
+  );
+}
+
+function StatInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null | undefined;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="space-y-1 text-xs font-semibold text-muted-foreground">
+      <span>{label}</span>
+      <Input
+        type="number"
+        min={0}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+      />
+    </label>
   );
 }
