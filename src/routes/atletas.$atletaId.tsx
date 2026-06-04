@@ -162,7 +162,7 @@ function AthleteProfilePage() {
           </Button>
         </div>
 
-        <AccessibilityControls prefs={prefs} onChange={setPrefs} />
+
 
         <section
           aria-labelledby="atleta-nome"
@@ -303,7 +303,6 @@ function AthleteProfilePage() {
           <AthleteVideoGallery
             atletaId={atletaId}
             canManage={canManage}
-            showCaptions={prefs.videoCaptions}
           />
         </section>
       </div>
