@@ -4,11 +4,6 @@ import { ArrowLeft, Loader2, MessageSquarePlus, Trophy } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
-import {
-  AccessibilityControls,
-  a11yContainerClass,
-  useA11yPrefs,
-} from "@/components/AccessibilityControls";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
