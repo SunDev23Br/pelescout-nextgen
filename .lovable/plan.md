@@ -1,53 +1,39 @@
-## 1. Aba Candidatos → perfil do atleta + chat
+## Mudanças
 
-Em `src/routes/candidatos.index.tsx`:
+### 1. Aba Candidatos — chat para admin e olheiros (clube)
+Arquivo: `src/routes/candidatos.index.tsx`
 
-- Em cada linha/card do candidato, se `c.user_id` existir, transformar nome/avatar em `<Link to="/atletas/$atletaId" params={{ atletaId: c.user_id }}>`. Sem `user_id`, manter o nome como texto puro (sem link, sem botão de chat) — conforme escolhido.
-- Adicionar uma nova coluna "Ações" na tabela (visível só para `admin`/`clube`) com:
-  - Botão **Ver perfil** → `/atletas/$atletaId`
-  - Botão **Chat** (ícone `MessageSquarePlus`, `aria-label="Iniciar conversa"`) que chama `startConversation(user_id)` de `src/lib/chat.ts` e navega para `/chat`. Reaproveita a lógica já usada em `atletas.$atletaId.tsx`.
-- Mesma dupla de ações nos cards do `ClubeCardsView` (apenas quando `user_id` existe). Manter o fluxo de "Desbloquear contato" intacto.
+- Manter botão "Chat" apenas para admin e clube (já está assim).
+- Para candidatos **sem `userId`** (cadastrados manualmente), o botão "Chat" fica **desabilitado** com tooltip "Candidato sem conta no app".
+- Botão "Ver perfil" continua escondido quando não houver `userId` (já implementado).
+- Nenhuma mudança de RLS — o chat usa a tabela `conversations` que só aceita atletas com conta.
 
-Sem mudanças de backend — `conversations` já só aceita iniciador admin/clube, então a restrição de papéis fica garantida tanto no UI quanto na RLS.
+### 2. Perfil público de olheiro/clube (visível para atletas)
+Novo arquivo: `src/routes/usuarios.$userId.tsx` (rota `/usuarios/:userId`)
 
-## 2. Perfil do atleta — novos campos
+Mostra para qualquer usuário logado:
+- Nome e avatar
+- Papel (Olheiro / Clube)
+- Nome do clube + CNPJ (quando `role = clube`)
+- Email e celular
+- Botão "Iniciar conversa" — visível só quando o visitante é olheiro/clube e o alvo é atleta (regra atual do chat). Atleta vendo perfil de olheiro/clube **não** vê esse botão (atletas não podem iniciar conversas pela política do banco).
 
-Migração no Supabase adicionando colunas opcionais em `public.profiles`:
+Acesso à página:
+- A partir do chat: clique no nome/avatar do interlocutor na conversa abre `/usuarios/$userId` (já carregamos `peer` via `get_conversation_peers`).
+- Edit em `src/routes/chat.tsx` para tornar o cabeçalho da conversa clicável.
 
-- `bio text`
-- `historico_clubes jsonb default '[]'::jsonb` — array de `{ clube, periodo, descricao }`
-- `stats jsonb default '{}'::jsonb` — `{ jogos, gols, assistencias, titulos }`
+RLS:
+- Política existente `chat peer profile read` já permite o atleta ler o perfil do olheiro/clube com quem conversa. Sem migração necessária.
+- A página exibe "Perfil não disponível" se a query retornar nulo (caso visitante não tenha permissão).
 
-Sem novas tabelas, sem novas policies (as existentes em `profiles` já cobrem leitura por dono, peer de chat, admin/clube e suporte).
+### 3. Remover controles de acessibilidade
+- Deletar `src/components/AccessibilityControls.tsx`.
+- Em `src/routes/atletas.$atletaId.tsx`: remover imports `AccessibilityControls`, `a11yContainerClass`, `useA11yPrefs`, o estado `prefs`, o `<AccessibilityControls>` renderizado, a classe wrapper a11y, e a prop `showCaptions` passada ao `AthleteVideoGallery`.
+- Em `src/components/AthleteVideoGallery.tsx`: remover prop `showCaptions` e qualquer renderização de legendas atrelada a ela (manter o `aria-label` e o vídeo normais).
+- Em `src/styles.css`: remover o bloco `.a11y-high-contrast { ... }` no fim do arquivo.
 
-### UI
-
-`src/routes/atletas.$atletaId.tsx` (visualização pública):
-- Nova seção **Sobre** com a bio (texto longo) quando preenchida.
-- Nova seção **Estatísticas** em grid (Jogos / Gols / Assistências / Títulos).
-- Nova seção **Histórico de clubes** em lista vertical (clube + período + descrição).
-
-`src/routes/perfil.tsx` (edição pelo próprio atleta):
-- Textarea para bio.
-- Inputs numéricos para as 4 stats.
-- Editor simples de histórico de clubes (lista com adicionar/remover linha).
-- Salva via `supabase.from("profiles").update(...)`.
-
-## 3. Acessibilidade
-
-Novo componente `src/components/AccessibilityControls.tsx` exibido no topo do perfil do atleta (`atletas.$atletaId.tsx`) com 3 controles persistidos em `localStorage`:
-
-- **Tamanho da fonte**: botões `A-` / `A` / `A+` aplicando classe `text-base|text-lg|text-xl` no container principal do perfil.
-- **Alto contraste**: toggle que adiciona a classe `a11y-high-contrast` no container — definida em `src/styles.css` sobrescrevendo `--background`, `--foreground`, `--card`, `--border`, `--primary` para tokens de máximo contraste.
-- **Legendas/descrição em vídeos**: toggle que, quando ativo, faz `AthleteVideoGallery` mostrar título + descrição abaixo de cada vídeo, garante `controls` e `tabIndex={0}` no `<video>`, e adiciona `aria-label` descritivo. Estado lido via prop ou contexto leve.
-
-Ajustes de a11y adicionais no perfil:
-- Botão "Voltar" com `aria-label`.
-- Garantir `alt` no avatar (já vem do componente).
-- Tap targets dos botões de ação ≥ 44px (`min-h-11`).
-
-## Arquivos
-
-- **Editar**: `src/routes/candidatos.index.tsx`, `src/routes/atletas.$atletaId.tsx`, `src/routes/perfil.tsx`, `src/components/AthleteVideoGallery.tsx`, `src/styles.css`, `src/integrations/supabase/types.ts` (regenerado após migração).
-- **Criar**: `src/components/AccessibilityControls.tsx`.
-- **Migração**: adicionar `bio`, `historico_clubes`, `stats` em `public.profiles`.
+### Resumo de arquivos
+- editar: `src/routes/candidatos.index.tsx` (tooltip/disabled), `src/routes/atletas.$atletaId.tsx`, `src/components/AthleteVideoGallery.tsx`, `src/styles.css`, `src/routes/chat.tsx` (link no header da conversa)
+- criar: `src/routes/usuarios.$userId.tsx`
+- deletar: `src/components/AccessibilityControls.tsx`
+- sem migração de banco
