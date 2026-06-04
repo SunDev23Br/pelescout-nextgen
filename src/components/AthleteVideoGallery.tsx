@@ -13,11 +13,9 @@ import { ChatMedia } from "@/components/chat/ChatMedia";
 export function AthleteVideoGallery({
   atletaId,
   canManage,
-  showCaptions = false,
 }: {
   atletaId: string;
   canManage: boolean;
-  showCaptions?: boolean;
 }) {
   const [videos, setVideos] = useState<AthleteVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,14 +133,6 @@ export function AthleteVideoGallery({
                   </Button>
                 )}
               </div>
-              {showCaptions && (
-                <p className="text-xs text-muted-foreground">
-                  Vídeo enviado pelo atleta em{" "}
-                  {new Date(v.created_at).toLocaleDateString("pt-BR")}.
-                  {v.mime ? ` Formato ${v.mime}.` : ""} Use os controles do player
-                  para reproduzir, pausar e ajustar o volume.
-                </p>
-              )}
             </div>
           ))}
 

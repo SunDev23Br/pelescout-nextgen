@@ -179,8 +179,8 @@ function CandidatosPage() {
                   </td>
                   {canScout && (
                     <td className="px-5 py-3">
-                      {c.userId ? (
-                        <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-1">
+                        {c.userId ? (
                           <Button
                             asChild
                             variant="ghost"
@@ -194,6 +194,18 @@ function CandidatosPage() {
                               <UserCircle2 className="h-4 w-4" />
                             </Link>
                           </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            aria-label="Candidato sem conta no app"
+                            title="Candidato sem conta no app"
+                          >
+                            <UserCircle2 className="h-4 w-4 opacity-50" />
+                          </Button>
+                        )}
+                        {c.userId ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -203,12 +215,18 @@ function CandidatosPage() {
                           >
                             <MessageSquarePlus className="h-4 w-4" />
                           </Button>
-                        </div>
-                      ) : (
-                        <span className="block text-right text-xs text-muted-foreground">
-                          Sem cadastro
-                        </span>
-                      )}
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            aria-label="Candidato sem conta no app — não é possível conversar"
+                            title="Candidato sem conta no app"
+                          >
+                            <MessageSquarePlus className="h-4 w-4 opacity-50" />
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>
