@@ -63,7 +63,7 @@ function AthleteProfilePage() {
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
-  const [prefs, setPrefs] = useA11yPrefs();
+  
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
@@ -149,7 +149,7 @@ function AthleteProfilePage() {
 
   return (
     <AppLayout>
-      <div className={"mx-auto max-w-4xl space-y-6 " + a11yContainerClass(prefs)}>
+      <div className="mx-auto max-w-4xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
             variant="ghost"
