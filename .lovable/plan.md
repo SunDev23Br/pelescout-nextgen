@@ -1,39 +1,63 @@
+# Redesign do Perfil do Atleta — Estilo FIFA / Scouting Pro
+
+Reformular `src/routes/atletas.$atletaId.tsx` para um layout futurista com sidebar de seções, foto em destaque com glow neon, barras de habilidades animadas, vídeo de destaque e conquistas. Mantém todos os dados já existentes no banco (`profiles`, `athlete_videos`) — apenas muda apresentação.
+
+## Estrutura visual
+
+```
+┌──────────────────────────────────────────────┐
+│ [sidebar]  │  HERO: foto glow + nome + infos │
+│  Perfil    │ ──────────────────────────────  │
+│  Avaliações│  SOBRE MIM (bio)                │
+│  Vídeos    │  HABILIDADES (barras animadas)  │
+│  Fotos     │  VÍDEO DE DESTAQUE              │
+│ Conquistas │  CONQUISTAS (troféus)           │
+│  Contato   │                                 │
+└──────────────────────────────────────────────┘
+```
+
 ## Mudanças
 
-### 1. Aba Candidatos — chat para admin e olheiros (clube)
-Arquivo: `src/routes/candidatos.index.tsx`
+### 1. Tokens de cor (src/styles.css)
+Adicionar variáveis para o tema neon **apenas no escopo do perfil do atleta** (não muda o tema global do app):
+- `--neon-cyan: #00D4FF`
+- `--neon-blue-deep: #0A0F1C`, `--neon-blue-mid: #0F172A`, `--neon-blue-accent: #1E3A8A`
+- Utility `.glow-neon` (box-shadow azul radial) e `.text-glow` (text-shadow cyan)
+- Keyframes `skill-bar-fill` (largura 0→valor em 1.2s ease-out)
 
-- Manter botão "Chat" apenas para admin e clube (já está assim).
-- Para candidatos **sem `userId`** (cadastrados manualmente), o botão "Chat" fica **desabilitado** com tooltip "Candidato sem conta no app".
-- Botão "Ver perfil" continua escondido quando não houver `userId` (já implementado).
-- Nenhuma mudança de RLS — o chat usa a tabela `conversations` que só aceita atletas com conta.
+### 2. `src/routes/atletas.$atletaId.tsx`
+- Layout grid 2 colunas: sidebar fixa (56–72px com ícones de `lucide-react`: User, Star, Video, Image, Trophy, Mail) + conteúdo
+- Sidebar com scroll-spy: clica num ícone → `scrollIntoView` para a seção; ativa visual no item correspondente
+- Hero redesenhado: avatar circular grande com anel duplo + glow cyan, nome em font-display uppercase tracking-wider, posição em destaque cyan, chips de idade/altura/peso/pé numa linha
+- Botão "Iniciar conversa" (mantém regra `canStartChat`) com estilo neon
 
-### 2. Perfil público de olheiro/clube (visível para atletas)
-Novo arquivo: `src/routes/usuarios.$userId.tsx` (rota `/usuarios/:userId`)
+### 3. Nova seção HABILIDADES
+Como o schema atual não tem campo de skills, derivar do `stats` + `posicao` com valores default (ex: zagueiro/volante = marcação alta) **OU** ler de `profile.stats.skills` se existir (objeto opcional sem migration). Render:
+- 5 barras: Marcação, Força, Passe, Velocidade, Posicionamento
+- Cada barra: label + valor 0-100 + trilho escuro + preenchimento gradient cyan→blue com animação de entrada
+- Usar `IntersectionObserver` para disparar animação ao entrar na viewport
 
-Mostra para qualquer usuário logado:
-- Nome e avatar
-- Papel (Olheiro / Clube)
-- Nome do clube + CNPJ (quando `role = clube`)
-- Email e celular
-- Botão "Iniciar conversa" — visível só quando o visitante é olheiro/clube e o alvo é atleta (regra atual do chat). Atleta vendo perfil de olheiro/clube **não** vê esse botão (atletas não podem iniciar conversas pela política do banco).
+### 4. VÍDEO DE DESTAQUE
+- Pega o vídeo mais recente de `athlete_videos` (já listado pelo `AthleteVideoGallery`)
+- Renderizar player único grande com thumbnail (poster gerado do próprio vídeo via `<video preload="metadata">`) e botão play central com glow
+- A galeria completa de vídeos continua aparecendo abaixo
 
-Acesso à página:
-- A partir do chat: clique no nome/avatar do interlocutor na conversa abre `/usuarios/$userId` (já carregamos `peer` via `get_conversation_peers`).
-- Edit em `src/routes/chat.tsx` para tornar o cabeçalho da conversa clicável.
+### 5. CONQUISTAS
+Reaproveitar `historico_clubes` como conquistas se não houver campo dedicado, OU usar `profile.stats.conquistas` (array opcional de `{titulo, ano}`). Render como grid de cards com ícone `Trophy` dourado-cyan.
 
-RLS:
-- Política existente `chat peer profile read` já permite o atleta ler o perfil do olheiro/clube com quem conversa. Sem migração necessária.
-- A página exibe "Perfil não disponível" se a query retornar nulo (caso visitante não tenha permissão).
+### 6. Animações & interações
+- Hover nos cards: subtle lift + glow cyan
+- Transições `transition-all duration-300`
+- Barras animam via CSS keyframes triggered por classe `.animate` adicionada quando visível
 
-### 3. Remover controles de acessibilidade
-- Deletar `src/components/AccessibilityControls.tsx`.
-- Em `src/routes/atletas.$atletaId.tsx`: remover imports `AccessibilityControls`, `a11yContainerClass`, `useA11yPrefs`, o estado `prefs`, o `<AccessibilityControls>` renderizado, a classe wrapper a11y, e a prop `showCaptions` passada ao `AthleteVideoGallery`.
-- Em `src/components/AthleteVideoGallery.tsx`: remover prop `showCaptions` e qualquer renderização de legendas atrelada a ela (manter o `aria-label` e o vídeo normais).
-- Em `src/styles.css`: remover o bloco `.a11y-high-contrast { ... }` no fim do arquivo.
+## Detalhes técnicos
 
-### Resumo de arquivos
-- editar: `src/routes/candidatos.index.tsx` (tooltip/disabled), `src/routes/atletas.$atletaId.tsx`, `src/components/AthleteVideoGallery.tsx`, `src/styles.css`, `src/routes/chat.tsx` (link no header da conversa)
-- criar: `src/routes/usuarios.$userId.tsx`
-- deletar: `src/components/AccessibilityControls.tsx`
-- sem migração de banco
+- Sem mudança de schema, sem migration, sem novas dependências
+- `useRef` + `IntersectionObserver` para scroll-spy da sidebar e trigger das barras
+- Sidebar vira top-bar horizontal em mobile (`md:` breakpoint)
+- Mantém SEO `head()`, `canManage`, `canStartChat`, `handleStartChat`, e a `<AthleteVideoGallery>` existente
+- Não toca em `perfil.tsx`, `candidatos.index.tsx`, `chat.tsx`, `usuarios.$userId.tsx`
+
+## Arquivos
+- editar `src/routes/atletas.$atletaId.tsx` (reescrita do JSX, lógica preservada)
+- editar `src/styles.css` (tokens neon + keyframes, escopados via classes para não poluir o tema global)
