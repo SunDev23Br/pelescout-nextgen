@@ -24,10 +24,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { candidatos, type Candidato } from "@/lib/mock-data";
+import { candidatos as mockCandidatos, type Candidato } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 
@@ -59,7 +61,49 @@ function CandidatosPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<(typeof STATUS_TABS)[number]["value"]>("todos");
   const [startingChat, setStartingChat] = useState<string | null>(null);
+  const [realAtletas, setRealAtletas] = useState<Candidato[]>([]);
   const effectiveStatus = status;
+
+  useEffect(() => {
+    if (!canScout) return;
+    let cancelled = false;
+    (async () => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "atleta");
+      const ids = (roles ?? []).map((r) => r.user_id);
+      if (ids.length === 0) {
+        if (!cancelled) setRealAtletas([]);
+        return;
+      }
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, nome, email, celular, avatar_url, data_nascimento, posicao, cidade, altura, peso, pe")
+        .in("id", ids);
+      if (cancelled || !profs) return;
+      const mapped: Candidato[] = profs.map((p) => ({
+        id: `u_${p.id}`,
+        userId: p.id,
+        nome: p.nome ?? "Atleta",
+        dataNascimento: p.data_nascimento ?? "2000-01-01",
+        posicao: (p.posicao ?? "Meia") as Candidato["posicao"],
+        cidade: p.cidade ?? "—",
+        altura: p.altura ?? 0,
+        peso: p.peso ?? 0,
+        pe: (p.pe ?? "Destro") as Candidato["pe"],
+        avatar: p.avatar_url ?? "",
+        email: p.email ?? "",
+        celular: p.celular ?? "",
+        peneiraId: "",
+        status: "pendente",
+      }));
+      setRealAtletas(mapped);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [canScout]);
 
   async function handleStartChat(c: Candidato) {
     if (!c.userId) return;
@@ -78,9 +122,14 @@ function CandidatosPage() {
     return <Navigate to="/clubes" />;
   }
 
+  const allCandidatos = useMemo(() => {
+    const realIds = new Set(realAtletas.map((c) => c.userId));
+    const filteredMock = mockCandidatos.filter((c) => !c.userId || !realIds.has(c.userId));
+    return [...realAtletas, ...filteredMock];
+  }, [realAtletas]);
 
   const list = useMemo(() => {
-    return candidatos.filter((c) => {
+    return allCandidatos.filter((c) => {
       if (effectiveStatus !== "todos" && c.status !== effectiveStatus) return false;
       if (!q.trim()) return true;
       const t = q.toLowerCase();
@@ -90,7 +139,7 @@ function CandidatosPage() {
         c.cidade.toLowerCase().includes(t)
       );
     });
-  }, [q, effectiveStatus]);
+  }, [q, effectiveStatus, allCandidatos]);
 
   return (
     <AppLayout>
@@ -159,14 +208,25 @@ function CandidatosPage() {
               {list.map((c) => (
                 <tr key={c.id} className="border-t border-border transition-colors hover:bg-bg2">
                   <td className="px-5 py-3">
-                    <Link
-                      to="/candidatos/$candidatoId"
-                      params={{ candidatoId: c.id }}
-                      className="flex items-center gap-3 font-semibold hover:text-primary"
-                    >
-                      <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
-                      {c.nome}
-                    </Link>
+                    {c.userId ? (
+                      <Link
+                        to="/atletas/$atletaId"
+                        params={{ atletaId: c.userId }}
+                        className="flex items-center gap-3 font-semibold hover:text-primary"
+                      >
+                        <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
+                        {c.nome}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/candidatos/$candidatoId"
+                        params={{ candidatoId: c.id }}
+                        className="flex items-center gap-3 font-semibold hover:text-primary"
+                      >
+                        <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
+                        {c.nome}
+                      </Link>
+                    )}
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
                   <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">{calcularIdade(c.dataNascimento)} anos</td>
