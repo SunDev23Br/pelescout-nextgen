@@ -48,6 +48,11 @@ interface RequestRow {
   nome: string;
   email: string;
   kind: "admin" | "clube";
+  celular?: string | null;
+  idade?: number | null;
+  clube_atual?: string | null;
+  rg_frente_path?: string | null;
+  rg_verso_path?: string | null;
 }
 
 type RoleFilter = "all" | "atleta" | "admin" | "clube";
