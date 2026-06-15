@@ -533,8 +533,8 @@ function AdminRequestDetails({ req, onPreview }: { req: RequestRow; onPreview?: 
             Documento de identidade
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <RgThumb label="Frente" url={frenteUrl} />
-            <RgThumb label="Verso" url={versoUrl} />
+            <RgThumb label="Frente" url={frenteUrl} onClick={onPreview} />
+            <RgThumb label="Verso" url={versoUrl} onClick={onPreview} />
           </div>
         </div>
       )}
