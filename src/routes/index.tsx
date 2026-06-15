@@ -82,6 +82,7 @@ function Landing() {
         </div>
       </header>
 
+      <main>
       <section className="relative mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
