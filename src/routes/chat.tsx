@@ -227,8 +227,19 @@ function ChatPage() {
                 await blockUser(active.peer.id);
                 toast.success("Usuário bloqueado");
               }}
+              onDelete={async () => {
+                if (!confirm(`Excluir a conversa com ${active.peer.nome}? Esta ação não pode ser desfeita.`)) return;
+                try {
+                  await deleteConversation(active.id);
+                  toast.success("Conversa excluída");
+                  setActiveId(null);
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Não foi possível excluir");
+                }
+              }}
               onInvite={() => setInviteOpen(true)}
               canInvite={canStart === true}
+              canDelete={canStart === true}
               isScout={canStart === true}
             />
           ) : (
