@@ -208,14 +208,25 @@ function CandidatosPage() {
               {list.map((c) => (
                 <tr key={c.id} className="border-t border-border transition-colors hover:bg-bg2">
                   <td className="px-5 py-3">
-                    <Link
-                      to="/candidatos/$candidatoId"
-                      params={{ candidatoId: c.id }}
-                      className="flex items-center gap-3 font-semibold hover:text-primary"
-                    >
-                      <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
-                      {c.nome}
-                    </Link>
+                    {c.userId ? (
+                      <Link
+                        to="/atletas/$atletaId"
+                        params={{ atletaId: c.userId }}
+                        className="flex items-center gap-3 font-semibold hover:text-primary"
+                      >
+                        <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
+                        {c.nome}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/candidatos/$candidatoId"
+                        params={{ candidatoId: c.id }}
+                        className="flex items-center gap-3 font-semibold hover:text-primary"
+                      >
+                        <AthleteAvatar src={c.avatar} alt={c.nome} className="h-9 w-9 border border-border" />
+                        {c.nome}
+                      </Link>
+                    )}
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{c.posicao}</td>
                   <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">{calcularIdade(c.dataNascimento)} anos</td>
