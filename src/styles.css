@@ -192,4 +192,110 @@
   box-shadow: var(--shadow-card);
 }
 
+/* ============================================================
+   Athlete profile — neon FIFA-style scoped tokens & utilities
+   ============================================================ */
+.athlete-neon {
+  --neon-cyan: #00d4ff;
+  --neon-blue-deep: #0a0f1c;
+  --neon-blue-mid: #0f172a;
+  --neon-blue-accent: #1e3a8a;
+}
+
+.athlete-neon .neon-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 15, 28, 0.96));
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.athlete-neon .neon-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 12px 50px -8px rgba(0, 212, 255, 0.25);
+}
+
+.athlete-neon .glow-neon {
+  box-shadow:
+    0 0 0 3px rgba(0, 212, 255, 0.3),
+    0 0 30px 6px rgba(0, 212, 255, 0.45),
+    0 0 80px 12px rgba(30, 58, 138, 0.5);
+}
+
+.athlete-neon .text-glow {
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.45);
+}
+
+.athlete-neon .neon-sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: #94a3b8;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+.athlete-neon .neon-sidebar-item:hover {
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.08);
+}
+.athlete-neon .neon-sidebar-item.active {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+}
+
+.athlete-neon .skill-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.athlete-neon .skill-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00d4ff 0%, #1e3a8a 100%);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.athlete-neon .skill-fill.animate {
+  width: var(--skill-value, 0%);
+}
+
+.athlete-neon .play-button {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.95), rgba(30, 58, 138, 0.9));
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0f1c;
+  transition: transform 0.25s ease;
+}
+.athlete-neon .play-button:hover {
+  transform: scale(1.08);
+}
+
+.athlete-neon .trophy-card {
+  background: linear-gradient(160deg, rgba(0, 212, 255, 0.08), rgba(30, 58, 138, 0.18));
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+.athlete-neon .trophy-card:hover {
+  border-color: rgba(0, 212, 255, 0.6);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.25);
+  transform: translateY(-3px);
+}
+
+
 
