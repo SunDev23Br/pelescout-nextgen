@@ -1,10 +1,7 @@
 import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2,
-  Loader2,
   Lock,
   Mail,
   MapPin,
@@ -27,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { listAtletas, type AtletaItem } from "@/lib/atletas.functions";
+import { candidatos, type Candidato } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
@@ -64,14 +61,7 @@ function CandidatosPage() {
   const [startingChat, setStartingChat] = useState<string | null>(null);
   const effectiveStatus = status;
 
-  const fetchAtletas = useServerFn(listAtletas);
-  const { data: atletas = [], isLoading } = useQuery({
-    queryKey: ["atletas-list"],
-    queryFn: () => fetchAtletas(),
-    enabled: ready && !!user && canScout,
-  });
-
-  async function handleStartChat(c: AtletaItem) {
+  async function handleStartChat(c: Candidato) {
     if (!c.userId) return;
     setStartingChat(c.id);
     try {
@@ -90,17 +80,17 @@ function CandidatosPage() {
 
 
   const list = useMemo(() => {
-    return atletas.filter((c) => {
+    return candidatos.filter((c) => {
       if (effectiveStatus !== "todos" && c.status !== effectiveStatus) return false;
       if (!q.trim()) return true;
       const t = q.toLowerCase();
       return (
         c.nome.toLowerCase().includes(t) ||
-        (c.posicao ?? "").toLowerCase().includes(t) ||
-        (c.cidade ?? "").toLowerCase().includes(t)
+        c.posicao.toLowerCase().includes(t) ||
+        c.cidade.toLowerCase().includes(t)
       );
     });
-  }, [q, effectiveStatus, atletas]);
+  }, [q, effectiveStatus]);
 
   return (
     <AppLayout>
@@ -190,50 +180,64 @@ function CandidatosPage() {
                   {canScout && (
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-1">
-                        <Button
-                          asChild
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`Ver perfil de ${c.nome}`}
-                        >
-                          <Link
-                            to="/atletas/$atletaId"
-                            params={{ atletaId: c.userId }}
+                        {c.userId ? (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Ver perfil de ${c.nome}`}
                           >
-                            <UserCircle2 className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`Iniciar conversa com ${c.nome}`}
-                          disabled={startingChat === c.id}
-                          onClick={() => handleStartChat(c)}
-                        >
-                          <MessageSquarePlus className="h-4 w-4" />
-                        </Button>
+                            <Link
+                              to="/atletas/$atletaId"
+                              params={{ atletaId: c.userId }}
+                            >
+                              <UserCircle2 className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            aria-label="Candidato sem conta no app"
+                            title="Candidato sem conta no app"
+                          >
+                            <UserCircle2 className="h-4 w-4 opacity-50" />
+                          </Button>
+                        )}
+                        {c.userId ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Iniciar conversa com ${c.nome}`}
+                            disabled={startingChat === c.id}
+                            onClick={() => handleStartChat(c)}
+                          >
+                            <MessageSquarePlus className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            aria-label="Candidato sem conta no app — não é possível conversar"
+                            title="Candidato sem conta no app"
+                          >
+                            <MessageSquarePlus className="h-4 w-4 opacity-50" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   )}
                 </tr>
               ))}
-              {isLoading && (
+              {list.length === 0 && (
                 <tr>
                   <td
                     colSpan={canScout ? 7 : 6}
                     className="px-5 py-12 text-center text-muted-foreground"
                   >
-                    <Loader2 className="mx-auto h-5 w-5 animate-spin" />
-                  </td>
-                </tr>
-              )}
-              {!isLoading && list.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={canScout ? 7 : 6}
-                    className="px-5 py-12 text-center text-muted-foreground"
-                  >
-                    Nenhum atleta cadastrado.
+                    Nenhum candidato encontrado.
                   </td>
                 </tr>
               )}
@@ -246,11 +250,10 @@ function CandidatosPage() {
   );
 }
 
-function ClubeCardsView({ list }: { list: AtletaItem[] }) {
+function ClubeCardsView({ list }: { list: Candidato[] }) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
-  const [paying, setPaying] = useState<AtletaItem | null>(null);
+  const [paying, setPaying] = useState<Candidato | null>(null);
   const [processing, setProcessing] = useState(false);
-
 
   const confirmar = async () => {
     if (!paying) return;

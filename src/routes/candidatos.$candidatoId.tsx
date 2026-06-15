@@ -1,8 +1,5 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, MapPin, Ruler, Weight, Footprints, Mail, Phone } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { ArrowLeft, MapPin, Ruler, Weight, Footprints, Mail, Phone } from "lucide-react";
 import { useSession } from "@/lib/session";
 import {
   Radar,
@@ -15,14 +12,23 @@ import {
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { Button } from "@/components/ui/button";
-import { getAtleta } from "@/lib/atletas.functions";
+import { getCandidato, getPeneira } from "@/lib/mock-data";
 import { calcularIdade, formatarDataBR } from "@/lib/date";
 
 export const Route = createFileRoute("/candidatos/$candidatoId")({
-  head: () => ({
+  loader: ({ params }) => {
+    const candidato = getCandidato(params.candidatoId);
+    if (!candidato) throw notFound();
+    const peneira = getPeneira(candidato.peneiraId);
+    return { candidato, peneira };
+  },
+  head: ({ loaderData }) => ({
     meta: [
-      { title: `Atleta — Pelé Next Gen` },
-      { name: "description", content: `Perfil e avaliação do atleta.` },
+      { title: `${loaderData?.candidato.nome ?? "Atleta"} — Pelé Next Gen` },
+      {
+        name: "description",
+        content: `Perfil e avaliação de ${loaderData?.candidato.nome ?? "atleta"}.`,
+      },
     ],
   }),
   notFoundComponent: () => (
@@ -35,48 +41,13 @@ export const Route = createFileRoute("/candidatos/$candidatoId")({
       </div>
     </AppLayout>
   ),
-  errorComponent: ({ error }) => (
-    <AppLayout>
-      <div className="rounded-2xl border border-border bg-card p-12 text-center">
-        <p className="text-destructive">{error.message}</p>
-      </div>
-    </AppLayout>
-  ),
   component: CandidatoDetalhe,
 });
 
 function CandidatoDetalhe() {
-  const { candidatoId } = Route.useParams();
-  const { user, ready } = useSession();
-  const navigate = useNavigate();
-  const fetchAtleta = useServerFn(getAtleta);
-
-  useEffect(() => {
-    if (ready && !user) navigate({ to: "/login" });
-  }, [ready, user, navigate]);
-
-  const { data: candidato, isLoading } = useQuery({
-    queryKey: ["atleta", candidatoId],
-    queryFn: () => fetchAtleta({ data: { id: candidatoId } }),
-    enabled: ready && !!user,
-  });
-
+  const { candidato, peneira } = Route.useLoaderData();
+  const { user } = useSession();
   const isClube = user?.role === "clube";
-
-  if (isLoading || !ready) {
-    return (
-      <AppLayout>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      </AppLayout>
-    );
-  }
-
-  if (!candidato) {
-    throw notFound();
-  }
-
   const liberado =
     !isClube || (user?.contatosDesbloqueados ?? []).includes(candidato.id);
 
@@ -107,39 +78,32 @@ function CandidatoDetalhe() {
                 alt={candidato.nome}
                 className="h-28 w-28 border-4 border-primary shadow-gold"
               />
-              {candidato.notaGeral != null && (
-                <span className="absolute -bottom-1 right-0 rounded-full bg-gradient-gold px-2 py-0.5 text-xs font-bold text-primary-foreground shadow">
-                  {candidato.notaGeral.toFixed(1)}
-                </span>
-              )}
+              <span className="absolute -bottom-1 right-0 rounded-full bg-gradient-gold px-2 py-0.5 text-xs font-bold text-primary-foreground shadow">
+                {candidato.notaGeral?.toFixed(1) ?? "—"}
+              </span>
             </div>
             <h1 className="mt-4 font-display text-2xl font-extrabold">{candidato.nome}</h1>
             <p className="text-sm text-muted-foreground">
-              {candidato.posicao || "—"}
-              {candidato.dataNascimento ? ` · ${calcularIdade(candidato.dataNascimento)} anos` : ""}
+              {candidato.posicao} · {calcularIdade(candidato.dataNascimento)} anos
             </p>
-            {candidato.dataNascimento && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Nascimento: {formatarDataBR(candidato.dataNascimento)}
-              </p>
-            )}
+            <p className="mt-1 text-xs text-muted-foreground">
+              Nascimento: {formatarDataBR(candidato.dataNascimento)}
+            </p>
 
             <div className="mt-6 grid w-full grid-cols-3 gap-2">
-              <Stat icon={Ruler} label="Altura" value={candidato.altura ? `${candidato.altura}cm` : "—"} />
-              <Stat icon={Weight} label="Peso" value={candidato.peso ? `${candidato.peso}kg` : "—"} />
-              <Stat icon={Footprints} label="Pé" value={candidato.pe || "—"} />
+              <Stat icon={Ruler} label="Altura" value={`${candidato.altura}cm`} />
+              <Stat icon={Weight} label="Peso" value={`${candidato.peso}kg`} />
+              <Stat icon={Footprints} label="Pé" value={candidato.pe} />
             </div>
 
-            {candidato.cidade && (
-              <div className="mt-6 w-full rounded-xl border border-border bg-bg2 p-4 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Cidade
-                </p>
-                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
-                  <MapPin className="h-4 w-4 text-primary" /> {candidato.cidade}
-                </p>
-              </div>
-            )}
+            <div className="mt-6 w-full rounded-xl border border-border bg-bg2 p-4 text-left">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Cidade
+              </p>
+              <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
+                <MapPin className="h-4 w-4 text-primary" /> {candidato.cidade}
+              </p>
+            </div>
 
             <div className="mt-4 w-full rounded-xl border border-border bg-bg2 p-4 text-left">
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -153,7 +117,7 @@ function CandidatoDetalhe() {
                     (liberado ? "" : "select-none blur-sm text-muted-foreground")
                   }
                 >
-                  {liberado ? candidato.email || "—" : "•••••••• oculto"}
+                  {liberado ? candidato.email : "•••••••• oculto"}
                 </span>
               </p>
               <p className="mt-1.5 flex items-center gap-1.5 text-sm">
@@ -164,7 +128,7 @@ function CandidatoDetalhe() {
                     (liberado ? "" : "select-none blur-sm text-muted-foreground")
                   }
                 >
-                  {liberado ? candidato.celular || "—" : "•••••••• oculto"}
+                  {liberado ? candidato.celular : "•••••••• oculto"}
                 </span>
               </p>
               {!liberado && (
@@ -173,6 +137,19 @@ function CandidatoDetalhe() {
                 </Button>
               )}
             </div>
+
+            {peneira && (
+              <Link
+                to="/peneiras/$peneiraId"
+                params={{ peneiraId: peneira.id }}
+                className="mt-4 w-full rounded-xl border border-primary/30 bg-primary/10 p-4 text-left text-sm transition-colors hover:bg-primary/15"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Peneira inscrita
+                </p>
+                <p className="mt-1 font-semibold">{peneira.titulo}</p>
+              </Link>
+            )}
           </div>
         </div>
 
