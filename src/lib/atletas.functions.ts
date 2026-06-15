@@ -28,6 +28,24 @@ async function assertScout(supabase: any, userId: string) {
   }
 }
 
+function mapProfile(p: any): AtletaItem {
+  return {
+    id: p.id,
+    userId: p.id,
+    nome: p.nome ?? "Atleta",
+    avatar: p.avatar_url ?? "",
+    posicao: p.posicao ?? "",
+    cidade: p.cidade ?? "",
+    dataNascimento: p.data_nascimento ?? "",
+    altura: p.altura ?? 0,
+    peso: p.peso ?? 0,
+    pe: p.pe ?? "",
+    email: p.email ?? "",
+    celular: p.celular ?? "",
+    status: "pendente",
+  };
+}
+
 export const listAtletas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AtletaItem[]> => {
@@ -39,7 +57,7 @@ export const listAtletas = createServerFn({ method: "GET" })
       .select("user_id")
       .eq("role", "atleta");
     if (rolesErr) throw new Error(rolesErr.message);
-    const ids = (roles ?? []).map((r: any) => r.user_id as string);
+    const ids = (roles ?? []).map((r) => r.user_id as string);
     if (ids.length === 0) return [];
 
     const { data: profiles, error: pErr } = await supabase
@@ -50,43 +68,7 @@ export const listAtletas = createServerFn({ method: "GET" })
       .in("id", ids);
     if (pErr) throw new Error(pErr.message);
 
-    const { data: avals } = await supabase
-      .from("avaliacoes")
-      .select("candidato_user_id, tecnica, fisico, tatico, psicologico, created_at")
-      .in("candidato_user_id", ids)
-      .order("created_at", { ascending: false });
-
-    const latestByUser = new Map<string, any>();
-    for (const a of avals ?? []) {
-      if (!latestByUser.has(a.candidato_user_id)) latestByUser.set(a.candidato_user_id, a);
-    }
-
-    return (profiles ?? []).map((p: any) => {
-      const a = latestByUser.get(p.id);
-      let notaGeral: number | undefined;
-      let status: AtletaItem["status"] = "pendente";
-      if (a) {
-        notaGeral =
-          Math.round(((a.tecnica + a.fisico + a.tatico + a.psicologico) / 4) * 10) / 10;
-        status = notaGeral >= 3 ? "aprovado" : "avaliado";
-      }
-      return {
-        id: p.id,
-        userId: p.id,
-        nome: p.nome ?? "Atleta",
-        avatar: p.avatar_url ?? "",
-        posicao: p.posicao ?? "",
-        cidade: p.cidade ?? "",
-        dataNascimento: p.data_nascimento ?? "",
-        altura: p.altura ?? 0,
-        peso: p.peso ?? 0,
-        pe: p.pe ?? "",
-        email: p.email ?? "",
-        celular: p.celular ?? "",
-        notaGeral,
-        status,
-      };
-    });
+    return (profiles ?? []).map(mapProfile);
   });
 
 export const getAtleta = createServerFn({ method: "GET" })
@@ -106,44 +88,11 @@ export const getAtleta = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!p) return null;
 
-    const { data: aval } = await supabase
-      .from("avaliacoes")
-      .select("tecnica, fisico, tatico, psicologico, comentario, created_at")
-      .eq("candidato_user_id", data.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    let notaGeral: number | undefined;
-    if (aval) {
-      notaGeral =
-        Math.round(
-          ((aval.tecnica + aval.fisico + aval.tatico + aval.psicologico) / 4) * 10,
-        ) / 10;
-    }
-
     return {
-      id: p.id,
-      userId: p.id,
-      nome: p.nome ?? "Atleta",
-      avatar: p.avatar_url ?? "",
-      posicao: p.posicao ?? "",
-      cidade: p.cidade ?? "",
-      dataNascimento: p.data_nascimento ?? "",
-      altura: p.altura ?? 0,
-      peso: p.peso ?? 0,
-      pe: p.pe ?? "",
-      email: p.email ?? "",
-      celular: p.celular ?? "",
-      notaGeral,
-      avaliacao: aval
-        ? {
-            tecnica: aval.tecnica,
-            fisico: aval.fisico,
-            tatico: aval.tatico,
-            psicologico: aval.psicologico,
-          }
-        : undefined,
-      comentario: aval?.comentario ?? undefined,
+      ...mapProfile(p),
+      avaliacao: undefined as
+        | { tecnica: number; fisico: number; tatico: number; psicologico: number }
+        | undefined,
+      comentario: undefined as string | undefined,
     };
   });
