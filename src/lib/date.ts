@@ -19,7 +19,7 @@ export function calcularIdade(dataNascimento: string | Date): number {
 
 /** Formata uma data ISO ou Date como dd/mm/aaaa. */
 export function formatarDataBR(data: string | Date): string {
-  const d = typeof data === "string" ? new Date(data) : data;
+  const d = typeof data === "string" ? fromISODate(data) : data;
   if (Number.isNaN(d.getTime())) return "";
   const dia = String(d.getDate()).padStart(2, "0");
   const mes = String(d.getMonth() + 1).padStart(2, "0");
