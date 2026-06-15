@@ -92,14 +92,10 @@ export async function salvarAvaliacao(
       .eq("id", input.candidatoId);
   }
 
-  // Fire email (best-effort, non-blocking failure)
-  try {
-    await supabase.functions.invoke("send-avaliacao-email", {
-      body: { avaliacaoId: data.id },
-    });
-  } catch (err) {
-    console.warn("[avaliacoes] email send skipped:", err);
-  }
+  // Envio de e-mail desativado por enquanto — apenas simulado.
+  console.info("[avaliacoes] e-mail simulado (envio automático desativado)", {
+    avaliacaoId: data.id,
+  });
 
   return { id: data.id, notaGeral };
 }
