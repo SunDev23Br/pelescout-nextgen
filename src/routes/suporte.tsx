@@ -307,7 +307,7 @@ function SuportePage() {
                     </div>
                   </div>
                   {r.kind === "admin" && (r.celular || r.idade || r.clube_atual || r.rg_frente_path || r.rg_verso_path) && (
-                    <AdminRequestDetails req={r} />
+                    <AdminRequestDetails req={r} onPreview={() => setPreviewRequest(r)} />
                   )}
                 </div>
               ))}
