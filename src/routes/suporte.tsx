@@ -471,3 +471,89 @@ function UserCard({
     </div>
   );
 }
+
+function AdminRequestDetails({ req }: { req: RequestRow }) {
+  const [frenteUrl, setFrenteUrl] = useState<string | null>(null);
+  const [versoUrl, setVersoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUrls() {
+      if (req.rg_frente_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_frente_path, 600);
+        if (!cancelled) setFrenteUrl(url);
+      }
+      if (req.rg_verso_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_verso_path, 600);
+        if (!cancelled) setVersoUrl(url);
+      }
+    }
+    loadUrls();
+    return () => {
+      cancelled = true;
+    };
+  }, [req.rg_frente_path, req.rg_verso_path]);
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-border pt-3">
+      <div className="grid gap-2 text-xs sm:grid-cols-3">
+        {req.celular && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Phone className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-foreground">{req.celular}</span>
+          </div>
+        )}
+        {req.idade != null && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-foreground">{req.idade} anos</span>
+          </div>
+        )}
+        {req.clube_atual && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Building2 className="h-3.5 w-3.5 text-primary" />
+            <span className="truncate font-medium text-foreground">{req.clube_atual}</span>
+          </div>
+        )}
+      </div>
+
+      {(req.rg_frente_path || req.rg_verso_path) && (
+        <div>
+          <div className="mb-1.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <IdCard className="h-3.5 w-3.5" />
+            Documento de identidade
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <RgThumb label="Frente" url={frenteUrl} />
+            <RgThumb label="Verso" url={versoUrl} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RgThumb({ label, url }: { label: string; url: string | null }) {
+  if (!url) {
+    return (
+      <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-border text-[11px] text-muted-foreground">
+        {label} indisponível
+      </div>
+    );
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block overflow-hidden rounded-lg border border-border"
+    >
+      <img src={url} alt={`RG ${label}`} className="h-24 w-full object-cover" />
+      <div className="absolute inset-0 flex items-center justify-center bg-background/70 opacity-0 transition group-hover:opacity-100">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
+          <ExternalLink className="h-3.5 w-3.5" /> Abrir {label}
+        </span>
+      </div>
+    </a>
+  );
+}
