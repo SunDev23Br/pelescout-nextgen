@@ -549,7 +549,7 @@ function AdminRequestDetails({ req, onPreview }: { req: RequestRow; onPreview?: 
   );
 }
 
-function RgThumb({ label, url }: { label: string; url: string | null }) {
+function RgThumb({ label, url, onClick }: { label: string; url: string | null; onClick?: () => void }) {
   if (!url) {
     return (
       <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-border text-[11px] text-muted-foreground">
@@ -558,18 +558,103 @@ function RgThumb({ label, url }: { label: string; url: string | null }) {
     );
   }
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative block overflow-hidden rounded-lg border border-border"
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative block w-full overflow-hidden rounded-lg border border-border text-left"
     >
       <img src={url} alt={`RG ${label}`} className="h-24 w-full object-cover" />
       <div className="absolute inset-0 flex items-center justify-center bg-background/70 opacity-0 transition group-hover:opacity-100">
         <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
-          <ExternalLink className="h-3.5 w-3.5" /> Abrir {label}
+          <ExternalLink className="h-3.5 w-3.5" /> Ampliar {label}
         </span>
       </div>
-    </a>
+    </button>
+  );
+}
+
+function RgPreviewModal({
+  req,
+  open,
+  onClose,
+  onApprove,
+  onReject,
+}: {
+  req: RequestRow | null;
+  open: boolean;
+  onClose: () => void;
+  onApprove: (req: RequestRow) => void;
+  onReject: (req: RequestRow) => void;
+}) {
+  const [frenteUrl, setFrenteUrl] = useState<string | null>(null);
+  const [versoUrl, setVersoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setFrenteUrl(null);
+      setVersoUrl(null);
+      if (!req) return;
+      if (req.rg_frente_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_frente_path, 600);
+        if (!cancelled) setFrenteUrl(url);
+      }
+      if (req.rg_verso_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_verso_path, 600);
+        if (!cancelled) setVersoUrl(url);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [req]);
+
+  if (!req) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Documento de identidade — {req.nome}</DialogTitle>
+          <DialogDescription>
+            Revise o RG antes de aprovar o cadastro.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-2 sm:grid-cols-2">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Frente</p>
+            {frenteUrl ? (
+              <img src={frenteUrl} alt="RG Frente" className="w-full rounded-lg border" />
+            ) : (
+              <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                Frente indisponível
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Verso</p>
+            {versoUrl ? (
+              <img src={versoUrl} alt="RG Verso" className="w-full rounded-lg border" />
+            ) : (
+              <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                Verso indisponível
+              </div>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Fechar
+          </Button>
+          <Button variant="destructive" onClick={() => { onReject(req); onClose(); }}>
+            Recusar
+          </Button>
+          <Button onClick={() => { onApprove(req); onClose(); }}>
+            Aprovar cadastro
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
