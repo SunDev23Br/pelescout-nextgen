@@ -336,7 +336,7 @@ function PerfilPage() {
           </p>
         </div>
 
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
+        <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
           <h2 className="mb-4 font-display text-lg font-bold">Foto de perfil</h2>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
             <AthleteAvatar
@@ -386,7 +386,7 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarPerfil}
-          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
         >
           <h2 className="font-display text-lg font-bold">Dados pessoais</h2>
           <div className="space-y-2">
@@ -407,7 +407,7 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarEmail}
-          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
         >
           <h2 className="flex items-center gap-2 font-display text-lg font-bold">
             <Mail className="h-5 w-5" /> E-mail
@@ -438,7 +438,7 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarNovaSenha}
-          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
         >
           <div>
             <h2 className="flex items-center gap-2 font-display text-lg font-bold">
@@ -549,7 +549,7 @@ function PerfilPage() {
         {user.role === "atleta" && (
           <form
             onSubmit={salvarAtleta}
-            className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8"
+            className="space-y-6 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
           >
             <div>
               <h2 className="flex items-center gap-2 font-display text-lg font-bold">
@@ -703,7 +703,7 @@ function PerfilPage() {
         )}
 
         {user.role === "atleta" && (
-          <section className="rounded-3xl border border-border bg-card p-6 shadow-card sm:p-8">
+          <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
