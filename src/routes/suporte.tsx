@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2, Filter, Users } from "lucide-react";
+import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2, Filter, Users, Phone, Calendar, IdCard, ExternalLink } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
+import { getSignedUrl } from "@/lib/storage";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/suporte")({
