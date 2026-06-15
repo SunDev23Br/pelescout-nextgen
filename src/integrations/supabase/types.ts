@@ -16,31 +16,46 @@ export type Database = {
     Tables: {
       admin_requests: {
         Row: {
+          celular: string | null
+          clube_atual: string | null
           created_at: string
           id: string
+          idade: number | null
           notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          rg_frente_path: string | null
+          rg_verso_path: string | null
           status: Database["public"]["Enums"]["admin_request_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          celular?: string | null
+          clube_atual?: string | null
           created_at?: string
           id?: string
+          idade?: number | null
           notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          rg_frente_path?: string | null
+          rg_verso_path?: string | null
           status?: Database["public"]["Enums"]["admin_request_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          celular?: string | null
+          clube_atual?: string | null
           created_at?: string
           id?: string
+          idade?: number | null
           notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          rg_frente_path?: string | null
+          rg_verso_path?: string | null
           status?: Database["public"]["Enums"]["admin_request_status"]
           updated_at?: string
           user_id?: string

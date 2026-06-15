@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2, Filter, Users } from "lucide-react";
+import { CheckCircle2, Shield, Building2, User as UserIcon, Trash2, Filter, Users, Phone, Calendar, IdCard, ExternalLink } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
+import { getSignedUrl } from "@/lib/storage";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/suporte")({
@@ -47,6 +48,11 @@ interface RequestRow {
   nome: string;
   email: string;
   kind: "admin" | "clube";
+  celular?: string | null;
+  idade?: number | null;
+  clube_atual?: string | null;
+  rg_frente_path?: string | null;
+  rg_verso_path?: string | null;
 }
 
 type RoleFilter = "all" | "atleta" | "admin" | "clube";
@@ -73,7 +79,7 @@ function SuportePage() {
       supabase.from("user_roles").select("user_id, role"),
       supabase
         .from("admin_requests")
-        .select("id, user_id, status, created_at")
+        .select("id, user_id, status, created_at, celular, idade, clube_atual, rg_frente_path, rg_verso_path")
         .order("created_at", { ascending: false }),
       supabase
         .from("clube_requests")
@@ -98,7 +104,17 @@ function SuportePage() {
     );
 
     const toRow = (kind: "admin" | "clube") =>
-      (r: { id: string; user_id: string; status: string; created_at: string }): RequestRow => {
+      (r: {
+        id: string;
+        user_id: string;
+        status: string;
+        created_at: string;
+        celular?: string | null;
+        idade?: number | null;
+        clube_atual?: string | null;
+        rg_frente_path?: string | null;
+        rg_verso_path?: string | null;
+      }): RequestRow => {
         const p = profileById.get(r.user_id);
         return {
           id: r.id,
@@ -108,11 +124,16 @@ function SuportePage() {
           nome: p?.nome ?? "—",
           email: p?.email ?? "—",
           kind,
+          celular: r.celular ?? null,
+          idade: r.idade ?? null,
+          clube_atual: r.clube_atual ?? null,
+          rg_frente_path: r.rg_frente_path ?? null,
+          rg_verso_path: r.rg_verso_path ?? null,
         };
       };
 
     setRequests([
-      ...(adminReqs ?? []).map(toRow("admin")),
+      ...((adminReqs as never[] | null) ?? []).map(toRow("admin")),
       ...(clubeReqs ?? []).map(toRow("clube")),
     ]);
     setLoading(false);
@@ -239,41 +260,46 @@ function SuportePage() {
               .map((r) => (
                 <div
                   key={`${r.kind}-${r.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+                  className="rounded-xl border border-border bg-card p-3"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
-                          (r.kind === "admin"
-                            ? "bg-primary/15 text-primary"
-                            : "bg-blue-500/15 text-blue-400")
-                        }
-                      >
-                        {r.kind === "admin" ? <Shield className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
-                        {r.kind === "admin" ? "Admin" : "Clube"}
-                      </span>
-                      <p className="truncate font-semibold">{r.nome}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={
+                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
+                            (r.kind === "admin"
+                              ? "bg-primary/15 text-primary"
+                              : "bg-blue-500/15 text-blue-400")
+                          }
+                        >
+                          {r.kind === "admin" ? <Shield className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                          {r.kind === "admin" ? "Admin" : "Clube"}
+                        </span>
+                        <p className="truncate font-semibold">{r.nome}</p>
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">{r.email}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Solicitado em{" "}
+                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                      </p>
                     </div>
-                    <p className="truncate text-xs text-muted-foreground">{r.email}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Solicitado em{" "}
-                      {new Date(r.created_at).toLocaleDateString("pt-BR")}
-                    </p>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => approveRequest(r)}>
+                        Aprovar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => rejectRequest(r)}
+                      >
+                        Recusar
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => approveRequest(r)}>
-                      Aprovar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => rejectRequest(r)}
-                    >
-                      Recusar
-                    </Button>
-                  </div>
+                  {r.kind === "admin" && (r.celular || r.idade || r.clube_atual || r.rg_frente_path || r.rg_verso_path) && (
+                    <AdminRequestDetails req={r} />
+                  )}
                 </div>
               ))}
           </div>
@@ -443,5 +469,91 @@ function UserCard({
         )}
       </div>
     </div>
+  );
+}
+
+function AdminRequestDetails({ req }: { req: RequestRow }) {
+  const [frenteUrl, setFrenteUrl] = useState<string | null>(null);
+  const [versoUrl, setVersoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUrls() {
+      if (req.rg_frente_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_frente_path, 600);
+        if (!cancelled) setFrenteUrl(url);
+      }
+      if (req.rg_verso_path) {
+        const url = await getSignedUrl("admin-docs", req.rg_verso_path, 600);
+        if (!cancelled) setVersoUrl(url);
+      }
+    }
+    loadUrls();
+    return () => {
+      cancelled = true;
+    };
+  }, [req.rg_frente_path, req.rg_verso_path]);
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-border pt-3">
+      <div className="grid gap-2 text-xs sm:grid-cols-3">
+        {req.celular && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Phone className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-foreground">{req.celular}</span>
+          </div>
+        )}
+        {req.idade != null && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-foreground">{req.idade} anos</span>
+          </div>
+        )}
+        {req.clube_atual && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Building2 className="h-3.5 w-3.5 text-primary" />
+            <span className="truncate font-medium text-foreground">{req.clube_atual}</span>
+          </div>
+        )}
+      </div>
+
+      {(req.rg_frente_path || req.rg_verso_path) && (
+        <div>
+          <div className="mb-1.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <IdCard className="h-3.5 w-3.5" />
+            Documento de identidade
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <RgThumb label="Frente" url={frenteUrl} />
+            <RgThumb label="Verso" url={versoUrl} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RgThumb({ label, url }: { label: string; url: string | null }) {
+  if (!url) {
+    return (
+      <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-border text-[11px] text-muted-foreground">
+        {label} indisponível
+      </div>
+    );
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block overflow-hidden rounded-lg border border-border"
+    >
+      <img src={url} alt={`RG ${label}`} className="h-24 w-full object-cover" />
+      <div className="absolute inset-0 flex items-center justify-center bg-background/70 opacity-0 transition group-hover:opacity-100">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
+          <ExternalLink className="h-3.5 w-3.5" /> Abrir {label}
+        </span>
+      </div>
+    </a>
   );
 }
