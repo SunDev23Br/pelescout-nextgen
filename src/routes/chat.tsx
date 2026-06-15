@@ -42,7 +42,7 @@ import {
   useTyping,
 } from "@/hooks/use-chat";
 import { useSession } from "@/lib/session";
-import { blockUser, reportUser, sendMessage } from "@/lib/chat";
+import { blockUser, deleteConversation, reportUser, sendMessage } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
