@@ -481,7 +481,7 @@ function UserCard({
   );
 }
 
-function AdminRequestDetails({ req }: { req: RequestRow }) {
+function AdminRequestDetails({ req, onPreview }: { req: RequestRow; onPreview?: () => void }) {
   const [frenteUrl, setFrenteUrl] = useState<string | null>(null);
   const [versoUrl, setVersoUrl] = useState<string | null>(null);
 
