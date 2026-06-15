@@ -152,6 +152,14 @@ export async function sendMessage(input: SendMessageInput): Promise<MessageRow> 
   return data as MessageRow;
 }
 
+export async function deleteConversation(conversationId: string) {
+  const { error } = await supabase
+    .from("conversations")
+    .delete()
+    .eq("id", conversationId);
+  if (error) throw new Error(error.message);
+}
+
 export async function markRead(conversationId: string) {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;

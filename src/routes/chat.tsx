@@ -8,6 +8,7 @@ import {
   MessageSquarePlus,
   MoreVertical,
   Search,
+  Trash2,
   Trophy,
   UserCircle,
 } from "lucide-react";
@@ -41,7 +42,7 @@ import {
   useTyping,
 } from "@/hooks/use-chat";
 import { useSession } from "@/lib/session";
-import { blockUser, reportUser, sendMessage } from "@/lib/chat";
+import { blockUser, deleteConversation, reportUser, sendMessage } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -226,8 +227,19 @@ function ChatPage() {
                 await blockUser(active.peer.id);
                 toast.success("Usuário bloqueado");
               }}
+              onDelete={async () => {
+                if (!confirm(`Excluir a conversa com ${active.peer.nome}? Esta ação não pode ser desfeita.`)) return;
+                try {
+                  await deleteConversation(active.id);
+                  toast.success("Conversa excluída");
+                  setActiveId(null);
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Não foi possível excluir");
+                }
+              }}
               onInvite={() => setInviteOpen(true)}
               canInvite={canStart === true}
+              canDelete={canStart === true}
               isScout={canStart === true}
             />
           ) : (
@@ -299,8 +311,10 @@ interface ActiveProps {
   onBack: () => void;
   onReport: () => void;
   onBlock: () => void;
+  onDelete: () => void;
   onInvite: () => void;
   canInvite: boolean;
+  canDelete: boolean;
   isScout: boolean;
 }
 
@@ -313,8 +327,10 @@ function ActiveConversation({
   onBack,
   onReport,
   onBlock,
+  onDelete,
   onInvite,
   canInvite,
+  canDelete,
   isScout,
 }: ActiveProps) {
   const { messages, loading } = useMessages(conversationId);
@@ -430,6 +446,14 @@ function ActiveConversation({
             <DropdownMenuItem onClick={onReport}>
               <Flag className="mr-2 h-4 w-4" /> Denunciar
             </DropdownMenuItem>
+            {canDelete && (
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Excluir conversa
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
