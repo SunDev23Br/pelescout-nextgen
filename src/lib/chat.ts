@@ -100,13 +100,33 @@ export async function getUnlockedAtletaUserIds(): Promise<Set<string>> {
     .from("contatos_desbloqueados")
     .select("candidato_id")
     .eq("clube_id", uid);
-  const candIds = (unlocks ?? []).map((u) => u.candidato_id);
-  if (candIds.length === 0) return new Set();
+  const ids = (unlocks ?? []).map((u) => u.candidato_id).filter((v): v is string => !!v);
+  if (ids.length === 0) return new Set();
+
+  // Caso 1: id é um candidato.id -> resolver para candidatos.user_id
   const { data: cands } = await supabase
     .from("candidatos")
-    .select("user_id")
-    .in("id", candIds);
-  return new Set((cands ?? []).map((c) => c.user_id).filter((v): v is string => !!v));
+    .select("id, user_id")
+    .in("id", ids);
+  const resolved = new Set<string>();
+  const resolvedCandIds = new Set<string>();
+  (cands ?? []).forEach((c) => {
+    resolvedCandIds.add(c.id);
+    if (c.user_id) resolved.add(c.user_id);
+  });
+
+  // Caso 2: id já é um profiles.id (atleta aprovado via "Todos os atletas",
+  // sem linha em candidatos). Confirma que existe como profile e adiciona.
+  const remaining = ids.filter((id) => !resolvedCandIds.has(id));
+  if (remaining.length > 0) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id")
+      .in("id", remaining);
+    (profs ?? []).forEach((p) => resolved.add(p.id));
+  }
+
+  return resolved;
 }
 
 async function currentUserIsClube(uid: string): Promise<boolean> {

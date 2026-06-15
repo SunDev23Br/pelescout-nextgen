@@ -1,63 +1,51 @@
-# Avaliações ao vivo → persistência, nota geral e e-mail
+## Problema
 
-## 1. Banco de dados (migration)
+Hoje a página `/clubes` mostra apenas atletas vindos da tabela `candidatos` com `status='aprovado'`. Na página `/avaliacoes` existem dois caminhos de aprovação:
 
-Ajustar `public.avaliacoes` para suportar todas as métricas e ambos os alvos (candidato em peneira ou atleta cadastrado):
+1. **Peneira selecionada** → grava em `candidatos` e atualiza `status='aprovado'`. Já aparece em `/clubes`.
+2. **"Todos os atletas"** → grava só em `avaliacoes` com `decisao='aprovado'` e `atleta_user_id`. **Não aparece** em `/clubes` porque não cria linha em `candidatos`.
 
-- Tornar `candidato_id` opcional (nullable).
-- Adicionar colunas: `atleta_user_id uuid` (FK para `profiles.id`), `peneira_id uuid`, `intensidade numeric`, `mental numeric`, `nota_geral numeric`, `decisao text` (aprovado/reprovado/reavaliar), `tags_positivas text[]`, `tags_negativas text[]`, `pe_bonus numeric`.
-- Renomear semanticamente: usar `tecnica`, `tatico`, `fisico` já existentes; mapear `mental` (novo) e manter `psicologico` para compatibilidade.
-- Constraint: pelo menos um entre `candidato_id` e `atleta_user_id` deve estar preenchido.
-- RLS:
-  - Avaliador (admin) pode inserir/ler suas próprias avaliações.
-  - Atleta pode ler avaliações que tenham `atleta_user_id = auth.uid()` ou `candidato_id` ligado ao seu `user_id`.
-  - Clube: sem acesso (já bloqueado na UI).
-- Trigger `tg_set_updated_at` no update.
+A página de clubes precisa exibir os dois casos.
 
-## 2. Backend — server function de salvar avaliação
+## Solução
 
-Criar `src/lib/avaliacoes.functions.ts` com `salvarAvaliacao` (`createServerFn` + `requireSupabaseAuth`):
-1. Valida input (zod): scores, tags, comentário, decisão, alvo (candidato_id OU atleta_user_id), peneira_id opcional.
-2. Calcula `nota_geral` = média dos 5 scores + `pe_bonus`.
-3. Insere em `avaliacoes`.
-4. Se `candidato_id`: atualiza `candidatos.nota_geral` e `candidatos.status` conforme decisão.
-5. Resolve e-mail do atleta (de `candidatos.email` ou `profiles.email` via admin client).
-6. Dispara e-mail via `/lovable/email/transactional/send` com `templateName: 'avaliacao-atleta'`, `idempotencyKey: avaliacao-${id}`, e os dados da avaliação.
-7. Retorna `{ id, nota_geral }`.
+Fazer `/clubes` consolidar as duas fontes em uma única lista de atletas aprovados, deduplicada pelo `user_id` do atleta.
 
-## 3. E-mail (Lovable Emails padrão)
+### Fonte 1 — Peneira
+```
+SELECT em candidatos WHERE status='aprovado' AND user_id IS NOT NULL
+```
 
-- Rodar `setup_email_infra` + `scaffold_transactional_email` (intermediários, sem parar).
-- Criar template `src/lib/email-templates/avaliacao-atleta.tsx` (React Email) com:
-  - Saudação ao atleta, nome do avaliador, data, peneira (se houver).
-  - Nota geral em destaque, breakdown das 5 métricas, decisão (badge), tags positivas/negativas, comentário do olheiro.
-  - Estilo alinhado ao app (tokens lidos de `src/styles.css`).
-- Registrar em `src/lib/email-templates/registry.ts`.
+### Fonte 2 — Avaliação ao vivo "Todos os atletas"
+```
+SELECT em avaliacoes WHERE decisao='aprovado' AND atleta_user_id IS NOT NULL
+```
+Pega a avaliação mais recente por atleta.
 
-## 4. UI — `/avaliacoes`
+### Deduplicação
+Se um atleta foi aprovado pelos dois caminhos, mantém um único card (prioriza a fonte com peneira, para preservar o título "Aprovado em: <peneira>").
 
-- No `salvar()`, chamar o server fn com payload completo; mostrar loading e toast de sucesso/erro.
-- Bloquear botão enquanto envia.
-- Passar `candidato_id` quando uma peneira está selecionada; `atleta_user_id` quando "Todos os atletas".
+## Desbloqueio de contato
 
-## 5. UI — `/candidatos` (lista)
+A tabela `contatos_desbloqueados` usa `candidato_id` (sem FK), mas hoje só é alimentada com IDs de `candidatos`. Para atletas aprovados via "Todos os atletas" (que não têm linha em `candidatos`), o desbloqueio passa a usar o `user_id` do atleta como chave.
 
-- Já lê `candidatos`; passar a exibir `nota_geral` (badge "Nota X.X") no card de cada candidato quando existir.
-- Atualizar a query para incluir esse campo (se faltar) e refazer fetch após salvar.
+- Card vindo de `candidatos` → key = `candidatos.id` (igual hoje, sem migração)
+- Card vindo só de `avaliacoes` → key = `profiles.id` (user_id do atleta)
 
-## 6. UI — `/atletas/$atletaId`
+`unlockContato`, `session.contatosDesbloqueados` e a comparação no chat continuam funcionando porque tratam o campo como uuid opaco.
 
-- Buscar última avaliação do atleta (`avaliacoes` por `atleta_user_id` OU `candidato_id` em `candidatos.user_id = atletaId`).
-- Exibir bloco "Nota geral" com o valor mais recente, no padrão de design existente da página.
+## Restrição do chat (já implementada)
 
-## Resumo técnico
+Atualizar `getUnlockedAtletaUserIds()` em `src/lib/chat.ts` para também considerar entradas de `contatos_desbloqueados` cujo `candidato_id` é, na verdade, um `profiles.id` (quando não há candidato correspondente). Assim clubes que pagaram por um atleta aprovado via "Todos os atletas" também podem mandar mensagem.
 
-| Camada | Arquivo |
-|---|---|
-| Migration | nova migration de `avaliacoes` |
-| Server fn | `src/lib/avaliacoes.functions.ts` |
-| Email template | `src/lib/email-templates/avaliacao-atleta.tsx` + `registry.ts` |
-| UI | `src/routes/avaliacoes.tsx`, `src/routes/candidatos.index.tsx`, `src/routes/atletas.$atletaId.tsx` |
-| Infra email | `setup_email_infra` + `scaffold_transactional_email` |
+## Arquivos afetados
 
-Não há alterações no chat, perfis, cadastro ou outras rotas.
+- `src/routes/clubes.tsx` — buscar das duas fontes, deduplicar, usar `user_id` como chave de desbloqueio quando não houver candidato.
+- `src/lib/chat.ts` — `getUnlockedAtletaUserIds` passa a aceitar IDs de desbloqueio que já são user_ids de atletas (atletas aprovados sem candidato).
+- Nenhuma alteração no schema do banco.
+
+## O que não muda
+
+- Fluxo de aprovação na `/avaliacoes` continua igual.
+- `candidatos.user_id NOT NULL` continua sendo requisito para aparecer em `/clubes` (atletas sem cadastro no sistema não podem receber mensagem).
+- Preço e dialog de pagamento idênticos.
