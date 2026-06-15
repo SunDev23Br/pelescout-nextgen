@@ -24,10 +24,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { candidatos, type Candidato } from "@/lib/mock-data";
+import { candidatos as mockCandidatos, type Candidato } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 
