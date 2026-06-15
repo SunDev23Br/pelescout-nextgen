@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
+import { getUltimaAvaliacaoAtleta } from "@/lib/avaliacoes";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/atletas/$atletaId")({
@@ -95,6 +96,19 @@ function AthleteProfilePage() {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [animateBars, setAnimateBars] = useState(false);
+  const [notaGeral, setNotaGeral] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getUltimaAvaliacaoAtleta(atletaId)
+      .then((r) => {
+        if (!cancelled) setNotaGeral(r?.notaGeral ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [atletaId]);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
@@ -230,20 +244,32 @@ function AthleteProfilePage() {
               {profile.cidade ? ` · ${profile.cidade}` : ""}
             </p>
           </div>
-          {canStartChat && (
-            <Button
-              onClick={handleStartChat}
-              disabled={starting}
-              aria-label={`Iniciar conversa com ${profile.nome}`}
-            >
-              {starting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <MessageSquarePlus className="mr-2 h-4 w-4" />
-              )}
-              Iniciar conversa
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {notaGeral != null && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/10 px-4 py-2 text-center">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">
+                  Nota geral
+                </p>
+                <p className="font-display text-2xl font-extrabold text-gradient-gold leading-none">
+                  {notaGeral.toFixed(1)}
+                </p>
+              </div>
+            )}
+            {canStartChat && (
+              <Button
+                onClick={handleStartChat}
+                disabled={starting}
+                aria-label={`Iniciar conversa com ${profile.nome}`}
+              >
+                {starting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquarePlus className="mr-2 h-4 w-4" />
+                )}
+                Iniciar conversa
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* TOP: Perfil + Sobre/Habilidades */}

@@ -43,6 +43,7 @@ import {
 } from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
+import { salvarAvaliacao } from "@/lib/avaliacoes";
 
 export const Route = createFileRoute("/avaliacoes")({
   head: () => ({
@@ -286,18 +287,31 @@ function AvaliacoesPageInner() {
     });
   }
 
-  function salvar() {
-    if (!selected) return;
-    const avg =
-      (scores.tecnica +
-        scores.tatica +
-        scores.fisica +
-        scores.mental +
-        scores.intensidade) /
-      5;
-    toast.success(`Avaliação salva para ${selected.nome}`, {
-      description: `Nota geral: ${avg.toFixed(1)}`,
-    });
+  const [submitting, setSubmitting] = useState(false);
+  async function salvar() {
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    try {
+      const isCandidato = peneiraId !== ALL_ATLETAS;
+      const result = await salvarAvaliacao({
+        candidatoId: isCandidato ? selected.id : null,
+        atletaUserId: isCandidato ? null : selected.id,
+        peneiraId: isCandidato ? peneiraId : null,
+        scores,
+        peBonus: footBonus,
+        tagsPositivas: positiveTags,
+        tagsNegativas: negativeTags,
+        comentario,
+        decisao: decisaoSel ?? null,
+      });
+      toast.success(`Avaliação salva para ${selected.nome}`, {
+        description: `Nota geral: ${result.notaGeral.toFixed(1)} · E-mail enviado ao atleta.`,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar avaliação");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const idadeAtleta = selected?.dataNascimento
@@ -527,8 +541,9 @@ function AvaliacoesPageInner() {
 
             <ScoutComment value={comentario} onChange={setComentario} />
 
-            <Button onClick={salvar} size="lg" className="w-full shadow-gold">
-              <Save className="mr-2 h-5 w-5" /> Salvar Avaliação
+            <Button onClick={salvar} size="lg" disabled={submitting} className="w-full shadow-gold">
+              {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+              {submitting ? "Salvando..." : "Salvar Avaliação"}
               {decisaoSel && <CheckCircle2 className="ml-2 h-4 w-4" />}
             </Button>
           </div>
