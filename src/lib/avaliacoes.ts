@@ -81,9 +81,15 @@ export async function salvarAvaliacao(
 
   // If candidate, reflect score and status on candidato row
   if (input.candidatoId) {
-    const updates: Record<string, unknown> = { nota_geral: notaGeral };
-    if (input.decisao) updates.status = STATUS_BY_DECISAO[input.decisao];
-    await supabase.from("candidatos").update(updates).eq("id", input.candidatoId);
+    const status = input.decisao ? STATUS_BY_DECISAO[input.decisao] : undefined;
+    await supabase
+      .from("candidatos")
+      .update(
+        status
+          ? { nota_geral: notaGeral, status }
+          : { nota_geral: notaGeral },
+      )
+      .eq("id", input.candidatoId);
   }
 
   // Fire email (best-effort, non-blocking failure)
