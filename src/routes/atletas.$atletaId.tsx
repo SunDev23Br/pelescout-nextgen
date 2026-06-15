@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
+import { getUltimaAvaliacaoAtleta } from "@/lib/avaliacoes";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/atletas/$atletaId")({
