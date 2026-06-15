@@ -446,6 +446,14 @@ function ActiveConversation({
             <DropdownMenuItem onClick={onReport}>
               <Flag className="mr-2 h-4 w-4" /> Denunciar
             </DropdownMenuItem>
+            {canDelete && (
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Excluir conversa
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
