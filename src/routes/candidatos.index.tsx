@@ -122,14 +122,8 @@ function CandidatosPage() {
     return <Navigate to="/clubes" />;
   }
 
-  const allCandidatos = useMemo(() => {
-    const realIds = new Set(realAtletas.map((c) => c.userId));
-    const filteredMock = mockCandidatos.filter((c) => !c.userId || !realIds.has(c.userId));
-    return [...realAtletas, ...filteredMock];
-  }, [realAtletas]);
-
   const list = useMemo(() => {
-    return allCandidatos.filter((c) => {
+    return realAtletas.filter((c) => {
       if (effectiveStatus !== "todos" && c.status !== effectiveStatus) return false;
       if (!q.trim()) return true;
       const t = q.toLowerCase();
@@ -139,7 +133,7 @@ function CandidatosPage() {
         c.cidade.toLowerCase().includes(t)
       );
     });
-  }, [q, effectiveStatus, allCandidatos]);
+  }, [q, effectiveStatus, realAtletas]);
 
   return (
     <AppLayout>
