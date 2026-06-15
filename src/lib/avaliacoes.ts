@@ -35,9 +35,9 @@ export function calcularNotaGeral(
   return Math.min(10, Math.max(0, Number((media + peBonus).toFixed(2))));
 }
 
-const STATUS_BY_DECISAO: Record<Decisao, "aprovado" | "rejeitado" | "avaliado"> = {
+const STATUS_BY_DECISAO: Record<Decisao, "aprovado" | "reprovado" | "avaliado"> = {
   aprovado: "aprovado",
-  reprovado: "rejeitado",
+  reprovado: "reprovado",
   reavaliar: "avaliado",
 };
 
