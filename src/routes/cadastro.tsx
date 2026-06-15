@@ -312,14 +312,14 @@ function CadastroPage() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={form.dataNascimento ? new Date(form.dataNascimento) : undefined}
+                      selected={form.dataNascimento ? fromISODate(form.dataNascimento) : undefined}
                       onSelect={(d) => d && update("dataNascimento", toISODate(d))}
                       captionLayout="dropdown"
                       fromYear={new Date().getFullYear() - IDADE_MAX}
                       toYear={new Date().getFullYear() - IDADE_MIN}
                       defaultMonth={
                         form.dataNascimento
-                          ? new Date(form.dataNascimento)
+                          ? fromISODate(form.dataNascimento)
                           : new Date(new Date().getFullYear() - 16, 0, 1)
                       }
                       disabled={(date) => {
