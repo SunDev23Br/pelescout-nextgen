@@ -88,10 +88,51 @@ export async function listConversations(): Promise<ConversationWithPeer[]> {
   });
 }
 
+/**
+ * Retorna o conjunto de user_ids de atletas que o clube atual desbloqueou
+ * (via tabela contatos_desbloqueados -> candidatos.user_id).
+ */
+export async function getUnlockedAtletaUserIds(): Promise<Set<string>> {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+  if (!uid) return new Set();
+  const { data: unlocks } = await supabase
+    .from("contatos_desbloqueados")
+    .select("candidato_id")
+    .eq("clube_id", uid);
+  const candIds = (unlocks ?? []).map((u) => u.candidato_id);
+  if (candIds.length === 0) return new Set();
+  const { data: cands } = await supabase
+    .from("candidatos")
+    .select("user_id")
+    .in("id", candIds);
+  return new Set((cands ?? []).map((c) => c.user_id).filter((v): v is string => !!v));
+}
+
+async function currentUserIsClube(uid: string): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", uid);
+  const roles = (data ?? []).map((r) => r.role as string);
+  // Apenas restringe quando o papel ativo é estritamente clube (não admin/suporte)
+  return roles.includes("clube") && !roles.includes("admin") && !roles.includes("suporte");
+}
+
 export async function startConversation(atletaId: string): Promise<string> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;
   if (!uid) throw new Error("Faça login para iniciar uma conversa.");
+
+  // Restrição: clubes só podem conversar com atletas que pagaram para desbloquear.
+  if (await currentUserIsClube(uid)) {
+    const unlocked = await getUnlockedAtletaUserIds();
+    if (!unlocked.has(atletaId)) {
+      throw new Error(
+        "Você só pode enviar mensagens para atletas cujo contato você desbloqueou na aba Clubes.",
+      );
+    }
+  }
 
   // Try existing
   const { data: existing } = await supabase
@@ -214,12 +255,25 @@ export async function getSignedMediaUrl(path: string): Promise<string | null> {
 }
 
 export async function searchAtletas(q: string, limit = 20) {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+
+  // Se o usuário é clube, restringe a busca aos atletas desbloqueados.
+  let allowedIds: Set<string> | null = null;
+  if (uid && (await currentUserIsClube(uid))) {
+    allowedIds = await getUnlockedAtletaUserIds();
+    if (allowedIds.size === 0) return [];
+  }
+
   let query = supabase
     .from("profiles")
     .select("id, nome, avatar_url, posicao, cidade")
     .limit(limit);
   if (q.trim()) {
     query = query.ilike("nome", `%${q.trim()}%`);
+  }
+  if (allowedIds) {
+    query = query.in("id", Array.from(allowedIds));
   }
   const { data, error } = await query;
   if (error) throw error;
