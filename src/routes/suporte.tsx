@@ -104,7 +104,17 @@ function SuportePage() {
     );
 
     const toRow = (kind: "admin" | "clube") =>
-      (r: { id: string; user_id: string; status: string; created_at: string }): RequestRow => {
+      (r: {
+        id: string;
+        user_id: string;
+        status: string;
+        created_at: string;
+        celular?: string | null;
+        idade?: number | null;
+        clube_atual?: string | null;
+        rg_frente_path?: string | null;
+        rg_verso_path?: string | null;
+      }): RequestRow => {
         const p = profileById.get(r.user_id);
         return {
           id: r.id,
@@ -114,11 +124,16 @@ function SuportePage() {
           nome: p?.nome ?? "—",
           email: p?.email ?? "—",
           kind,
+          celular: r.celular ?? null,
+          idade: r.idade ?? null,
+          clube_atual: r.clube_atual ?? null,
+          rg_frente_path: r.rg_frente_path ?? null,
+          rg_verso_path: r.rg_verso_path ?? null,
         };
       };
 
     setRequests([
-      ...(adminReqs ?? []).map(toRow("admin")),
+      ...((adminReqs as never[] | null) ?? []).map(toRow("admin")),
       ...(clubeReqs ?? []).map(toRow("clube")),
     ]);
     setLoading(false);
