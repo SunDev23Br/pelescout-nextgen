@@ -1,0 +1,17 @@
+# Pelé Next Gen
+
+> Plataforma oficial de peneiras de futebol que conecta atletas, olheiros e clubes em todo o Brasil. Atletas se inscrevem em peneiras, são avaliados por olheiros profissionais e constroem um perfil esportivo visível para clubes.
+
+Pelé Next Gen organiza seletivas (peneiras) de futebol, hospeda perfis profissionais de atletas com vídeos e estatísticas, e permite que olheiros e clubes acompanhem candidatos e iniciem contato.
+
+## Pages
+
+- [Início](/): Visão geral da plataforma, próxima peneira em destaque e como participar.
+- [Cadastro de atleta](/cadastro): Página para atletas criarem conta na plataforma.
+- [Entrar](/login): Acesso para atletas, olheiros e clubes já cadastrados.
+- [Registro de olheiro](/registro-admin): Solicitação de conta de olheiro/admin.
+- [Registro de clube](/registro-clube): Solicitação de conta de clube.
+
+## Optional
+
+- [Peneiras](/peneiras): Lista de peneiras abertas (requer login).

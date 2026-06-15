@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
 import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
 import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
@@ -33,6 +34,11 @@ import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
   path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegistroClubeRoute = RegistroClubeRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
+    | '/sitemap.xml'
     | '/suporte'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
+    | '/sitemap.xml'
     | '/suporte'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
+    | '/sitemap.xml'
     | '/suporte'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -280,6 +292,7 @@ export interface RootRouteChildren {
   PerfilAtletaRoute: typeof PerfilAtletaRoute
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuporteRoute: typeof SuporteRoute
   AtletasAtletaIdRoute: typeof AtletasAtletaIdRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/suporte'
       fullPath: '/suporte'
       preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/registro-clube': {
@@ -448,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilAtletaRoute: PerfilAtletaRoute,
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuporteRoute: SuporteRoute,
   AtletasAtletaIdRoute: AtletasAtletaIdRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,

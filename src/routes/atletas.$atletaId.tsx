@@ -11,12 +11,34 @@ import { startConversation } from "@/lib/chat";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/atletas/$atletaId")({
-  head: () => ({
-    meta: [
-      { title: "Perfil do atleta — Pelé Next Gen" },
-      { name: "description", content: "Veja o perfil completo e os vídeos do atleta." },
-    ],
-  }),
+  head: ({ params }) => {
+    const url = `https://pelescout-nextgen.lovable.app/atletas/${params.atletaId}`;
+    const title = "Perfil do atleta — Pelé Next Gen";
+    const description =
+      "Perfil completo do atleta na Pelé Next Gen: posição, estatísticas, histórico de clubes e vídeos de destaque.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "profile" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            url,
+            mainEntity: { "@type": "Person", url },
+          }),
+        },
+      ],
+    };
+  },
   component: AthleteProfilePage,
 });
 
