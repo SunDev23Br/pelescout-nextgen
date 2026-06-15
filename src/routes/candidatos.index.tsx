@@ -77,11 +77,24 @@ function CandidatosPage() {
         if (!cancelled) setRealAtletas([]);
         return;
       }
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, nome, email, celular, avatar_url, data_nascimento, posicao, cidade, altura, peso, pe")
-        .in("id", ids);
+      const [{ data: profs }, { data: notas }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, nome, email, celular, avatar_url, data_nascimento, posicao, cidade, altura, peso, pe")
+          .in("id", ids),
+        supabase
+          .from("avaliacoes")
+          .select("atleta_user_id, nota_geral, created_at")
+          .in("atleta_user_id", ids)
+          .order("created_at", { ascending: false }),
+      ]);
       if (cancelled || !profs) return;
+      const latestByAtleta = new Map<string, number>();
+      (notas ?? []).forEach((n) => {
+        if (n.atleta_user_id && n.nota_geral != null && !latestByAtleta.has(n.atleta_user_id)) {
+          latestByAtleta.set(n.atleta_user_id, Number(n.nota_geral));
+        }
+      });
       const mapped: Candidato[] = profs.map((p) => ({
         id: `u_${p.id}`,
         userId: p.id,
@@ -96,7 +109,8 @@ function CandidatosPage() {
         email: p.email ?? "",
         celular: p.celular ?? "",
         peneiraId: "",
-        status: "pendente",
+        status: latestByAtleta.has(p.id) ? "avaliado" : "pendente",
+        notaGeral: latestByAtleta.get(p.id),
       }));
       setRealAtletas(mapped);
     })();
