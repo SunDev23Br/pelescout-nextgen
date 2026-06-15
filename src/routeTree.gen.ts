@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
 import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
+import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
@@ -42,6 +43,11 @@ const RegistroClubeRoute = RegistroClubeRouteImport.update({
 const RegistroAdminRoute = RegistroAdminRouteImport.update({
   id: '/registro-admin',
   path: '/registro-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilAtletaRoute = PerfilAtletaRouteImport.update({
+  id: '/perfil-atleta',
+  path: '/perfil-atleta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
+  '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
+  '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
+  '/perfil-atleta': typeof PerfilAtletaRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/suporte': typeof SuporteRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manual'
     | '/perfil'
+    | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manual'
     | '/perfil'
+    | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/manual'
     | '/perfil'
+    | '/perfil-atleta'
     | '/registro-admin'
     | '/registro-clube'
     | '/suporte'
@@ -265,6 +277,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
   PerfilRoute: typeof PerfilRoute
+  PerfilAtletaRoute: typeof PerfilAtletaRoute
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
   SuporteRoute: typeof SuporteRoute
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/registro-admin'
       fullPath: '/registro-admin'
       preLoaderRoute: typeof RegistroAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil-atleta': {
+      id: '/perfil-atleta'
+      path: '/perfil-atleta'
+      fullPath: '/perfil-atleta'
+      preLoaderRoute: typeof PerfilAtletaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -425,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
   PerfilRoute: PerfilRoute,
+  PerfilAtletaRoute: PerfilAtletaRoute,
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
   SuporteRoute: SuporteRoute,
