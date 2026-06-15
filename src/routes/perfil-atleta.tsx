@@ -1,18 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Award,
-  Crown,
-  Flame,
   Footprints,
-  Goal,
   Loader2,
-  Medal,
   Ruler,
   Settings,
-  Sparkles,
   Star,
-  Target,
   Trophy,
   Weight,
   Zap,
@@ -31,7 +24,8 @@ export const Route = createFileRoute("/perfil-atleta")({
       { title: "Perfil do Atleta — Pelé Next Gen" },
       {
         name: "description",
-        content: "Vitrine profissional do atleta: destaques, habilidades, vídeos e conquistas.",
+        content:
+          "Vitrine profissional do atleta: destaques, habilidades, vídeos e conquistas.",
       },
     ],
   }),
@@ -100,12 +94,12 @@ function PerfilAtletaPage() {
         if (data) {
           setProfile({
             ...data,
-            historico_clubes: (data.historico_clubes as ClubeHistorico[] | null) ?? [],
+            historico_clubes:
+              (data.historico_clubes as ClubeHistorico[] | null) ?? [],
             stats: (data.stats as AthleteStats | null) ?? {},
           } as FullProfile);
         }
         setLoading(false);
-        // trigger bar animation next tick
         requestAnimationFrame(() => setAnimateBars(true));
       });
     return () => {
@@ -115,27 +109,20 @@ function PerfilAtletaPage() {
 
   const skills = useMemo(() => {
     const s = profile?.stats ?? {};
-    const cap = (n: number, max: number) => Math.min(100, Math.round((n / max) * 100));
+    const cap = (n: number, max: number) =>
+      Math.min(100, Math.round((n / max) * 100));
+    const base = s.jogos != null ? cap(s.jogos, 100) : 70;
     return [
+      { label: "Marcação", value: Math.min(100, base + 10) },
+      { label: "Força", value: Math.max(40, base - 5) },
       {
-        label: "Finalização",
-        value: s.gols != null ? cap(s.gols, 30) : 65,
-        icon: Goal,
+        label: "Passe",
+        value: s.assistencias != null ? cap(s.assistencias, 25) : 75,
       },
+      { label: "Velocidade", value: Math.max(50, base) },
       {
-        label: "Visão de jogo",
-        value: s.assistencias != null ? cap(s.assistencias, 25) : 70,
-        icon: Target,
-      },
-      {
-        label: "Experiência",
-        value: s.jogos != null ? cap(s.jogos, 100) : 60,
-        icon: Flame,
-      },
-      {
-        label: "Vitórias",
-        value: s.titulos != null ? cap(s.titulos, 10) : 55,
-        icon: Trophy,
+        label: "Posicionamento",
+        value: s.gols != null ? cap(s.gols, 30) + 30 : 80,
       },
     ];
   }, [profile]);
@@ -144,7 +131,7 @@ function PerfilAtletaPage() {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-[color:var(--blue-light)]" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#3da9fc]" />
         </div>
       </AppLayout>
     );
@@ -161,218 +148,265 @@ function PerfilAtletaPage() {
   }
 
   const idade = calcIdade(profile.data_nascimento);
-  const overall = Math.round(
-    skills.reduce((acc, s) => acc + s.value, 0) / skills.length,
-  );
 
-  const conquistas: { label: string; sub?: string; icon: React.ComponentType<{ className?: string }> }[] = [];
+  const conquistas: { label: string; sub?: string }[] = [];
   if (profile.stats.titulos)
-    conquistas.push({ label: `${profile.stats.titulos} título${profile.stats.titulos > 1 ? "s" : ""}`, sub: "Carreira", icon: Crown });
+    conquistas.push({
+      label: "Campeão",
+      sub: `${profile.stats.titulos} título${profile.stats.titulos > 1 ? "s" : ""}`,
+    });
   if (profile.stats.gols)
-    conquistas.push({ label: `${profile.stats.gols} gols`, sub: "Marcados", icon: Goal });
+    conquistas.push({ label: `${profile.stats.gols} Gols`, sub: "Marcados" });
   if (profile.stats.assistencias)
-    conquistas.push({ label: `${profile.stats.assistencias} assistências`, sub: "Visão de jogo", icon: Sparkles });
+    conquistas.push({
+      label: `${profile.stats.assistencias} Assistências`,
+      sub: "Visão de jogo",
+    });
   if (profile.stats.jogos)
-    conquistas.push({ label: `${profile.stats.jogos} jogos`, sub: "Disputados", icon: Medal });
-  (profile.historico_clubes ?? []).slice(0, 3).forEach((c) =>
-    conquistas.push({ label: c.clube, sub: c.periodo ?? "Passagem", icon: Award }),
+    conquistas.push({
+      label: `${profile.stats.jogos} Jogos`,
+      sub: "Disputados",
+    });
+  (profile.historico_clubes ?? []).slice(0, 2).forEach((c) =>
+    conquistas.push({ label: c.clube, sub: c.periodo ?? "Passagem" }),
   );
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-6xl space-y-6 pb-8">
-        {/* Header bar */}
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--blue-light)]/40 bg-[color:var(--blue)]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--blue-light)] shadow-[0_0_20px_-5px_var(--blue-light)]">
-            <Zap className="h-3 w-3" /> Vitrine do atleta
-          </span>
-          <Button asChild variant="outline" size="sm" className="border-[color:var(--blue-light)]/30 text-[color:var(--blue-light)] hover:bg-[color:var(--blue)]/10">
-            <Link to="/perfil">
-              <Settings className="mr-2 h-4 w-4" /> Editar dados
-            </Link>
-          </Button>
-        </div>
-
-        {/* HERO */}
-        <section
-          aria-labelledby="atleta-nome"
-          className="relative overflow-hidden rounded-3xl border border-[color:var(--blue-light)]/20 bg-gradient-to-br from-[#050b1e] via-[#0a1736] to-[#050b1e] p-6 shadow-[0_30px_80px_-30px_rgba(26,127,212,0.55)] sm:p-10"
-        >
-          {/* glow orbs */}
-          <div className="pointer-events-none absolute -top-32 -left-24 h-72 w-72 rounded-full bg-[color:var(--blue-light)]/30 blur-3xl" aria-hidden />
-          <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-[#1a7fd4]/20 blur-3xl" aria-hidden />
-          {/* grid pattern */}
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.08]"
-            aria-hidden
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(26,127,212,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(26,127,212,0.5) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
-
-          <div className="relative flex flex-col items-center gap-8 sm:flex-row sm:items-end">
-            {/* Avatar with glow */}
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 -m-2 animate-pulse rounded-full bg-[color:var(--blue-light)] opacity-40 blur-2xl" aria-hidden />
-              <div className="relative rounded-full p-1 bg-gradient-to-br from-[color:var(--blue-light)] via-[#1a7fd4] to-[color:var(--blue-dark)] shadow-[0_0_45px_-5px_var(--blue-light)]">
-                <AthleteAvatar
-                  src={profile.avatar_url ?? undefined}
-                  alt={profile.nome}
-                  className="h-36 w-36 sm:h-44 sm:w-44 border-4 border-[#050b1e]"
-                />
-              </div>
-              {/* Overall badge */}
-              <div className="absolute -bottom-2 -right-2 flex h-16 w-16 flex-col items-center justify-center rounded-full border-2 border-[color:var(--blue-light)] bg-[#050b1e] text-[color:var(--blue-light)] shadow-[0_0_25px_-5px_var(--blue-light)]">
-                <span className="font-display text-2xl font-extrabold leading-none">{overall}</span>
-                <span className="text-[8px] font-bold uppercase tracking-widest text-[color:var(--blue-light)]/80">Geral</span>
-              </div>
-            </div>
-
-            <div className="flex-1 text-center sm:text-left">
-              <p className="font-display text-[11px] font-bold uppercase tracking-[0.3em] text-[color:var(--blue-light)]">
-                {profile.posicao ?? "Atleta"}
-              </p>
-              <h1
-                id="atleta-nome"
-                className="mt-1 font-display text-4xl font-black uppercase leading-none tracking-tight text-white sm:text-6xl"
-                style={{ textShadow: "0 0 30px rgba(26,127,212,0.45)" }}
-              >
-                {profile.nome}
-              </h1>
-              {profile.cidade && (
-                <p className="mt-2 text-sm text-white/60">📍 {profile.cidade}</p>
-              )}
-
-              {/* Quick info */}
-              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-                <QuickStat icon={Star} label="Idade" value={idade != null ? `${idade}` : "—"} suffix={idade != null ? "anos" : undefined} />
-                <QuickStat icon={Ruler} label="Altura" value={profile.altura ? `${profile.altura}` : "—"} suffix={profile.altura ? "cm" : undefined} />
-                <QuickStat icon={Weight} label="Peso" value={profile.peso ? `${profile.peso}` : "—"} suffix={profile.peso ? "kg" : undefined} />
-                <QuickStat icon={Footprints} label="Pé" value={profile.pe ?? "—"} />
-              </div>
-            </div>
+      <div
+        className="min-h-screen -m-4 sm:-m-6 p-4 sm:p-8"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, #0d1e3d 0%, #050b1e 60%, #03070f 100%)",
+        }}
+      >
+        <div className="mx-auto max-w-6xl space-y-6 pb-8">
+          {/* Header bar */}
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#3da9fc]/40 bg-[#3da9fc]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#7cc6ff] shadow-[0_0_20px_-5px_#3da9fc]">
+              <Zap className="h-3 w-3" /> Vitrine do atleta
+            </span>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-[#3da9fc]/30 bg-transparent text-[#7cc6ff] hover:bg-[#3da9fc]/10 hover:text-white"
+            >
+              <Link to="/perfil">
+                <Settings className="mr-2 h-4 w-4" /> Editar dados
+              </Link>
+            </Button>
           </div>
-        </section>
 
-        {/* Sobre + Habilidades */}
-        <div className="grid gap-6 lg:grid-cols-5">
-          {/* Sobre */}
-          <section
-            aria-labelledby="sobre"
-            className="lg:col-span-2 group relative overflow-hidden rounded-3xl border border-[color:var(--blue-light)]/15 bg-[#0a1428]/80 p-6 shadow-[0_20px_60px_-30px_rgba(26,127,212,0.4)] backdrop-blur sm:p-8"
-          >
-            <div className="absolute -inset-px rounded-3xl bg-gradient-to-br from-[color:var(--blue-light)]/20 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-            <h2 id="sobre" className="mb-4 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-[0.2em] text-[color:var(--blue-light)]">
-              <Sparkles className="h-4 w-4" /> Sobre
-            </h2>
-            {profile.bio ? (
-              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-white/85">
-                {profile.bio}
-              </p>
-            ) : (
-              <p className="text-sm italic text-white/40">
-                Conte sua história. Adicione uma bio em{" "}
-                <Link to="/perfil" className="text-[color:var(--blue-light)] underline">
-                  editar dados
-                </Link>
-                .
-              </p>
-            )}
-          </section>
+          {/* TOP: Perfil + Sobre/Habilidades */}
+          <div className="grid gap-6 lg:grid-cols-5">
+            {/* COLUNA ESQUERDA: Identidade */}
+            <section
+              aria-labelledby="atleta-nome"
+              className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-[#3da9fc]/15 bg-gradient-to-b from-[#0c1a36]/90 to-[#070f24]/90 p-8 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)]"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                aria-hidden
+                style={{
+                  backgroundImage:
+                    "linear-gradient(rgba(61,169,252,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(61,169,252,0.5) 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
+                }}
+              />
 
-          {/* Habilidades */}
-          <section
-            aria-labelledby="hab"
-            className="lg:col-span-3 relative overflow-hidden rounded-3xl border border-[color:var(--blue-light)]/15 bg-[#0a1428]/80 p-6 shadow-[0_20px_60px_-30px_rgba(26,127,212,0.4)] backdrop-blur sm:p-8"
-          >
-            <h2 id="hab" className="mb-6 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-[0.2em] text-[color:var(--blue-light)]">
-              <Zap className="h-4 w-4" /> Habilidades
-            </h2>
-            <ul className="space-y-5">
-              {skills.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <li key={s.label}>
-                    <div className="mb-1.5 flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 font-semibold text-white/90">
-                        <Icon className="h-4 w-4 text-[color:var(--blue-light)]" />
-                        {s.label}
-                      </span>
-                      <span className="font-display text-base font-extrabold text-[color:var(--blue-light)]">
-                        {s.value}
-                      </span>
-                    </div>
-                    <div className="relative h-2.5 overflow-hidden rounded-full bg-white/5">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-[color:var(--blue)] via-[color:var(--blue-light)] to-[#7cc6ff] shadow-[0_0_15px_var(--blue-light)] transition-[width] duration-[1200ms] ease-out"
-                        style={{ width: animateBars ? `${s.value}%` : "0%" }}
+              <div className="relative flex flex-col items-center text-center">
+                {/* Avatar com anel + glow */}
+                <div className="relative">
+                  <div
+                    className="absolute inset-0 -m-6 rounded-full bg-[#3da9fc]/40 blur-3xl animate-pulse"
+                    aria-hidden
+                  />
+                  <div className="relative rounded-full p-[3px] bg-gradient-to-br from-[#7cc6ff] via-[#3da9fc] to-[#1a5fb4] shadow-[0_0_50px_-2px_#3da9fc]">
+                    <div className="rounded-full p-[2px] bg-[#050b1e]">
+                      <AthleteAvatar
+                        src={profile.avatar_url ?? undefined}
+                        alt={profile.nome}
+                        className="h-44 w-44 sm:h-52 sm:w-52 border-2 border-[#3da9fc]/40"
                       />
                     </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        </div>
+                  </div>
+                </div>
 
-        {/* Vídeo destaque */}
-        <section
-          aria-labelledby="videos"
-          className="relative overflow-hidden rounded-3xl border border-[color:var(--blue-light)]/15 bg-[#0a1428]/80 p-6 shadow-[0_20px_60px_-30px_rgba(26,127,212,0.4)] backdrop-blur sm:p-8"
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 id="videos" className="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-[0.2em] text-[color:var(--blue-light)]">
-              <Flame className="h-4 w-4" /> Vídeos em destaque
-            </h2>
-          </div>
-          <div className="rounded-2xl border border-white/5 bg-black/30 p-3 sm:p-5">
-            <AthleteVideoGallery atletaId={profile.id} canManage={true} />
-          </div>
-        </section>
+                <h1
+                  id="atleta-nome"
+                  className="mt-6 font-display text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-4xl"
+                  style={{ textShadow: "0 0 25px rgba(61,169,252,0.45)" }}
+                >
+                  {profile.nome}
+                </h1>
+                <p className="mt-2 text-sm font-medium uppercase tracking-[0.25em] text-[#7cc6ff]/80">
+                  {profile.posicao ?? "Atleta"}
+                </p>
 
-        {/* Conquistas */}
-        <section
-          aria-labelledby="conq"
-          className="relative overflow-hidden rounded-3xl border border-[color:var(--blue-light)]/15 bg-[#0a1428]/80 p-6 shadow-[0_20px_60px_-30px_rgba(26,127,212,0.4)] backdrop-blur sm:p-8"
-        >
-          <h2 id="conq" className="mb-6 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-[0.2em] text-[color:var(--blue-light)]">
-            <Trophy className="h-4 w-4" /> Conquistas
-          </h2>
-          {conquistas.length === 0 ? (
-            <p className="text-sm italic text-white/40">
-              Suas conquistas vão aparecer aqui. Preencha estatísticas e histórico em{" "}
-              <Link to="/perfil" className="text-[color:var(--blue-light)] underline">
-                editar dados
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {conquistas.map((c, i) => {
-                const Icon = c.icon;
-                return (
-                  <li
-                    key={i}
-                    className="group relative overflow-hidden rounded-2xl border border-[color:var(--blue-light)]/15 bg-gradient-to-br from-[#0e1c3a] to-[#06112a] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[color:var(--blue-light)]/50 hover:shadow-[0_15px_40px_-15px_var(--blue-light)]"
-                  >
-                    <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[color:var(--blue-light)]/20 blur-2xl opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                    <Icon className="mb-3 h-8 w-8 text-[color:var(--blue-light)] drop-shadow-[0_0_8px_var(--blue-light)]" />
-                    <p className="font-display text-sm font-extrabold leading-tight text-white">
-                      {c.label}
-                    </p>
-                    {c.sub && (
-                      <p className="mt-0.5 text-[11px] uppercase tracking-wider text-white/50">
-                        {c.sub}
+                {/* Quick stats */}
+                <div className="mt-6 grid w-full grid-cols-4 gap-2">
+                  <QuickStat
+                    icon={Star}
+                    label="Idade"
+                    value={idade != null ? `${idade}` : "—"}
+                    suffix={idade != null ? "anos" : undefined}
+                  />
+                  <QuickStat
+                    icon={Ruler}
+                    label="Altura"
+                    value={
+                      profile.altura
+                        ? (profile.altura / 100).toFixed(2).replace(".", ",")
+                        : "—"
+                    }
+                    suffix={profile.altura ? "m" : undefined}
+                  />
+                  <QuickStat
+                    icon={Weight}
+                    label="Peso"
+                    value={profile.peso ? `${profile.peso}` : "—"}
+                    suffix={profile.peso ? "kg" : undefined}
+                  />
+                  <QuickStat
+                    icon={Footprints}
+                    label="Pé"
+                    value={profile.pe ?? "—"}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* COLUNA DIREITA: Sobre + Habilidades */}
+            <section
+              aria-labelledby="sobre"
+              className="lg:col-span-3 relative overflow-hidden rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-8 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)]"
+            >
+              <div>
+                <h2
+                  id="sobre"
+                  className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]"
+                >
+                  Sobre mim
+                </h2>
+                <div className="mt-2 h-px w-12 bg-gradient-to-r from-[#3da9fc] to-transparent" />
+                {profile.bio ? (
+                  <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-white/85">
+                    {profile.bio}
+                  </p>
+                ) : (
+                  <p className="mt-4 text-sm italic text-white/40">
+                    Conte sua história. Adicione uma bio em{" "}
+                    <Link
+                      to="/perfil"
+                      className="text-[#7cc6ff] underline"
+                    >
+                      editar dados
+                    </Link>
+                    .
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-8">
+                <h2 className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+                  Habilidades
+                </h2>
+                <div className="mt-2 h-px w-12 bg-gradient-to-r from-[#3da9fc] to-transparent" />
+                <ul className="mt-5 space-y-4">
+                  {skills.map((s) => (
+                    <li key={s.label}>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
+                          {s.label}
+                        </span>
+                        <span className="font-display text-xs font-bold text-[#7cc6ff]">
+                          {s.value}
+                        </span>
+                      </div>
+                      <div className="relative h-2 overflow-hidden rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/5">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#1a5fb4] via-[#3da9fc] to-[#7cc6ff] shadow-[0_0_12px_#3da9fc] transition-[width] duration-[1200ms] ease-out"
+                          style={{
+                            width: animateBars ? `${s.value}%` : "0%",
+                          }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          </div>
+
+          {/* BOTTOM: Vídeo + Conquistas */}
+          <div className="grid gap-6 lg:grid-cols-5">
+            {/* Vídeo */}
+            <section
+              aria-labelledby="videos"
+              className="lg:col-span-3 relative overflow-hidden rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+            >
+              <h2
+                id="videos"
+                className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]"
+              >
+                Vídeo em destaque
+              </h2>
+              <div className="mt-2 h-px w-12 bg-gradient-to-r from-[#3da9fc] to-transparent" />
+              <div className="mt-5 rounded-2xl border border-white/5 bg-black/40 p-3 sm:p-4">
+                <AthleteVideoGallery atletaId={profile.id} canManage={true} />
+              </div>
+            </section>
+
+            {/* Conquistas */}
+            <section
+              aria-labelledby="conq"
+              className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+            >
+              <h2
+                id="conq"
+                className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]"
+              >
+                Conquistas
+              </h2>
+              <div className="mt-2 h-px w-12 bg-gradient-to-r from-[#3da9fc] to-transparent" />
+              {conquistas.length === 0 ? (
+                <p className="mt-5 text-sm italic text-white/40">
+                  Suas conquistas vão aparecer aqui. Preencha estatísticas em{" "}
+                  <Link to="/perfil" className="text-[#7cc6ff] underline">
+                    editar dados
+                  </Link>
+                  .
+                </p>
+              ) : (
+                <ul className="mt-5 grid grid-cols-2 gap-3">
+                  {conquistas.slice(0, 4).map((c, i) => (
+                    <li
+                      key={i}
+                      className="group relative overflow-hidden rounded-2xl border border-[#3da9fc]/15 bg-gradient-to-br from-[#0e1f44] to-[#06112a] p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#3da9fc]/50 hover:shadow-[0_15px_40px_-15px_#3da9fc]"
+                    >
+                      <div
+                        className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#3da9fc]/20 blur-2xl opacity-0 transition-opacity group-hover:opacity-100"
+                        aria-hidden
+                      />
+                      <Trophy
+                        className="mx-auto mb-2 h-9 w-9 text-[#7cc6ff] drop-shadow-[0_0_10px_#3da9fc]"
+                      />
+                      <p className="font-display text-sm font-extrabold leading-tight text-white">
+                        {c.label}
                       </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+                      {c.sub && (
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/50">
+                          {c.sub}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
@@ -390,14 +424,20 @@ function QuickStat({
   suffix?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[color:var(--blue-light)]/20 bg-white/[0.03] px-3 py-3 backdrop-blur transition-colors hover:border-[color:var(--blue-light)]/50">
-      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--blue-light)]/80">
-        <Icon className="h-3 w-3" />
-        {label}
+    <div className="rounded-xl border border-[#3da9fc]/20 bg-white/[0.03] px-2 py-2.5 backdrop-blur">
+      <div className="flex items-baseline justify-center gap-1">
+        <span className="font-display text-lg font-extrabold text-white sm:text-xl">
+          {value}
+        </span>
+        {suffix && (
+          <span className="text-[10px] font-semibold text-white/60">
+            {suffix}
+          </span>
+        )}
       </div>
-      <div className="mt-1 flex items-baseline gap-1">
-        <span className="font-display text-2xl font-extrabold text-white">{value}</span>
-        {suffix && <span className="text-xs text-white/60">{suffix}</span>}
+      <div className="mt-1 flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-[0.15em] text-[#7cc6ff]/80">
+        <Icon className="h-2.5 w-2.5" />
+        {label}
       </div>
     </div>
   );
