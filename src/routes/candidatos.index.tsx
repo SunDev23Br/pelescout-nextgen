@@ -190,64 +190,50 @@ function CandidatosPage() {
                   {canScout && (
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-1">
-                        {c.userId ? (
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="sm"
-                            aria-label={`Ver perfil de ${c.nome}`}
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Ver perfil de ${c.nome}`}
+                        >
+                          <Link
+                            to="/atletas/$atletaId"
+                            params={{ atletaId: c.userId }}
                           >
-                            <Link
-                              to="/atletas/$atletaId"
-                              params={{ atletaId: c.userId }}
-                            >
-                              <UserCircle2 className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled
-                            aria-label="Candidato sem conta no app"
-                            title="Candidato sem conta no app"
-                          >
-                            <UserCircle2 className="h-4 w-4 opacity-50" />
-                          </Button>
-                        )}
-                        {c.userId ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            aria-label={`Iniciar conversa com ${c.nome}`}
-                            disabled={startingChat === c.id}
-                            onClick={() => handleStartChat(c)}
-                          >
-                            <MessageSquarePlus className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled
-                            aria-label="Candidato sem conta no app — não é possível conversar"
-                            title="Candidato sem conta no app"
-                          >
-                            <MessageSquarePlus className="h-4 w-4 opacity-50" />
-                          </Button>
-                        )}
+                            <UserCircle2 className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Iniciar conversa com ${c.nome}`}
+                          disabled={startingChat === c.id}
+                          onClick={() => handleStartChat(c)}
+                        >
+                          <MessageSquarePlus className="h-4 w-4" />
+                        </Button>
                       </div>
                     </td>
                   )}
                 </tr>
               ))}
-              {list.length === 0 && (
+              {isLoading && (
                 <tr>
                   <td
                     colSpan={canScout ? 7 : 6}
                     className="px-5 py-12 text-center text-muted-foreground"
                   >
-                    Nenhum candidato encontrado.
+                    <Loader2 className="mx-auto h-5 w-5 animate-spin" />
+                  </td>
+                </tr>
+              )}
+              {!isLoading && list.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={canScout ? 7 : 6}
+                    className="px-5 py-12 text-center text-muted-foreground"
+                  >
+                    Nenhum atleta cadastrado.
                   </td>
                 </tr>
               )}
@@ -260,10 +246,11 @@ function CandidatosPage() {
   );
 }
 
-function ClubeCardsView({ list }: { list: Candidato[] }) {
+function ClubeCardsView({ list }: { list: AtletaItem[] }) {
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
-  const [paying, setPaying] = useState<Candidato | null>(null);
+  const [paying, setPaying] = useState<AtletaItem | null>(null);
   const [processing, setProcessing] = useState(false);
+
 
   const confirmar = async () => {
     if (!paying) return;
