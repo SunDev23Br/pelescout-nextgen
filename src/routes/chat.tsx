@@ -8,6 +8,7 @@ import {
   MessageSquarePlus,
   MoreVertical,
   Search,
+  Trash2,
   Trophy,
   UserCircle,
 } from "lucide-react";
