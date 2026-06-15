@@ -79,47 +79,88 @@ export type Database = {
       }
       avaliacoes: {
         Row: {
+          atleta_user_id: string | null
           avaliador_id: string | null
-          candidato_id: string
+          candidato_id: string | null
           comentario: string | null
           created_at: string
+          decisao: string | null
           fisico: number | null
           id: string
+          intensidade: number | null
+          mental: number | null
+          nota_geral: number | null
+          pe_bonus: number | null
+          peneira_id: string | null
           psicologico: number | null
+          tags_negativas: string[] | null
+          tags_positivas: string[] | null
           tatico: number | null
           tecnica: number | null
           updated_at: string
         }
         Insert: {
+          atleta_user_id?: string | null
           avaliador_id?: string | null
-          candidato_id: string
+          candidato_id?: string | null
           comentario?: string | null
           created_at?: string
+          decisao?: string | null
           fisico?: number | null
           id?: string
+          intensidade?: number | null
+          mental?: number | null
+          nota_geral?: number | null
+          pe_bonus?: number | null
+          peneira_id?: string | null
           psicologico?: number | null
+          tags_negativas?: string[] | null
+          tags_positivas?: string[] | null
           tatico?: number | null
           tecnica?: number | null
           updated_at?: string
         }
         Update: {
+          atleta_user_id?: string | null
           avaliador_id?: string | null
-          candidato_id?: string
+          candidato_id?: string | null
           comentario?: string | null
           created_at?: string
+          decisao?: string | null
           fisico?: number | null
           id?: string
+          intensidade?: number | null
+          mental?: number | null
+          nota_geral?: number | null
+          pe_bonus?: number | null
+          peneira_id?: string | null
           psicologico?: number | null
+          tags_negativas?: string[] | null
+          tags_positivas?: string[] | null
           tatico?: number | null
           tecnica?: number | null
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "avaliacoes_atleta_user_id_fkey"
+            columns: ["atleta_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "avaliacoes_candidato_id_fkey"
             columns: ["candidato_id"]
             isOneToOne: false
             referencedRelation: "candidatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avaliacoes_peneira_id_fkey"
+            columns: ["peneira_id"]
+            isOneToOne: false
+            referencedRelation: "peneiras"
             referencedColumns: ["id"]
           },
         ]
