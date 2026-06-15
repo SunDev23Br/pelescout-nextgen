@@ -13,19 +13,50 @@ function formatProxData(iso: string) {
   });
 }
 
+const HOME_OG_IMAGE =
+  "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03615082-b43f-44bc-a325-e562d4b95d20/id-preview-8a2baf9e--9a1282c2-3650-4073-a7fa-efe94d2d29d8.lovable.app-1777083107748.png";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Pelé Next Gen — A nova geração do futebol começa aqui!" },
+      { title: "Pelé Next Gen — Peneiras oficiais de futebol" },
       {
         name: "description",
         content:
           "Inscreva-se em peneiras oficiais, seja avaliado por olheiros profissionais e dê o próximo passo na sua carreira no futebol.",
       },
+      { property: "og:title", content: "Pelé Next Gen — Peneiras oficiais de futebol" },
+      {
+        property: "og:description",
+        content:
+          "Plataforma oficial Pelé Next Gen: peneiras, olheiros profissionais e perfis de atletas.",
+      },
+      { property: "og:url", content: "https://pelescout-nextgen.lovable.app/" },
+      { property: "og:image", content: HOME_OG_IMAGE },
+      { name: "twitter:image", content: HOME_OG_IMAGE },
+      { name: "twitter:title", content: "Pelé Next Gen — Peneiras oficiais de futebol" },
+      {
+        name: "twitter:description",
+        content:
+          "Plataforma oficial Pelé Next Gen: peneiras, olheiros profissionais e perfis de atletas.",
+      },
+    ],
+    links: [{ rel: "canonical", href: "https://pelescout-nextgen.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Pelé Next Gen",
+          url: "https://pelescout-nextgen.lovable.app",
+        }),
+      },
     ],
   }),
   component: Landing,
 });
+
 
 function Landing() {
   const [proxima, setProxima] = useState<Peneira | null>(null);
@@ -142,6 +173,7 @@ function Landing() {
           />
         </div>
       </section>
+      </main>
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
@@ -178,7 +210,7 @@ function Feature({
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
         <Icon className="h-6 w-6" />
       </div>
-      <h3 className="font-display text-lg font-bold">{title}</h3>
+      <h2 className="font-display text-lg font-bold">{title}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{text}</p>
     </div>
   );

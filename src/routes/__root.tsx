@@ -30,22 +30,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Pelé Next Gen — A nova geração do futebol começa aqui!" },
+      { title: "Pelé Next Gen — Peneiras de futebol" },
       {
         name: "description",
         content:
-          "Plataforma oficial Pelé Next Gen para gestão de peneiras de futebol: cadastre-se, participe e seja avaliado pelos melhores olheiros.",
+          "Plataforma oficial Pelé Next Gen: peneiras de futebol, avaliação por olheiros e perfis de atletas.",
       },
       { name: "author", content: "Pelé Next Gen" },
-      { property: "og:title", content: "Pelé Next Gen — A nova geração do futebol começa aqui!" },
-      { property: "og:description", content: "Pelenextgen é uma plataforma de gestão de peneiras, conecta atletas, olheiros e clubes ao redor do Brasil." },
+      { property: "og:site_name", content: "Pelé Next Gen" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Pelé Next Gen — A nova geração do futebol começa aqui!" },
-      { name: "description", content: "Pelenextgen é uma plataforma de gestão de peneiras, conecta atletas, olheiros e clubes ao redor do Brasil." },
-      { name: "twitter:description", content: "Pelenextgen é uma plataforma de gestão de peneiras, conecta atletas, olheiros e clubes ao redor do Brasil." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03615082-b43f-44bc-a325-e562d4b95d20/id-preview-8a2baf9e--9a1282c2-3650-4073-a7fa-efe94d2d29d8.lovable.app-1777083107748.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03615082-b43f-44bc-a325-e562d4b95d20/id-preview-8a2baf9e--9a1282c2-3650-4073-a7fa-efe94d2d29d8.lovable.app-1777083107748.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -56,11 +50,25 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Pelé Next Gen",
+          url: "https://pelescout-nextgen.lovable.app",
+          logo: "https://pelescout-nextgen.lovable.app/favicon.ico",
+          sameAs: [],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
+
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (

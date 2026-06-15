@@ -258,7 +258,7 @@ function Dashboard() {
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <div className="flex items-center justify-between">
-            <h3 className="font-display text-lg font-bold">Próximas peneiras</h3>
+            <h2 className="font-display text-lg font-bold">Próximas peneiras</h2>
             <Link
               to="/peneiras"
               className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-gold-light"
@@ -339,7 +339,7 @@ function ChartCard({
       }
     >
       <div className="mb-4">
-        <h3 className="font-display text-lg font-bold">{title}</h3>
+        <h2 className="font-display text-lg font-bold">{title}</h2>
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </div>
       {children}
