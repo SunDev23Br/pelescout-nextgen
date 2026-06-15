@@ -86,8 +86,7 @@ function Landing() {
       <section className="relative mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
+            <span className="mb-5 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
               Plataforma oficial
             </span>
             <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
