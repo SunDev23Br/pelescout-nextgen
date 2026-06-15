@@ -1,14 +1,62 @@
-# Padronizar tamanho dos cards de peneira
 
-Hoje os cards em `/peneiras` têm alturas diferentes porque alguns elementos variam: título com 1 ou 2 linhas, lista de categorias opcional (com 0, 1 ou várias linhas que quebram) e meta-info que pode ter textos mais longos. O `Button` no final usa `mt-auto`, então a diferença sobra no meio do card.
+## Objetivo
 
-## Mudanças (somente em `src/components/PeneiraCard.tsx`)
+Coletar mais informações no cadastro do administrador (olheiro) em `/registro-admin` e exibi-las no painel `/suporte` ao revisar a solicitação, incluindo fotos do RG (frente e verso).
 
-1. **Título**: reservar sempre 2 linhas, mesmo quando o título tem só 1 linha — usar `min-h` equivalente a 2 linhas de `text-lg leading-tight` para travar a altura.
-2. **Bloco de categorias**: sempre renderizar o container (mesmo vazio) com altura fixa de uma linha de chips, com `overflow-hidden` para não estourar quando houver muitas categorias. Limitar visualmente a 1 linha (ex.: `max-h` + `overflow-hidden`) ou mostrar no máximo N categorias e o restante como `+X`.
-3. **Imagem**: já é `h-44`, manter.
-4. **Card raiz**: garantir altura uniforme via grid (o grid já está em `peneiras.index.tsx` com `sm:grid-cols-2 xl:grid-cols-3` — itens do grid esticam por padrão, então basta o card interno usar `h-full` para preencher a célula). Adicionar `h-full` no `<article>`.
+## Mudanças no banco
 
-## Resultado
+Migration nova:
 
-Todos os cards no grid terão exatamente a mesma altura, independente do tamanho do título ou da quantidade de categorias. Sem mudanças em dados, rotas ou estilos globais.
+1. Adicionar colunas em `public.admin_requests`:
+   - `celular text` (contato do olheiro)
+   - `idade integer` (1–120)
+   - `clube_atual text` (clube onde trabalha/trabalhou)
+   - `rg_frente_path text` (caminho no Storage)
+   - `rg_verso_path text` (caminho no Storage)
+2. Criar bucket de Storage **privado** `admin-docs` (via `storage_create_bucket`).
+3. Policies em `storage.objects` para `admin-docs`:
+   - INSERT: usuário autenticado só pode subir arquivos sob `auth.uid()/...`.
+   - SELECT: o dono (`auth.uid() = primeiro segmento do path`) OU `has_role(auth.uid(),'suporte')`.
+   - DELETE: somente suporte.
+4. Atualizar `approve_admin_request` para permanecer igual (não move arquivos; mantém path).
+
+## Mudanças em `/registro-admin` (`src/routes/registro-admin.tsx`)
+
+Adicionar ao formulário:
+- **Celular** (input com máscara simples, validação 10–15 dígitos).
+- **Idade** (input number, 18–99).
+- **Clube atual/anterior** (input text, 2–120 chars).
+- **RG — Frente** (upload de imagem, jpg/png/webp, ≤ 5 MB).
+- **RG — Verso** (upload de imagem, jpg/png/webp, ≤ 5 MB).
+
+Validação com `zod` (incluir arquivos: `instanceof(File)` + tamanho + mime).
+
+Fluxo no submit:
+1. `supabase.auth.signUp` (como hoje).
+2. Upload dos dois arquivos para `admin-docs/{user_id}/rg-frente.<ext>` e `rg-verso.<ext>` (upsert true).
+3. Insert em `admin_requests` com `celular`, `idade`, `clube_atual`, `rg_frente_path`, `rg_verso_path`.
+4. `supabase.auth.signOut()` e tela de sucesso (mantém o comportamento atual).
+
+Se algum upload falhar: mostrar toast, abortar o insert e impedir a tela de sucesso.
+
+## Mudanças em `/suporte` (`src/routes/suporte.tsx`)
+
+- Ao carregar `admin_requests`, trazer também os novos campos.
+- No card de solicitação pendente do tipo "admin", exibir:
+  - Celular, idade, clube atual.
+  - Miniaturas clicáveis do RG frente e verso, geradas via `getSignedUrl("admin-docs", path, 600)` (helper já existente em `src/lib/storage.ts`).
+  - Clique abre o arquivo em nova aba em tamanho real.
+- Solicitações `clube` continuam sem essas informações.
+
+## Detalhes técnicos
+
+- Bucket `admin-docs` privado; URLs assinadas com expiração curta (10 min) geradas sob demanda no painel.
+- Path no Storage usa `auth.uid()` como prefixo para casar com a RLS.
+- Tipos do Supabase serão regenerados após a migration; o código do front que lê os novos campos só é escrito depois disso.
+- Nenhuma alteração na lógica de aprovação/recusa — apenas exibição extra.
+
+## Arquivos afetados
+
+- `supabase/migrations/<novo>.sql` (colunas + policies do bucket)
+- `src/routes/registro-admin.tsx` (novos campos + uploads)
+- `src/routes/suporte.tsx` (exibição dos novos dados na revisão)
