@@ -96,6 +96,19 @@ function AthleteProfilePage() {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [animateBars, setAnimateBars] = useState(false);
+  const [notaGeral, setNotaGeral] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getUltimaAvaliacaoAtleta(atletaId)
+      .then((r) => {
+        if (!cancelled) setNotaGeral(r?.notaGeral ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [atletaId]);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
