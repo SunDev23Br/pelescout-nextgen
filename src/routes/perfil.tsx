@@ -328,15 +328,33 @@ function PerfilPage() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-3xl space-y-8">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-            Minha conta
-          </span>
-          <h1 className="mt-3 font-display text-3xl font-extrabold sm:text-4xl">Meu perfil</h1>
-          <p className="mt-2 text-muted-foreground">
-            Atualize suas informações pessoais, foto, e-mail e senha.
-          </p>
+      <div
+        className="min-h-screen -m-4 sm:-m-6 p-4 sm:p-8"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, #0d1e3d 0%, #050b1e 60%, #03070f 100%)",
+        }}
+      >
+        <div className="mx-auto max-w-3xl space-y-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#3da9fc]/40 bg-[#3da9fc]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#7cc6ff] shadow-[0_0_20px_-5px_#3da9fc]">
+              <Zap className="h-3 w-3" /> Editar perfil
+            </span>
+            <h1 className="mt-3 font-display text-3xl font-black uppercase tracking-tight text-white sm:text-4xl" style={{ textShadow: "0 0 25px rgba(61,169,252,0.45)" }}>
+              Meu perfil
+            </h1>
+            <p className="mt-2 text-sm text-white/60">
+              Atualize suas informações pessoais, foto, e-mail e senha.
+            </p>
+          </div>
+          {user.role === "atleta" && (
+            <Button asChild variant="outline" size="sm" className="border-[#3da9fc]/30 bg-transparent text-[#7cc6ff] hover:bg-[#3da9fc]/10 hover:text-white">
+              <Link to="/perfil-atleta">
+                <Eye className="mr-2 h-4 w-4" /> Ver vitrine
+              </Link>
+            </Button>
+          )}
         </div>
 
         <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
