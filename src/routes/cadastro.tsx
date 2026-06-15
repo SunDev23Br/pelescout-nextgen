@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ScrollPicker, range } from "@/components/ScrollPicker";
-import { calcularIdade, formatarDataBR, toISODate, IDADE_MIN, IDADE_MAX } from "@/lib/date";
+import { calcularIdade, formatarDataBR, fromISODate, toISODate, IDADE_MIN, IDADE_MAX } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
