@@ -38,6 +38,7 @@ const NAV: NavItem[] = [
   { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
+  { to: "/perfil-atleta", label: "Perfil do Atleta", icon: Trophy, roles: ["atleta"] },
   { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube", "suporte"] },
 ];
 
