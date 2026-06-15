@@ -11,7 +11,10 @@ import {
   Trash2,
   Trophy,
   UserCircle2,
+  Zap,
+  Eye,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
