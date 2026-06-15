@@ -1,6 +1,13 @@
+/** Converte ISO YYYY-MM-DD em Date local (sem deslocamento UTC). */
+export function fromISODate(iso: string): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Date(iso);
+}
+
 /** Calcula a idade em anos completos a partir de uma data de nascimento (ISO YYYY-MM-DD ou Date). */
 export function calcularIdade(dataNascimento: string | Date): number {
-  const d = typeof dataNascimento === "string" ? new Date(dataNascimento) : dataNascimento;
+  const d = typeof dataNascimento === "string" ? fromISODate(dataNascimento) : dataNascimento;
   if (Number.isNaN(d.getTime())) return 0;
   const hoje = new Date();
   let idade = hoje.getFullYear() - d.getFullYear();
@@ -8,6 +15,7 @@ export function calcularIdade(dataNascimento: string | Date): number {
   if (m < 0 || (m === 0 && hoje.getDate() < d.getDate())) idade--;
   return Math.max(0, idade);
 }
+
 
 /** Formata uma data ISO ou Date como dd/mm/aaaa. */
 export function formatarDataBR(data: string | Date): string {
