@@ -541,8 +541,9 @@ function AvaliacoesPageInner() {
 
             <ScoutComment value={comentario} onChange={setComentario} />
 
-            <Button onClick={salvar} size="lg" className="w-full shadow-gold">
-              <Save className="mr-2 h-5 w-5" /> Salvar Avaliação
+            <Button onClick={salvar} size="lg" disabled={submitting} className="w-full shadow-gold">
+              {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+              {submitting ? "Salvando..." : "Salvar Avaliação"}
               {decisaoSel && <CheckCircle2 className="ml-2 h-4 w-4" />}
             </Button>
           </div>
