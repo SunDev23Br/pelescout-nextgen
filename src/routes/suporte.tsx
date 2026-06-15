@@ -79,7 +79,7 @@ function SuportePage() {
       supabase.from("user_roles").select("user_id, role"),
       supabase
         .from("admin_requests")
-        .select("id, user_id, status, created_at")
+        .select("id, user_id, status, created_at, celular, idade, clube_atual, rg_frente_path, rg_verso_path")
         .order("created_at", { ascending: false }),
       supabase
         .from("clube_requests")
