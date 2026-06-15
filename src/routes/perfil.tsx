@@ -328,28 +328,21 @@ function PerfilPage() {
 
   return (
     <AppLayout>
-      <div
-        className="min-h-screen -m-4 sm:-m-6 p-4 sm:p-8"
-        style={{
-          background:
-            "radial-gradient(ellipse at top, #0d1e3d 0%, #050b1e 60%, #03070f 100%)",
-        }}
-      >
-        <div className="mx-auto max-w-3xl space-y-8">
+      <div className="mx-auto max-w-3xl space-y-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#3da9fc]/40 bg-[#3da9fc]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#7cc6ff] shadow-[0_0_20px_-5px_#3da9fc]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
               <Zap className="h-3 w-3" /> Editar perfil
             </span>
-            <h1 className="mt-3 font-display text-3xl font-black uppercase tracking-tight text-white sm:text-4xl" style={{ textShadow: "0 0 25px rgba(61,169,252,0.45)" }}>
+            <h1 className="mt-3 font-display text-2xl font-extrabold sm:text-3xl">
               Meu perfil
             </h1>
-            <p className="mt-2 text-sm text-white/60">
+            <p className="mt-1 text-sm text-muted-foreground">
               Atualize suas informações pessoais, foto, e-mail e senha.
             </p>
           </div>
           {user.role === "atleta" && (
-            <Button asChild variant="outline" size="sm" className="border-[#3da9fc]/30 bg-transparent text-[#7cc6ff] hover:bg-[#3da9fc]/10 hover:text-white">
+            <Button asChild variant="outline" size="sm">
               <Link to="/perfil-atleta">
                 <Eye className="mr-2 h-4 w-4" /> Ver vitrine
               </Link>
@@ -357,8 +350,9 @@ function PerfilPage() {
           )}
         </div>
 
-        <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
-          <h2 className="mb-4 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">Foto de perfil</h2>
+
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
+          <h2 className="mb-4 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">Foto de perfil</h2>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
             <AthleteAvatar
               src={avatarUrl ?? undefined}
@@ -407,9 +401,9 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarPerfil}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">Dados pessoais</h2>
+          <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">Dados pessoais</h2>
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Nome completo</Label>
             <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -428,9 +422,9 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarEmail}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+          <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
             <Mail className="h-5 w-5" /> E-mail
           </h2>
           <div className="space-y-2">
@@ -459,10 +453,10 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarNovaSenha}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
           <div>
-            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
               <Lock className="h-5 w-5" /> Alterar senha
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -570,10 +564,10 @@ function PerfilPage() {
         {user.role === "atleta" && (
           <form
             onSubmit={salvarAtleta}
-            className="space-y-6 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+            className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
           >
             <div>
-              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
                 <UserCircle2 className="h-5 w-5" /> Perfil de atleta
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -724,12 +718,11 @@ function PerfilPage() {
         )}
 
         {user.role === "atleta" && (
-          <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
 
-        </div>
       </div>
     </AppLayout>
   );

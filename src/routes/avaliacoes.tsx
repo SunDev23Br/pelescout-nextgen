@@ -12,6 +12,7 @@ import {
   Flame,
   Timer,
   Save,
+  Loader2,
 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
@@ -23,8 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getCandidatosDoJogo, peneiras } from "@/lib/mock-data";
 import { calcularIdade } from "@/lib/date";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import { QuickScoreSelector } from "@/components/evaluation/QuickScoreSelector";
@@ -34,7 +35,12 @@ import { ScoutComment } from "@/components/evaluation/ScoutComment";
 import { AutoSummary } from "@/components/evaluation/AutoSummary";
 import { OverallRating } from "@/components/evaluation/OverallRating";
 import { EvaluationCard } from "@/components/evaluation/EvaluationCard";
-import { FootProfile, EMPTY_FOOT_DATA, computeFootBonus, type FootData } from "@/components/evaluation/FootProfile";
+import {
+  FootProfile,
+  EMPTY_FOOT_DATA,
+  computeFootBonus,
+  type FootData,
+} from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
 
@@ -44,7 +50,8 @@ export const Route = createFileRoute("/avaliacoes")({
       { title: "Avaliação ao Vivo — Pelé Next Gen" },
       {
         name: "description",
-        content: "Avalie atletas em tempo real durante peneiras, jogos e treinos.",
+        content:
+          "Avalie atletas em tempo real durante peneiras, jogos e treinos.",
       },
     ],
   }),
@@ -60,6 +67,21 @@ type Scores = {
 };
 
 type Decision = "aprovado" | "reprovado" | "reavaliar";
+
+interface PeneiraRow {
+  id: string;
+  titulo: string;
+}
+
+interface AtletaRow {
+  id: string;
+  nome: string;
+  posicao: string | null;
+  dataNascimento: string | null;
+  avatar: string | null;
+}
+
+const ALL_ATLETAS = "__all__";
 
 function AvaliacoesPage() {
   const { user, ready } = useSession();
@@ -79,42 +101,145 @@ function AvaliacoesPage() {
 }
 
 function AvaliacoesPageInner() {
-  const [peneiraId, setPeneiraId] = useState(peneiras[0].id);
-  const peneiraSel = useMemo(() => peneiras.find((p) => p.id === peneiraId)!, [peneiraId]);
-  const [jogoNumero, setJogoNumero] = useState<number>(peneiraSel.jogos[0]?.numero ?? 1);
+  // ---- Data: peneiras + atletas ----
+  const [peneiras, setPeneiras] = useState<PeneiraRow[]>([]);
+  const [loadingPeneiras, setLoadingPeneiras] = useState(true);
+  const [peneiraId, setPeneiraId] = useState<string>(ALL_ATLETAS);
 
-  const lista = useMemo(() => getCandidatosDoJogo(peneiraId, jogoNumero), [peneiraId, jogoNumero]);
-  const [selectedId, setSelectedId] = useState(lista[0]?.id ?? "");
-  const selected = useMemo(() => lista.find((c) => c.id === selectedId) ?? lista[0], [lista, selectedId]);
+  const [atletas, setAtletas] = useState<AtletaRow[]>([]);
+  const [loadingAtletas, setLoadingAtletas] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>("");
 
-  // Scores
-  const [scores, setScores] = useState<Scores>({ tecnica: 0, tatica: 0, fisica: 0, mental: 0, intensidade: 0 });
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("peneiras")
+      .select("id, titulo")
+      .order("data", { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) toast.error(error.message);
+        setPeneiras((data ?? []) as PeneiraRow[]);
+        setLoadingPeneiras(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingAtletas(true);
+    const loader = async () => {
+      if (peneiraId === ALL_ATLETAS) {
+        // todos os atletas cadastrados (role=atleta)
+        const { data: roles, error: rErr } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "atleta");
+        if (rErr) {
+          toast.error(rErr.message);
+          if (!cancelled) {
+            setAtletas([]);
+            setLoadingAtletas(false);
+          }
+          return;
+        }
+        const ids = (roles ?? []).map((r) => r.user_id);
+        if (ids.length === 0) {
+          if (!cancelled) {
+            setAtletas([]);
+            setLoadingAtletas(false);
+          }
+          return;
+        }
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, nome, posicao, data_nascimento, avatar_url")
+          .in("id", ids)
+          .order("nome", { ascending: true });
+        if (error) toast.error(error.message);
+        if (!cancelled) {
+          setAtletas(
+            (data ?? []).map((p) => ({
+              id: p.id,
+              nome: p.nome,
+              posicao: p.posicao as string | null,
+              dataNascimento: p.data_nascimento as string | null,
+              avatar: p.avatar_url as string | null,
+            })),
+          );
+          setLoadingAtletas(false);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("candidatos")
+          .select("id, nome, posicao, data_nascimento, avatar")
+          .eq("peneira_id", peneiraId)
+          .order("nome", { ascending: true });
+        if (error) toast.error(error.message);
+        if (!cancelled) {
+          setAtletas(
+            (data ?? []).map((c) => ({
+              id: c.id,
+              nome: c.nome,
+              posicao: c.posicao as string | null,
+              dataNascimento: c.data_nascimento as string | null,
+              avatar: c.avatar as string | null,
+            })),
+          );
+          setLoadingAtletas(false);
+        }
+      }
+    };
+    void loader();
+    return () => {
+      cancelled = true;
+    };
+  }, [peneiraId]);
+
+  useEffect(() => {
+    setSelectedId(atletas[0]?.id ?? "");
+  }, [atletas]);
+
+  const selected = useMemo(
+    () => atletas.find((c) => c.id === selectedId) ?? atletas[0],
+    [atletas, selectedId],
+  );
+
+  // ---- Avaliação state ----
+  const [scores, setScores] = useState<Scores>({
+    tecnica: 0,
+    tatica: 0,
+    fisica: 0,
+    mental: 0,
+    intensidade: 0,
+  });
   const updateScore = useCallback((key: keyof Scores, value: number) => {
     setScores((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  // Tags
   const [positiveTags, setPositiveTags] = useState<string[]>([]);
   const [negativeTags, setNegativeTags] = useState<string[]>([]);
   const togglePositive = useCallback((tag: string) => {
-    setPositiveTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
+    setPositiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
   }, []);
   const toggleNegative = useCallback((tag: string) => {
-    setNegativeTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
+    setNegativeTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
   }, []);
 
-  // Comment
   const [comentario, setComentario] = useState("");
 
-  // Foot / bilateral
   const [footData, setFootData] = useState<FootData>(EMPTY_FOOT_DATA);
   const footBonus = useMemo(() => computeFootBonus(footData), [footData]);
 
-  // Decision
   const [decisoes, setDecisoes] = useState<Record<string, Decision>>({});
   const decisaoSel = selected ? decisoes[selected.id] : undefined;
 
-  // Timer
   const [startTime] = useState(Date.now());
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -125,10 +250,11 @@ function AvaliacoesPageInner() {
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
     const h = Math.floor(m / 60);
-    return `${h.toString().padStart(2, "0")}:${(m % 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+    return `${h.toString().padStart(2, "0")}:${(m % 60)
+      .toString()
+      .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
   };
 
-  // Auto-save
   const [saving, setSaving] = useState(false);
   useEffect(() => {
     if (!selected) return;
@@ -139,7 +265,6 @@ function AvaliacoesPageInner() {
     return () => clearTimeout(timeout);
   }, [scores, positiveTags, negativeTags, comentario, footData, selected]);
 
-  // Reset when athlete changes
   useEffect(() => {
     setScores({ tecnica: 0, tatica: 0, fisica: 0, mental: 0, intensidade: 0 });
     setPositiveTags([]);
@@ -156,16 +281,28 @@ function AvaliacoesPageInner() {
       reprovado: "Atleta reprovado.",
       reavaliar: "Atleta marcado para reavaliação.",
     };
-    toast.success(messages[decisao], { description: `Decisão registrada para ${selected.nome}.` });
+    toast.success(messages[decisao], {
+      description: `Decisão registrada para ${selected.nome}.`,
+    });
   }
 
   function salvar() {
     if (!selected) return;
-    const avg = (scores.tecnica + scores.tatica + scores.fisica + scores.mental + scores.intensidade) / 5;
+    const avg =
+      (scores.tecnica +
+        scores.tatica +
+        scores.fisica +
+        scores.mental +
+        scores.intensidade) /
+      5;
     toast.success(`Avaliação salva para ${selected.nome}`, {
       description: `Nota geral: ${avg.toFixed(1)}`,
     });
   }
+
+  const idadeAtleta = selected?.dataNascimento
+    ? calcularIdade(selected.dataNascimento)
+    : 0;
 
   return (
     <AppLayout>
@@ -183,7 +320,9 @@ function AvaliacoesPageInner() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1.5">
               <Timer className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-mono font-bold text-primary">{formatTime(elapsed)}</span>
+              <span className="text-xs font-mono font-bold text-primary">
+                {formatTime(elapsed)}
+              </span>
             </div>
             {saving && (
               <div className="flex items-center gap-1 text-[10px] text-success animate-fade-in">
@@ -194,45 +333,27 @@ function AvaliacoesPageInner() {
         </div>
       </header>
 
-      {/* Peneira/Jogo selectors */}
-      <div className="mb-4 grid gap-2 grid-cols-2">
-        <Select
-          value={peneiraId}
-          onValueChange={(v) => {
-            setPeneiraId(v);
-            const p = peneiras.find((x) => x.id === v)!;
-            setJogoNumero(p.jogos[0]?.numero ?? 1);
-            const first = getCandidatosDoJogo(v, p.jogos[0]?.numero ?? 1)[0];
-            if (first) setSelectedId(first.id);
-          }}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue />
+      {/* Peneira selector */}
+      <div className="mb-4">
+        <Select value={peneiraId} onValueChange={(v) => setPeneiraId(v)}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder="Selecione uma peneira" />
           </SelectTrigger>
           <SelectContent>
-            {peneiras.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={String(jogoNumero)}
-          onValueChange={(v) => {
-            const n = Number(v);
-            setJogoNumero(n);
-            const first = getCandidatosDoJogo(peneiraId, n)[0];
-            if (first) setSelectedId(first.id);
-          }}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {peneiraSel.jogos.map((j) => (
-              <SelectItem key={j.numero} value={String(j.numero)}>
-                Jogo {j.numero} — {j.horario}
-              </SelectItem>
-            ))}
+            <SelectItem value={ALL_ATLETAS}>
+              Todos os atletas cadastrados
+            </SelectItem>
+            {loadingPeneiras ? (
+              <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                Carregando peneiras…
+              </div>
+            ) : (
+              peneiras.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.titulo}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -241,58 +362,78 @@ function AvaliacoesPageInner() {
         {/* Athlete list */}
         <aside className="rounded-2xl border border-border bg-card p-2 shadow-card lg:max-h-[calc(100vh-180px)] lg:overflow-y-auto">
           <p className="px-2 py-1.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-            Atletas ({lista.length})
+            Atletas ({atletas.length})
           </p>
-          <div className="space-y-0.5">
-            {lista.map((c) => {
-              const active = selected?.id === c.id;
-              const dec = decisoes[c.id];
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedId(c.id)}
-                  className={cn(
-                    "flex w-full items-center gap-2.5 rounded-xl p-2 text-left transition-all duration-150",
-                    active ? "bg-primary/15 text-foreground" : "hover:bg-bg2"
-                  )}
-                >
-                  <AthleteAvatar src={c.avatar} alt={c.nome} className="h-8 w-8 border border-border" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold">{c.nome}</p>
-                    <p className="text-[10px] text-muted-foreground">{c.posicao} · {calcularIdade(c.dataNascimento)}a</p>
-                  </div>
-                  {dec === "aprovado" && <ThumbsUp className="h-3.5 w-3.5 text-success" />}
-                  {dec === "reprovado" && <ThumbsDown className="h-3.5 w-3.5 text-destructive" />}
-                  {dec === "reavaliar" && <RotateCcw className="h-3.5 w-3.5 text-primary" />}
-                  {!dec && (c.status === "avaliado" || c.status === "aprovado") && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-success/60" />
-                  )}
-                </button>
-              );
-            })}
-            {lista.length === 0 && (
-              <p className="px-2 py-6 text-center text-[10px] text-muted-foreground">
-                Nenhum atleta neste jogo.
-              </p>
-            )}
-          </div>
+          {loadingAtletas ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {atletas.map((c) => {
+                const active = selected?.id === c.id;
+                const dec = decisoes[c.id];
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedId(c.id)}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-xl p-2 text-left transition-all duration-150",
+                      active
+                        ? "bg-primary/15 text-foreground"
+                        : "hover:bg-bg2",
+                    )}
+                  >
+                    <AthleteAvatar
+                      src={c.avatar ?? undefined}
+                      alt={c.nome}
+                      className="h-8 w-8 border border-border"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold">{c.nome}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {c.posicao ?? "—"}
+                        {c.dataNascimento
+                          ? ` · ${calcularIdade(c.dataNascimento)}a`
+                          : ""}
+                      </p>
+                    </div>
+                    {dec === "aprovado" && (
+                      <ThumbsUp className="h-3.5 w-3.5 text-success" />
+                    )}
+                    {dec === "reprovado" && (
+                      <ThumbsDown className="h-3.5 w-3.5 text-destructive" />
+                    )}
+                    {dec === "reavaliar" && (
+                      <RotateCcw className="h-3.5 w-3.5 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+              {atletas.length === 0 && (
+                <p className="px-2 py-6 text-center text-[10px] text-muted-foreground">
+                  {peneiraId === ALL_ATLETAS
+                    ? "Nenhum atleta cadastrado ainda."
+                    : "Nenhum inscrito nesta peneira."}
+                </p>
+              )}
+            </div>
+          )}
         </aside>
 
         {/* Evaluation panel */}
         {selected ? (
           <div className="space-y-3 animate-fade-in">
-            {/* Athlete header + overall rating */}
             <div className="grid gap-3 grid-cols-[1fr_auto]">
               <EvaluationCard
                 nome={selected.nome}
-                posicao={selected.posicao}
-                idade={calcularIdade(selected.dataNascimento)}
-                avatar={selected.avatar}
+                posicao={selected.posicao ?? "—"}
+                idade={idadeAtleta}
+                avatar={selected.avatar ?? undefined}
               />
               <OverallRating scores={scores} bonus={footBonus} />
             </div>
 
-            {/* Decision buttons */}
             <div className="flex gap-2">
               <Button
                 onClick={() => decidir("aprovado")}
@@ -301,7 +442,7 @@ function AvaliacoesPageInner() {
                   "flex-1 transition-all",
                   decisaoSel === "aprovado"
                     ? "bg-success text-primary-foreground shadow-lg"
-                    : "bg-success/20 text-success hover:bg-success/30 border border-success/30"
+                    : "bg-success/20 text-success hover:bg-success/30 border border-success/30",
                 )}
               >
                 <ThumbsUp className="mr-1.5 h-4 w-4" /> Aprovar
@@ -313,7 +454,7 @@ function AvaliacoesPageInner() {
                   "flex-1 transition-all",
                   decisaoSel === "reprovado"
                     ? "bg-destructive text-destructive-foreground shadow-lg"
-                    : "bg-destructive/20 text-destructive hover:bg-destructive/30 border border-destructive/30"
+                    : "bg-destructive/20 text-destructive hover:bg-destructive/30 border border-destructive/30",
                 )}
               >
                 <ThumbsDown className="mr-1.5 h-4 w-4" /> Reprovar
@@ -325,23 +466,46 @@ function AvaliacoesPageInner() {
                   "flex-1 transition-all",
                   decisaoSel === "reavaliar"
                     ? "bg-primary text-primary-foreground shadow-lg"
-                    : "bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30"
+                    : "bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30",
                 )}
               >
                 <RotateCcw className="mr-1.5 h-4 w-4" /> Reavaliar
               </Button>
             </div>
 
-            {/* Quick scores */}
             <div className="space-y-1.5">
-              <QuickScoreSelector label="Técnica" icon={<Zap className="h-4 w-4" />} value={scores.tecnica} onChange={(v) => updateScore("tecnica", v)} />
-              <QuickScoreSelector label="Tática" icon={<Brain className="h-4 w-4" />} value={scores.tatica} onChange={(v) => updateScore("tatica", v)} />
-              <QuickScoreSelector label="Física" icon={<Dumbbell className="h-4 w-4" />} value={scores.fisica} onChange={(v) => updateScore("fisica", v)} />
-              <QuickScoreSelector label="Mental" icon={<Heart className="h-4 w-4" />} value={scores.mental} onChange={(v) => updateScore("mental", v)} />
-              <QuickScoreSelector label="Intensidade" icon={<Flame className="h-4 w-4" />} value={scores.intensidade} onChange={(v) => updateScore("intensidade", v)} />
+              <QuickScoreSelector
+                label="Técnica"
+                icon={<Zap className="h-4 w-4" />}
+                value={scores.tecnica}
+                onChange={(v) => updateScore("tecnica", v)}
+              />
+              <QuickScoreSelector
+                label="Tática"
+                icon={<Brain className="h-4 w-4" />}
+                value={scores.tatica}
+                onChange={(v) => updateScore("tatica", v)}
+              />
+              <QuickScoreSelector
+                label="Física"
+                icon={<Dumbbell className="h-4 w-4" />}
+                value={scores.fisica}
+                onChange={(v) => updateScore("fisica", v)}
+              />
+              <QuickScoreSelector
+                label="Mental"
+                icon={<Heart className="h-4 w-4" />}
+                value={scores.mental}
+                onChange={(v) => updateScore("mental", v)}
+              />
+              <QuickScoreSelector
+                label="Intensidade"
+                icon={<Flame className="h-4 w-4" />}
+                value={scores.intensidade}
+                onChange={(v) => updateScore("intensidade", v)}
+              />
             </div>
 
-            {/* Radar + Tags side by side on larger screens */}
             <div className="grid gap-3 md:grid-cols-2">
               <RadarPreview scores={scores} />
               <TagSelector
@@ -352,23 +516,29 @@ function AvaliacoesPageInner() {
               />
             </div>
 
-            {/* Foot / bilateral profile */}
             <FootProfile data={footData} onChange={setFootData} />
 
-            {/* Auto summary */}
-            <AutoSummary scores={scores} positiveTags={positiveTags} negativeTags={negativeTags} foot={footData} />
+            <AutoSummary
+              scores={scores}
+              positiveTags={positiveTags}
+              negativeTags={negativeTags}
+              foot={footData}
+            />
 
-            {/* Scout comment */}
             <ScoutComment value={comentario} onChange={setComentario} />
 
-            {/* Save button */}
             <Button onClick={salvar} size="lg" className="w-full shadow-gold">
               <Save className="mr-2 h-5 w-5" /> Salvar Avaliação
+              {decisaoSel && <CheckCircle2 className="ml-2 h-4 w-4" />}
             </Button>
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-sm text-muted-foreground">Nenhum atleta participando deste jogo.</p>
+            <p className="text-sm text-muted-foreground">
+              {loadingAtletas
+                ? "Carregando atletas…"
+                : "Selecione uma peneira ou cadastre atletas para começar a avaliar."}
+            </p>
           </div>
         )}
       </div>
