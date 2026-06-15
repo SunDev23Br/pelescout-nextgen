@@ -404,6 +404,13 @@ function SuportePage() {
           ))}
         </div>
       )}
+      <RgPreviewModal
+        req={previewRequest}
+        open={!!previewRequest}
+        onClose={() => setPreviewRequest(null)}
+        onApprove={approveRequest}
+        onReject={rejectRequest}
+      />
     </AppLayout>
   );
 }
