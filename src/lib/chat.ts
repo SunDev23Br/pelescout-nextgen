@@ -255,12 +255,25 @@ export async function getSignedMediaUrl(path: string): Promise<string | null> {
 }
 
 export async function searchAtletas(q: string, limit = 20) {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+
+  // Se o usuário é clube, restringe a busca aos atletas desbloqueados.
+  let allowedIds: Set<string> | null = null;
+  if (uid && (await currentUserIsClube(uid))) {
+    allowedIds = await getUnlockedAtletaUserIds();
+    if (allowedIds.size === 0) return [];
+  }
+
   let query = supabase
     .from("profiles")
     .select("id, nome, avatar_url, posicao, cidade")
     .limit(limit);
   if (q.trim()) {
     query = query.ilike("nome", `%${q.trim()}%`);
+  }
+  if (allowedIds) {
+    query = query.in("id", Array.from(allowedIds));
   }
   const { data, error } = await query;
   if (error) throw error;
