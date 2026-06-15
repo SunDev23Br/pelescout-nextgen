@@ -351,8 +351,8 @@ function PerfilPage() {
         </div>
 
 
-        <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
-          <h2 className="mb-4 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">Foto de perfil</h2>
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
+          <h2 className="mb-4 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">Foto de perfil</h2>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
             <AthleteAvatar
               src={avatarUrl ?? undefined}
@@ -401,9 +401,9 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarPerfil}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">Dados pessoais</h2>
+          <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">Dados pessoais</h2>
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Nome completo</Label>
             <Input value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -422,9 +422,9 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarEmail}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
-          <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+          <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
             <Mail className="h-5 w-5" /> E-mail
           </h2>
           <div className="space-y-2">
@@ -453,10 +453,10 @@ function PerfilPage() {
 
         <form
           onSubmit={salvarNovaSenha}
-          className="space-y-5 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+          className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
         >
           <div>
-            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
               <Lock className="h-5 w-5" /> Alterar senha
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -564,10 +564,10 @@ function PerfilPage() {
         {user.role === "atleta" && (
           <form
             onSubmit={salvarAtleta}
-            className="space-y-6 rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8"
+            className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
           >
             <div>
-              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.28em] text-[#7cc6ff]">
+              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
                 <UserCircle2 className="h-5 w-5" /> Perfil de atleta
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -718,7 +718,7 @@ function PerfilPage() {
         )}
 
         {user.role === "atleta" && (
-          <section className="rounded-3xl border border-[#3da9fc]/15 bg-[#0a1428]/80 p-6 backdrop-blur shadow-[0_30px_80px_-30px_rgba(61,169,252,0.35)] sm:p-8">
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
