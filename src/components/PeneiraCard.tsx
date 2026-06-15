@@ -17,7 +17,7 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
   const pct = Math.min(100, (peneira.inscritos / peneira.vagas) * 100);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold">
       <div className="relative h-44 overflow-hidden">
         <img
           src={peneira.imagem}
