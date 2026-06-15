@@ -43,6 +43,7 @@ import {
 } from "@/components/evaluation/FootProfile";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
+import { salvarAvaliacao } from "@/lib/avaliacoes";
 
 export const Route = createFileRoute("/avaliacoes")({
   head: () => ({
