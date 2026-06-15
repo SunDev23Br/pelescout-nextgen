@@ -37,9 +37,10 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
-        <h3 className="line-clamp-2 font-display text-lg font-bold leading-tight">
+        <h3 className="line-clamp-2 min-h-[2.75rem] font-display text-lg font-bold leading-tight">
           {peneira.titulo}
         </h3>
+
 
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
