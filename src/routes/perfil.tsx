@@ -723,7 +723,6 @@ function PerfilPage() {
           </section>
         )}
 
-        </div>
       </div>
     </AppLayout>
   );
