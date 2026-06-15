@@ -71,6 +71,7 @@ function SuportePage() {
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [previewRequest, setPreviewRequest] = useState<RequestRow | null>(null);
 
   async function load() {
     setLoading(true);
