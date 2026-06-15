@@ -311,8 +311,10 @@ interface ActiveProps {
   onBack: () => void;
   onReport: () => void;
   onBlock: () => void;
+  onDelete: () => void;
   onInvite: () => void;
   canInvite: boolean;
+  canDelete: boolean;
   isScout: boolean;
 }
 
@@ -325,8 +327,10 @@ function ActiveConversation({
   onBack,
   onReport,
   onBlock,
+  onDelete,
   onInvite,
   canInvite,
+  canDelete,
   isScout,
 }: ActiveProps) {
   const { messages, loading } = useMessages(conversationId);
