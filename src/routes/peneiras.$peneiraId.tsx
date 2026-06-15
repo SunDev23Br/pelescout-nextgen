@@ -41,20 +41,52 @@ export const Route = createFileRoute("/peneiras/$peneiraId")({
     if (!peneira) throw notFound();
     return { peneira };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.peneira.titulo ?? "Peneira"} — Pelé Next Gen` },
-      {
-        name: "description",
-        content:
-          loaderData?.peneira.descricao ??
-          "Detalhes da peneira oficial Pelé Next Gen.",
-      },
-      ...(loaderData?.peneira.imagem
-        ? [{ property: "og:image", content: loaderData.peneira.imagem }]
-        : []),
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const url = `https://pelescout-nextgen.lovable.app/peneiras/${params.peneiraId}`;
+    const titulo = loaderData?.peneira.titulo ?? "Peneira";
+    const desc =
+      loaderData?.peneira.descricao?.slice(0, 155) ??
+      "Detalhes da peneira oficial Pelé Next Gen.";
+    return {
+      meta: [
+        { title: `${titulo} — Pelé Next Gen` },
+        { name: "description", content: desc },
+        { property: "og:title", content: `${titulo} — Pelé Next Gen` },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "event" },
+        { property: "og:url", content: url },
+        ...(loaderData?.peneira.imagem
+          ? [
+              { property: "og:image", content: loaderData.peneira.imagem },
+              { name: "twitter:image", content: loaderData.peneira.imagem },
+            ]
+          : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: loaderData?.peneira
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "SportsEvent",
+                name: loaderData.peneira.titulo,
+                description: loaderData.peneira.descricao ?? undefined,
+                startDate: loaderData.peneira.data,
+                eventStatus: "https://schema.org/EventScheduled",
+                location: {
+                  "@type": "Place",
+                  name: `${loaderData.peneira.cidade}/${loaderData.peneira.estado}`,
+                  address: `${loaderData.peneira.cidade}, ${loaderData.peneira.estado}, Brasil`,
+                },
+                image: loaderData.peneira.imagem ?? undefined,
+                url,
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   notFoundComponent: () => (
     <AppLayout>
       <div className="rounded-2xl border border-border bg-card p-12 text-center">
