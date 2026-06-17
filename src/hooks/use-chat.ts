@@ -128,28 +128,16 @@ export function usePresence(userId: string | null) {
       if (!cancelled) setPresence(data);
     };
     void load();
-    const channel = supabase
-      .channel(`presence-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_presence",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          if (payload.new) {
-            setPresence({
-              is_online: (payload.new as { is_online: boolean }).is_online,
-              last_seen_at: (payload.new as { last_seen_at: string }).last_seen_at,
-            });
-          }
-        },
-      )
-      .subscribe();
+    void load();
+    // Poll presence instead of Realtime broadcast (which was removed for privacy).
+    const id = setInterval(() => void load(), 20_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
+    };
+  }, [userId]);
+  return presence;
+}
       supabase.removeChannel(channel);
     };
   }, [userId]);
