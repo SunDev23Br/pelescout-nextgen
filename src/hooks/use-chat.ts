@@ -128,17 +128,11 @@ export function usePresence(userId: string | null) {
       if (!cancelled) setPresence(data);
     };
     void load();
-    void load();
     // Poll presence instead of Realtime broadcast (which was removed for privacy).
     const id = setInterval(() => void load(), 20_000);
     return () => {
       cancelled = true;
       clearInterval(id);
-    };
-  }, [userId]);
-  return presence;
-}
-      supabase.removeChannel(channel);
     };
   }, [userId]);
   return presence;
