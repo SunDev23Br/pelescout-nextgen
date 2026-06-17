@@ -317,6 +317,11 @@ function PerfilAtletaPage() {
           </section>
         </div>
 
+        {/* Wearable metrics */}
+        <WearableMetricsCard atletaId={profile.id} />
+
+
+
         {/* BOTTOM: Vídeo + Conquistas */}
         <div className="grid gap-4 lg:grid-cols-5">
           <section
