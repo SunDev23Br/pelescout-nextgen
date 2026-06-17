@@ -25,21 +25,13 @@ export function useConversations() {
 
   useEffect(() => {
     void refresh();
-    const channel = supabase
-      .channel("conversations-feed")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        () => void refresh(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => void refresh(),
-      )
-      .subscribe();
+    // Periodic refresh (Realtime broadcast on conversations was removed for privacy).
+    const id = setInterval(() => void refresh(), 15_000);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 
