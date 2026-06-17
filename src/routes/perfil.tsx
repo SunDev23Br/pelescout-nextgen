@@ -723,6 +723,8 @@ function PerfilPage() {
           </section>
         )}
 
+        {user.role === "atleta" && <WearableConnections />}
+
       </div>
     </AppLayout>
   );
