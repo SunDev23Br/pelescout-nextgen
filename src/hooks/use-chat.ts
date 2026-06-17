@@ -25,21 +25,13 @@ export function useConversations() {
 
   useEffect(() => {
     void refresh();
-    const channel = supabase
-      .channel("conversations-feed")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        () => void refresh(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => void refresh(),
-      )
-      .subscribe();
+    // Periodic refresh (Realtime broadcast on conversations was removed for privacy).
+    const id = setInterval(() => void refresh(), 15_000);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
     };
   }, []);
 
@@ -136,29 +128,11 @@ export function usePresence(userId: string | null) {
       if (!cancelled) setPresence(data);
     };
     void load();
-    const channel = supabase
-      .channel(`presence-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_presence",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          if (payload.new) {
-            setPresence({
-              is_online: (payload.new as { is_online: boolean }).is_online,
-              last_seen_at: (payload.new as { last_seen_at: string }).last_seen_at,
-            });
-          }
-        },
-      )
-      .subscribe();
+    // Poll presence instead of Realtime broadcast (which was removed for privacy).
+    const id = setInterval(() => void load(), 20_000);
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      clearInterval(id);
     };
   }, [userId]);
   return presence;
