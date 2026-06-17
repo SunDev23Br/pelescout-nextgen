@@ -626,6 +626,102 @@ export type Database = {
         }
         Relationships: []
       }
+      wearable_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          external_user_id: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          provider: Database["public"]["Enums"]["wearable_provider"]
+          refresh_token: string | null
+          scopes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          external_user_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          provider: Database["public"]["Enums"]["wearable_provider"]
+          refresh_token?: string | null
+          scopes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          external_user_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          provider?: Database["public"]["Enums"]["wearable_provider"]
+          refresh_token?: string | null
+          scopes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wearable_daily_metrics: {
+        Row: {
+          active_minutes: number | null
+          created_at: string
+          distance_m: number | null
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
+          heart_rate_resting: number | null
+          id: string
+          metric_date: string
+          provider: Database["public"]["Enums"]["wearable_provider"]
+          raw_payload: Json | null
+          speed_avg_kmh: number | null
+          steps: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_minutes?: number | null
+          created_at?: string
+          distance_m?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          heart_rate_resting?: number | null
+          id?: string
+          metric_date: string
+          provider: Database["public"]["Enums"]["wearable_provider"]
+          raw_payload?: Json | null
+          speed_avg_kmh?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_minutes?: number | null
+          created_at?: string
+          distance_m?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          heart_rate_resting?: number | null
+          id?: string
+          metric_date?: string
+          provider?: Database["public"]["Enums"]["wearable_provider"]
+          raw_payload?: Json | null
+          speed_avg_kmh?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -685,6 +781,7 @@ export type Database = {
       status_candidato: "pendente" | "avaliado" | "aprovado" | "reprovado"
       status_peneira: "aberta" | "em_andamento" | "encerrada"
       visibilidade: "publica" | "privada"
+      wearable_provider: "google_fit" | "fitbit"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -828,6 +925,7 @@ export const Constants = {
       status_candidato: ["pendente", "avaliado", "aprovado", "reprovado"],
       status_peneira: ["aberta", "em_andamento", "encerrada"],
       visibilidade: ["publica", "privada"],
+      wearable_provider: ["google_fit", "fitbit"],
     },
   },
 } as const
