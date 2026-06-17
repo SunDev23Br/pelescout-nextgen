@@ -30,6 +30,10 @@ import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
 import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
+import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
+import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
+import { Route as ApiWearablesCallbackProviderRouteImport } from './routes/api/wearables/callback.$provider'
+import { Route as ApiPublicHooksSyncWearablesRouteImport } from './routes/api/public/hooks/sync-wearables'
 
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
@@ -136,6 +140,28 @@ const AtletasAtletaIdRoute = AtletasAtletaIdRouteImport.update({
   path: '/atletas/$atletaId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWearablesSyncRoute = ApiWearablesSyncRouteImport.update({
+  id: '/api/wearables/sync',
+  path: '/api/wearables/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWearablesStartRoute = ApiWearablesStartRouteImport.update({
+  id: '/api/wearables/start',
+  path: '/api/wearables/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWearablesCallbackProviderRoute =
+  ApiWearablesCallbackProviderRouteImport.update({
+    id: '/api/wearables/callback/$provider',
+    path: '/api/wearables/callback/$provider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSyncWearablesRoute =
+  ApiPublicHooksSyncWearablesRouteImport.update({
+    id: '/api/public/hooks/sync-wearables',
+    path: '/api/public/hooks/sync-wearables',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +185,10 @@ export interface FileRoutesByFullPath {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
+  '/api/wearables/start': typeof ApiWearablesStartRoute
+  '/api/wearables/sync': typeof ApiWearablesSyncRoute
+  '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
+  '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +212,10 @@ export interface FileRoutesByTo {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos': typeof CandidatosIndexRoute
   '/peneiras': typeof PeneirasIndexRoute
+  '/api/wearables/start': typeof ApiWearablesStartRoute
+  '/api/wearables/sync': typeof ApiWearablesSyncRoute
+  '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
+  '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +240,10 @@ export interface FileRoutesById {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
+  '/api/wearables/start': typeof ApiWearablesStartRoute
+  '/api/wearables/sync': typeof ApiWearablesSyncRoute
+  '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
+  '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +269,10 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos/'
     | '/peneiras/'
+    | '/api/wearables/start'
+    | '/api/wearables/sync'
+    | '/api/public/hooks/sync-wearables'
+    | '/api/wearables/callback/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +296,10 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos'
     | '/peneiras'
+    | '/api/wearables/start'
+    | '/api/wearables/sync'
+    | '/api/public/hooks/sync-wearables'
+    | '/api/wearables/callback/$provider'
   id:
     | '__root__'
     | '/'
@@ -277,6 +323,10 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos/'
     | '/peneiras/'
+    | '/api/wearables/start'
+    | '/api/wearables/sync'
+    | '/api/public/hooks/sync-wearables'
+    | '/api/wearables/callback/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +351,10 @@ export interface RootRouteChildren {
   UsuariosUserIdRoute: typeof UsuariosUserIdRoute
   CandidatosIndexRoute: typeof CandidatosIndexRoute
   PeneirasIndexRoute: typeof PeneirasIndexRoute
+  ApiWearablesStartRoute: typeof ApiWearablesStartRoute
+  ApiWearablesSyncRoute: typeof ApiWearablesSyncRoute
+  ApiPublicHooksSyncWearablesRoute: typeof ApiPublicHooksSyncWearablesRoute
+  ApiWearablesCallbackProviderRoute: typeof ApiWearablesCallbackProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +506,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtletasAtletaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/wearables/sync': {
+      id: '/api/wearables/sync'
+      path: '/api/wearables/sync'
+      fullPath: '/api/wearables/sync'
+      preLoaderRoute: typeof ApiWearablesSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wearables/start': {
+      id: '/api/wearables/start'
+      path: '/api/wearables/start'
+      fullPath: '/api/wearables/start'
+      preLoaderRoute: typeof ApiWearablesStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wearables/callback/$provider': {
+      id: '/api/wearables/callback/$provider'
+      path: '/api/wearables/callback/$provider'
+      fullPath: '/api/wearables/callback/$provider'
+      preLoaderRoute: typeof ApiWearablesCallbackProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sync-wearables': {
+      id: '/api/public/hooks/sync-wearables'
+      path: '/api/public/hooks/sync-wearables'
+      fullPath: '/api/public/hooks/sync-wearables'
+      preLoaderRoute: typeof ApiPublicHooksSyncWearablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,6 +559,10 @@ const rootRouteChildren: RootRouteChildren = {
   UsuariosUserIdRoute: UsuariosUserIdRoute,
   CandidatosIndexRoute: CandidatosIndexRoute,
   PeneirasIndexRoute: PeneirasIndexRoute,
+  ApiWearablesStartRoute: ApiWearablesStartRoute,
+  ApiWearablesSyncRoute: ApiWearablesSyncRoute,
+  ApiPublicHooksSyncWearablesRoute: ApiPublicHooksSyncWearablesRoute,
+  ApiWearablesCallbackProviderRoute: ApiWearablesCallbackProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

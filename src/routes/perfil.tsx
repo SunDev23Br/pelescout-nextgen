@@ -18,6 +18,7 @@ import { Link } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
+import { WearableConnections } from "@/components/WearableConnections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -722,6 +723,8 @@ function PerfilPage() {
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
         )}
+
+        {user.role === "atleta" && <WearableConnections />}
 
       </div>
     </AppLayout>

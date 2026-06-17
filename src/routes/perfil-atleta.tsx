@@ -14,6 +14,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
+import { WearableMetricsCard } from "@/components/WearableMetricsCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { fromISODate } from "@/lib/date";
@@ -315,6 +316,11 @@ function PerfilAtletaPage() {
             </div>
           </section>
         </div>
+
+        {/* Wearable metrics */}
+        <WearableMetricsCard atletaId={profile.id} />
+
+
 
         {/* BOTTOM: Vídeo + Conquistas */}
         <div className="grid gap-4 lg:grid-cols-5">
