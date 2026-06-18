@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 import type { Database } from "@/integrations/supabase/types";
 
-type Provider = "google_fit";
+type Provider = "google_fit" | "mock";
 
 const HMAC_SECRET = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
