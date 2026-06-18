@@ -3,6 +3,7 @@ import { Loader2, RefreshCcw, Trash2, Watch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
+  connectMockWearable,
   disconnectWearable,
   listMyConnections,
   startWearableOAuth,
@@ -12,6 +13,7 @@ import {
 
 const PROVIDER_LABEL: Record<string, string> = {
   google_fit: "Google Fit",
+  mock: "Smartwatch simulado (teste)",
 };
 
 export function WearableConnections() {
