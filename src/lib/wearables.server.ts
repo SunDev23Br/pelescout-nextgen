@@ -220,6 +220,46 @@ async function fetchGoogleFitDaily(accessToken: string, days = 7): Promise<Daily
   return out;
 }
 
+// ---------- Mock provider ----------
+
+function hashStr(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(seed: number) {
+  let a = seed;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function mockDay(userId: string, date: string): DailyMetric {
+  const rnd = mulberry32(hashStr(`${userId}|${date}`));
+  const steps = Math.round(6000 + rnd() * 6000);
+  const distance_m = Math.round(steps * (0.7 + rnd() * 0.2));
+  const heart_rate_avg = Math.round(60 + rnd() * 25);
+  const heart_rate_max = Math.round(heart_rate_avg + 40 + rnd() * 60);
+  const active_minutes = Math.round(35 + rnd() * 80);
+  return { date, steps, distance_m, heart_rate_avg, heart_rate_max, active_minutes };
+}
+
+function generateMockDaily(userId: string, days: number): DailyMetric[] {
+  const today = dayUtcMillis(new Date());
+  const out: DailyMetric[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    out.push(mockDay(userId, isoDate(today - i * 86_400_000)));
+  }
+  return out;
+}
+
 export async function syncConnection(connectionId: string) {
   const admin = getAdmin();
   const { data: conn, error } = await admin
@@ -230,8 +270,10 @@ export async function syncConnection(connectionId: string) {
   if (error || !conn) throw new Error("Conexão não encontrada");
 
   try {
-    const token = await ensureFreshToken(conn);
-    const daily = await fetchGoogleFitDaily(token, 7);
+    const daily =
+      conn.provider === "mock"
+        ? generateMockDaily(conn.user_id, 7)
+        : await fetchGoogleFitDaily(await ensureFreshToken(conn), 7);
     const rows = daily.map((d) => {
       const speed = d.distance_m && d.active_minutes && d.active_minutes > 0
         ? Number(((d.distance_m / 1000) / (d.active_minutes / 60)).toFixed(2))
@@ -269,6 +311,28 @@ export async function syncConnection(connectionId: string) {
     throw e;
   }
 }
+
+export async function createMockConnection(userId: string): Promise<string> {
+  const admin = getAdmin();
+  const { data, error } = await admin
+    .from("wearable_connections")
+    .upsert(
+      {
+        user_id: userId,
+        provider: "mock",
+        access_token: "mock",
+        refresh_token: null,
+        expires_at: null,
+        scopes: "mock",
+      },
+      { onConflict: "user_id,provider" }
+    )
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
 
 export async function saveConnection(params: {
   userId: string;
