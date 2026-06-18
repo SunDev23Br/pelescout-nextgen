@@ -1,7 +1,7 @@
 // Client-side helpers for wearable integration.
 import { supabase } from "@/integrations/supabase/client";
 
-export type WearableProvider = "google_fit";
+export type WearableProvider = "google_fit" | "mock";
 
 export interface WearableConnectionRow {
   id: string;
