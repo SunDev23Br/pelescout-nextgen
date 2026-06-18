@@ -735,6 +735,10 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      clube_has_unlocked_atleta: {
+        Args: { _atleta_user_id: string; _clube_id: string }
+        Returns: boolean
+      }
       get_conversation_peers: {
         Args: { _conv_ids: string[] }
         Returns: {
@@ -764,6 +768,10 @@ export type Database = {
         Returns: undefined
       }
       users_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
+      users_share_conversation: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
+      }
     }
     Enums: {
       admin_request_status: "pending" | "approved" | "rejected"
