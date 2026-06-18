@@ -32,6 +32,7 @@ import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$
 import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
 import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
 import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
+import { Route as ApiWearablesMockConnectRouteImport } from './routes/api/wearables/mock.connect'
 import { Route as ApiWearablesCallbackProviderRouteImport } from './routes/api/wearables/callback.$provider'
 import { Route as ApiPublicHooksSyncWearablesRouteImport } from './routes/api/public/hooks/sync-wearables'
 
@@ -150,6 +151,11 @@ const ApiWearablesStartRoute = ApiWearablesStartRouteImport.update({
   path: '/api/wearables/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWearablesMockConnectRoute = ApiWearablesMockConnectRouteImport.update({
+  id: '/api/wearables/mock/connect',
+  path: '/api/wearables/mock/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWearablesCallbackProviderRoute =
   ApiWearablesCallbackProviderRouteImport.update({
     id: '/api/wearables/callback/$provider',
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
   '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
+  '/api/wearables/mock/connect': typeof ApiWearablesMockConnectRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
   '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
+  '/api/wearables/mock/connect': typeof ApiWearablesMockConnectRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
   '/api/wearables/callback/$provider': typeof ApiWearablesCallbackProviderRoute
+  '/api/wearables/mock/connect': typeof ApiWearablesMockConnectRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
     | '/api/wearables/callback/$provider'
+    | '/api/wearables/mock/connect'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
     | '/api/wearables/callback/$provider'
+    | '/api/wearables/mock/connect'
   id:
     | '__root__'
     | '/'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
     | '/api/wearables/callback/$provider'
+    | '/api/wearables/mock/connect'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -355,6 +367,7 @@ export interface RootRouteChildren {
   ApiWearablesSyncRoute: typeof ApiWearablesSyncRoute
   ApiPublicHooksSyncWearablesRoute: typeof ApiPublicHooksSyncWearablesRoute
   ApiWearablesCallbackProviderRoute: typeof ApiWearablesCallbackProviderRoute
+  ApiWearablesMockConnectRoute: typeof ApiWearablesMockConnectRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -520,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWearablesStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/wearables/mock/connect': {
+      id: '/api/wearables/mock/connect'
+      path: '/api/wearables/mock/connect'
+      fullPath: '/api/wearables/mock/connect'
+      preLoaderRoute: typeof ApiWearablesMockConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/wearables/callback/$provider': {
       id: '/api/wearables/callback/$provider'
       path: '/api/wearables/callback/$provider'
@@ -563,16 +583,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWearablesSyncRoute: ApiWearablesSyncRoute,
   ApiPublicHooksSyncWearablesRoute: ApiPublicHooksSyncWearablesRoute,
   ApiWearablesCallbackProviderRoute: ApiWearablesCallbackProviderRoute,
+  ApiWearablesMockConnectRoute: ApiWearablesMockConnectRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

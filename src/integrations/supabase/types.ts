@@ -781,7 +781,7 @@ export type Database = {
       status_candidato: "pendente" | "avaliado" | "aprovado" | "reprovado"
       status_peneira: "aberta" | "em_andamento" | "encerrada"
       visibilidade: "publica" | "privada"
-      wearable_provider: "google_fit" | "fitbit"
+      wearable_provider: "google_fit" | "fitbit" | "mock"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -925,7 +925,7 @@ export const Constants = {
       status_candidato: ["pendente", "avaliado", "aprovado", "reprovado"],
       status_peneira: ["aberta", "em_andamento", "encerrada"],
       visibilidade: ["publica", "privada"],
-      wearable_provider: ["google_fit", "fitbit"],
+      wearable_provider: ["google_fit", "fitbit", "mock"],
     },
   },
 } as const

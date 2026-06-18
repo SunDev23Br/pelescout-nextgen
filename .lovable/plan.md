@@ -1,65 +1,40 @@
 ## Objetivo
-Permitir que atletas conectem seu smartwatch/app de saúde (Apple Health, Google Fit, Garmin Connect, Fitbit, etc.) e que as métricas — batimentos, passos, distância e velocidade média — apareçam no perfil do atleta, visíveis para ele, olheiros e clubes.
 
-## Viabilidade e abordagem
-Sim, é possível. Como os smartwatches são variados, a melhor estratégia é integrar com as **APIs dos fabricantes** (cada uma é o "agregador" dos dados do relógio). Cada provedor exige OAuth **por usuário** (cada atleta autoriza a própria conta), o que é diferente dos connectors de workspace já usados no projeto.
+Permitir testar todo o fluxo de wearables (conectar, sincronizar, exibir métricas para olheiros/clubes) **sem precisar de um smartwatch real**, criando um provider simulado "Mock Wearable" que gera dados realistas de batimentos, passos, distância e velocidade.
 
-Para a primeira versão, recomendo começar com **2 provedores que cobrem a maior parte do mercado**:
-- **Google Fit / Health Connect** (Android + Wear OS + muitos relógios Android)
-- **Fitbit Web API** (cobertura ampla, OAuth simples, plano free)
+## O que será entregue
 
-Apple Health **não tem API pública na nuvem** — só roda no iPhone via HealthKit. Para suportá-lo de verdade precisaria de um app iOS nativo. Fica como passo futuro; por ora deixaremos um campo "entrada manual" como fallback.
+### 1. Novo provider `mock` no backend
+- Adicionar `"mock"` como provedor válido em `src/lib/wearables.server.ts` e `src/lib/wearables.ts`.
+- **Não usa OAuth** — a "conexão" é criada instantaneamente via endpoint dedicado, sem redirect ao Google.
+- A função de sync gera dados aleatórios mas plausíveis para os últimos N dias (ex: 6.000–12.000 passos/dia, BPM médio 60–85, distância 4–9 km, velocidade 4–6 km/h), gravando em `wearable_daily_metrics` com `provider = 'mock'`.
 
-Garmin Connect API exige aprovação comercial (processo lento). Sugiro deixar para uma fase 2.
+### 2. Novos endpoints
+- `POST /api/wearables/mock/connect` — cria uma `wearable_connection` fake para o usuário logado e dispara o primeiro sync (gera ~7 dias de histórico).
+- O endpoint existente `/api/wearables/sync` passa a sincronizar também conexões `mock` (gera o dia de hoje, mantendo o histórico anterior).
 
-## Escopo desta entrega
+### 3. UI no `/perfil` (componente `WearableConnections`)
+- Acrescentar botão **"Conectar dispositivo simulado (teste)"** ao lado do botão atual do Google Fit.
+- Aparece sempre, com um pequeno rótulo "modo de teste" para deixar claro que são dados fictícios.
+- Após conectar, mostra a conexão na lista com label "Smartwatch simulado", permitindo sincronizar e desconectar como qualquer outra.
 
-### 1. Banco de dados (Lovable Cloud)
-- `wearable_connections` — vínculo OAuth do atleta com um provedor (provider, access_token, refresh_token, expires_at, scopes, external_user_id, last_sync_at). RLS: atleta gerencia o próprio; suporte vê tudo.
-- `wearable_daily_metrics` — uma linha por atleta/dia/provedor com: heart_rate_avg, heart_rate_max, heart_rate_resting, steps, distance_m, speed_avg_kmh, active_minutes, raw_payload (jsonb). RLS: atleta lê o próprio; olheiros (admin) e clubes leem de qualquer atleta; suporte gerencia.
-- Tokens ficam criptografados em coluna marcada como sensível, lidos só por server functions.
+### 4. Exibição no perfil do atleta
+- Nenhuma mudança necessária em `WearableMetricsCard` — ele já lê de `wearable_daily_metrics` independentemente do provider, então os dados simulados aparecem automaticamente para olheiros/clubes na vitrine.
 
-### 2. Server functions (TanStack `createServerFn`)
-- `startOAuth(provider)` — gera URL de autorização e state.
-- `handleOAuthCallback(provider, code, state)` — troca code por tokens, salva em `wearable_connections`, dispara primeiro sync.
-- `syncWearable(connectionId)` — chama a API do provedor, normaliza para o formato comum (bpm, passos, metros, km/h), faz upsert em `wearable_daily_metrics` para os últimos 7 dias.
-- `disconnectWearable(connectionId)` — revoga e apaga.
-- `getAthleteMetrics(athleteId, range)` — leitura para o perfil.
+### 5. Segurança
+- O endpoint só cria conexão para o `auth.uid()` do bearer token (mesma proteção dos outros endpoints).
+- Limitado a 1 conexão `mock` por usuário (evita poluir o banco se clicar várias vezes — botão vira "Regenerar dados de teste").
+- Dados ficam isolados ao próprio usuário pelas policies RLS já existentes em `wearable_daily_metrics`.
 
-### 3. Cron diário
-- Server route pública `/api/public/hooks/sync-wearables` protegida por anon key.
-- `pg_cron` chama 1x/dia (03:00 BRT) e roda `syncWearable` para cada conexão ativa, com refresh de token quando necessário.
+## Detalhes técnicos
 
-### 4. UI
+- Sem novas migrações: aproveitamos as tabelas atuais. Não é preciso alterar enums porque `provider` em `wearable_connections` já é `text`.
+- Geração determinística-com-jitter: `seed = hash(userId + date)` para que cada atleta tenha um "perfil" consistente entre re-sincronizações.
+- O cron diário existente (`/api/public/hooks/sync-wearables`) também processará conexões mock, gerando 1 dia novo a cada execução — útil para ver a vitrine evoluir.
 
-**Página `/perfil` (atleta):**
-- Nova seção "Dispositivos conectados" com botões "Conectar Google Fit" / "Conectar Fitbit", status da conexão, último sync, botão "Sincronizar agora" e "Desconectar".
+## Como você vai testar
 
-**Página `/perfil-atleta` (vitrine, vista por olheiros/clubes):**
-- Novo card "Métricas do wearable (últimos 7 dias)" com:
-  - 4 quick stats: BPM médio, passos/dia, distância/dia (km), velocidade média (km/h)
-  - Mini-gráfico (sparkline) por métrica usando `recharts` já presente no projeto
-  - Selo "Sincronizado em <data>" ou estado vazio amigável ("Atleta ainda não conectou um dispositivo")
-
-### 5. Secrets necessários
-Precisaremos pedir ao usuário (em mensagem separada, via `add_secret`) quando começar a implementação:
-- `GOOGLE_FIT_CLIENT_ID` / `GOOGLE_FIT_CLIENT_SECRET`
-- `FITBIT_CLIENT_ID` / `FITBIT_CLIENT_SECRET`
-
-Cada um requer criar um app no console do respectivo provedor (Google Cloud Console e dev.fitbit.com) e cadastrar a URL de callback que vamos gerar.
-
-## Fora do escopo desta entrega (sugerido para depois)
-- App nativo iOS para Apple Health (HealthKit).
-- Integração Garmin (aprovação comercial).
-- Tempo real durante peneiras (exige WebSocket / stream — outra arquitetura).
-- Alertas/score automático baseado nas métricas.
-
-## Como o atleta vai usar
-1. Abre `/perfil` → "Dispositivos conectados" → clica em "Conectar Fitbit".
-2. É redirecionado para o login do Fitbit, autoriza.
-3. Volta para o perfil, vê "Conectado · sincronizando…".
-4. No dia seguinte (ou ao apertar "Sincronizar agora") os dados aparecem no card da vitrine para olheiros.
-
-## Confirmar antes de implementar
-- Começamos com **Google Fit + Fitbit** nesta v1? (Apple Health e Garmin ficam como fase 2.)
-- Tudo bem que você cadastre os apps no Google Cloud Console e no dev.fitbit.com para obter as credenciais? Vou guiar você passo a passo quando chegarmos lá.
+1. Em `/perfil`, clicar **"Conectar dispositivo simulado"** → toast de sucesso, conexão aparece na lista.
+2. Abrir a vitrine pública (`/perfil-atleta`) ou ver como olheiro → o card "Métricas do wearable" já mostra BPM, passos, distância e velocidade dos últimos 7 dias.
+3. Clicar **"Sincronizar agora"** para gerar/atualizar o dia corrente.
+4. Quando tiver um smartwatch real, basta desconectar o simulado e conectar via Google Fit — nada mais muda.

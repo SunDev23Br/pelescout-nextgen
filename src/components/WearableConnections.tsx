@@ -3,6 +3,7 @@ import { Loader2, RefreshCcw, Trash2, Watch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
+  connectMockWearable,
   disconnectWearable,
   listMyConnections,
   startWearableOAuth,
@@ -12,6 +13,7 @@ import {
 
 const PROVIDER_LABEL: Record<string, string> = {
   google_fit: "Google Fit",
+  mock: "Smartwatch simulado (teste)",
 };
 
 export function WearableConnections() {
@@ -46,6 +48,19 @@ export function WearableConnections() {
       window.location.href = url;
     } catch (e: any) {
       toast.error(e.message ?? "Falha ao iniciar conexão");
+      setBusy(false);
+    }
+  }
+
+  async function handleMockConnect() {
+    setBusy(true);
+    try {
+      await connectMockWearable();
+      toast.success("Smartwatch simulado conectado (dados de teste)");
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao conectar simulado");
+    } finally {
       setBusy(false);
     }
   }
@@ -134,12 +149,18 @@ export function WearableConnections() {
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Watch className="mr-2 h-4 w-4" />}
           Conectar Google Fit
         </Button>
+        <Button type="button" variant="secondary" onClick={handleMockConnect} disabled={busy}>
+          <Watch className="mr-2 h-4 w-4" /> Conectar simulado (teste)
+        </Button>
         {conns && conns.length > 0 && (
           <Button type="button" variant="outline" onClick={handleSync} disabled={busy}>
             <RefreshCcw className="mr-2 h-4 w-4" /> Sincronizar agora
           </Button>
         )}
       </div>
+      <p className="mt-2 text-[11px] italic text-muted-foreground">
+        O modo simulado gera dados fictícios apenas para você testar como sua vitrine aparecerá aos olheiros.
+      </p>
     </section>
   );
 }

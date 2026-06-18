@@ -1,7 +1,7 @@
 // Client-side helpers for wearable integration.
 import { supabase } from "@/integrations/supabase/client";
 
-export type WearableProvider = "google_fit";
+export type WearableProvider = "google_fit" | "mock";
 
 export interface WearableConnectionRow {
   id: string;
@@ -41,6 +41,15 @@ export async function startWearableOAuth(provider: WearableProvider): Promise<st
   if (!res.ok) throw new Error(`Falha ao iniciar OAuth: ${res.status} ${await res.text()}`);
   const { url } = (await res.json()) as { url: string };
   return url;
+}
+
+export async function connectMockWearable(): Promise<void> {
+  const token = await bearer();
+  const res = await fetch("/api/wearables/mock/connect", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Falha ao conectar simulado: ${res.status} ${await res.text()}`);
 }
 
 export async function syncWearablesNow(): Promise<{ synced: number }> {
