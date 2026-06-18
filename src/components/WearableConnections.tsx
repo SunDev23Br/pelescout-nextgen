@@ -52,6 +52,19 @@ export function WearableConnections() {
     }
   }
 
+  async function handleMockConnect() {
+    setBusy(true);
+    try {
+      await connectMockWearable();
+      toast.success("Smartwatch simulado conectado (dados de teste)");
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao conectar simulado");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleSync() {
     setBusy(true);
     try {
