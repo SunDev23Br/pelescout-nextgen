@@ -1,0 +1,1 @@
+ALTER TYPE public.wearable_provider ADD VALUE IF NOT EXISTS 'mock';
