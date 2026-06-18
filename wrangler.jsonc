@@ -1,7 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tanstack-start-app",
+  "name": "pelescout-nextgen",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "dist/server/index.mjs",
+  "vars": {
+    "SUPABASE_URL": "https://wtpirwbichgwdzlckcuq.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cGlyd2JpY2hnd2R6bGNrY3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNzI2MjEsImV4cCI6MjA5Mzc0ODYyMX0.1nepkvwWyyQOcCgBzW4gNv7RwRAK2uzkedWz09q4Wzc"
+  }
 }
