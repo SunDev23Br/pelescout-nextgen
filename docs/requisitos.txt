@@ -1,0 +1,275 @@
+================================================================================
+PELÉ NEXT GEN — ACADEMIA / PELESCOUT NEXTGEN
+Documento de Requisitos do Sistema
+Versão: 1.0  —  Data: 21/06/2026
+================================================================================
+
+Plataforma de scouting de futebol que conecta ATLETAS, CLUBES, OLHEIROS
+(admins) e equipe de SUPORTE. Permite divulgação de peneiras, inscrições,
+avaliações técnicas, gestão de talentos, chat entre as partes e desbloqueio
+de contato comercial dos atletas pelos clubes.
+
+
+================================================================================
+1. REQUISITOS FUNCIONAIS (RF)
+================================================================================
+
+--------------------------------------------------------------------------------
+1.1 Autenticação e Conta
+--------------------------------------------------------------------------------
+RF-01  O sistema deve permitir cadastro de atletas via e-mail e senha.
+RF-02  O sistema deve permitir login via e-mail/senha e via Google (OAuth).
+RF-03  O sistema deve permitir logout de qualquer dispositivo.
+RF-04  O sistema deve permitir recuperação/redefinição de senha por e-mail.
+RF-05  O sistema deve oferecer fluxo separado de registro de CLUBE
+       (registro-clube) com aprovação manual pela equipe de suporte.
+RF-06  O sistema deve oferecer fluxo separado de registro de ADMIN/OLHEIRO
+       (registro-admin) com aprovação manual pela equipe de suporte.
+RF-07  O sistema não deve permitir auto-cadastro com papel de admin, suporte
+       ou clube — apenas atleta é auto-concedido.
+
+--------------------------------------------------------------------------------
+1.2 Perfil do Atleta
+--------------------------------------------------------------------------------
+RF-08  O atleta deve poder completar seu perfil com: nome, data de
+       nascimento, posição preferida, perna dominante, altura, peso,
+       cidade/UF, foto e biografia.
+RF-09  O atleta deve poder enviar vídeos próprios (gallery) limitados em
+       quantidade/tamanho por bucket de Storage.
+RF-10  O atleta deve poder conectar dispositivos wearables (mock + provider
+       OAuth) e visualizar métricas sincronizadas.
+RF-11  O atleta deve poder editar e excluir suas próprias informações e
+       vídeos a qualquer momento.
+
+--------------------------------------------------------------------------------
+1.3 Peneiras
+--------------------------------------------------------------------------------
+RF-12  Admins/olheiros devem poder criar peneiras com: título, descrição,
+       data, local (cidade/UF), categoria/idade, vagas e status.
+RF-13  Atletas devem poder visualizar peneiras abertas e se inscrever.
+RF-14  O sistema deve impedir inscrições duplicadas do mesmo atleta na
+       mesma peneira.
+RF-15  Admins devem poder listar candidatos inscritos em cada peneira.
+RF-16  Admins devem poder atualizar status da peneira (aberta, encerrada,
+       cancelada).
+
+--------------------------------------------------------------------------------
+1.4 Candidatos e Avaliações
+--------------------------------------------------------------------------------
+RF-17  Admins devem poder abrir o perfil de um candidato a partir da peneira.
+RF-18  Admins devem poder registrar avaliações técnicas com: notas por
+       atributo (radar), nota geral, comentário do olheiro, tags e
+       resumo automático.
+RF-19  O sistema deve manter histórico de avaliações por candidato.
+RF-20  Clubes com contato desbloqueado devem poder visualizar as avaliações
+       do atleta.
+
+--------------------------------------------------------------------------------
+1.5 Desbloqueio de Contato (Clubes)
+--------------------------------------------------------------------------------
+RF-21  Clubes devem poder buscar atletas por filtros (posição, idade, UF,
+       nota mínima etc.).
+RF-22  Clubes devem poder desbloquear o contato de um atleta, registrando
+       a ação em `contatos_desbloqueados`.
+RF-23  Apenas após o desbloqueio o clube deve ter acesso a: dados de
+       contato, vídeos do atleta, perfil completo e capacidade de iniciar
+       chat com o atleta.
+
+--------------------------------------------------------------------------------
+1.6 Chat
+--------------------------------------------------------------------------------
+RF-24  O sistema deve oferecer chat 1:1 entre clube↔atleta (após
+       desbloqueio) e admin↔atleta.
+RF-25  Mensagens devem suportar texto e mídia (imagens, áudios curtos).
+RF-26  O sistema deve indicar presença on-line/última visualização via
+       `user_presence`.
+RF-27  Usuários devem poder bloquear (`chat_blocks`) e denunciar
+       (`chat_reports`) outros usuários.
+RF-28  Mensagens recebidas devem aparecer em tempo real (subscriptions).
+
+--------------------------------------------------------------------------------
+1.7 Suporte / Administração
+--------------------------------------------------------------------------------
+RF-29  A equipe de suporte deve poder aprovar/rejeitar admin_requests e
+       clube_requests.
+RF-30  A equipe de suporte deve poder gerenciar papéis dos usuários
+       (atribuir/remover atleta e clube), exceto admin e suporte.
+RF-31  Apenas admins devem poder conceder ou revogar papéis admin/suporte.
+RF-32  Admins devem poder excluir usuários via edge function
+       `delete-user`.
+
+--------------------------------------------------------------------------------
+1.8 Dashboard e Relatórios
+--------------------------------------------------------------------------------
+RF-33  O sistema deve apresentar dashboard com indicadores: total de
+       atletas, peneiras ativas, inscrições, avaliações realizadas e
+       desbloqueios.
+RF-34  O sistema deve exibir gráficos (recharts) por período e categoria.
+
+--------------------------------------------------------------------------------
+1.9 SEO / Sitemap
+--------------------------------------------------------------------------------
+RF-35  O sistema deve expor sitemap.xml e robots.txt públicos.
+RF-36  Cada rota pública deve ter title, meta description, OG e Twitter
+       metadata únicos.
+
+
+================================================================================
+2. REQUISITOS NÃO FUNCIONAIS (RNF)
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 Segurança
+--------------------------------------------------------------------------------
+RNF-01 Todas as tabelas do schema `public` devem ter RLS habilitada e
+       políticas explícitas; nenhum dado deve ser acessível sem política.
+RNF-02 Papéis de usuário devem ser armazenados em tabela separada
+       (`user_roles`) — nunca em `profiles` — para evitar escalonamento
+       de privilégio.
+RNF-03 Verificação de papel deve usar função SECURITY DEFINER
+       `has_role(uuid, app_role)`.
+RNF-04 Clubes só devem acessar dados de atletas que constem em
+       `contatos_desbloqueados` para aquele clube
+       (`clube_has_unlocked_atleta()`).
+RNF-05 A equipe de suporte não pode conceder a si mesma papel admin ou
+       suporte (bloqueado via WITH CHECK nas policies de `user_roles`).
+RNF-06 Chaves privadas (service role, secrets de provedores) nunca devem
+       ser expostas ao cliente; somente em server functions / edge
+       functions e variáveis de ambiente do servidor.
+RNF-07 Endpoints `/api/public/*` que recebam webhooks devem validar
+       assinatura HMAC antes de processar o payload.
+
+--------------------------------------------------------------------------------
+2.2 Performance
+--------------------------------------------------------------------------------
+RNF-08 Páginas principais devem renderizar em menos de 2s em conexão 4G.
+RNF-09 Dados de listagem devem ser carregados via TanStack Query com
+       cache (loaders + useSuspenseQuery).
+RNF-10 Imagens devem usar lazy loading e formatos otimizados.
+
+--------------------------------------------------------------------------------
+2.3 Disponibilidade e Deploy
+--------------------------------------------------------------------------------
+RNF-11 O sistema deve ser hospedável em Cloudflare Workers (via Wrangler)
+       e em Vercel (SPA), sem alterações de código.
+RNF-12 Banco e Auth são fornecidos por Lovable Cloud (PostgreSQL gerenciado).
+RNF-13 Migrations devem ser versionadas em `supabase/migrations/`.
+
+--------------------------------------------------------------------------------
+2.4 Usabilidade / Acessibilidade
+--------------------------------------------------------------------------------
+RNF-14 Interface responsiva (mobile-first) testada em 360px–1920px.
+RNF-15 Componentes devem seguir shadcn/ui + Radix (acessíveis por teclado
+       e leitores de tela).
+RNF-16 Tema escuro com paleta institucional (dourado #d4af37 + azul
+       #005baa); tipografia Poppins (títulos) + Inter (corpo).
+RNF-17 Conteúdo em português brasileiro (pt-BR).
+
+--------------------------------------------------------------------------------
+2.5 Manutenibilidade
+--------------------------------------------------------------------------------
+RNF-18 Código TypeScript em modo strict; sem `any` implícito.
+RNF-19 Lint e format obrigatórios (`eslint`, `prettier`).
+RNF-20 Componentes pequenos e focados; lógica de servidor isolada em
+       arquivos `.functions.ts` / `.server.ts`.
+RNF-21 Validação de entrada com Zod em toda server function.
+
+--------------------------------------------------------------------------------
+2.6 Privacidade / LGPD
+--------------------------------------------------------------------------------
+RNF-22 Dados pessoais de atletas (telefone, endereço completo, CPF) só
+       podem ser exibidos a clubes após desbloqueio explícito.
+RNF-23 O atleta pode solicitar exclusão da conta — admin executa via
+       edge function `delete-user` com cascade de FKs.
+RNF-24 Logs nunca devem conter tokens, senhas ou service-role keys.
+
+
+================================================================================
+3. REGRAS DE NEGÓCIO (RN)
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 Papéis e Hierarquia
+--------------------------------------------------------------------------------
+RN-01  Os papéis possíveis são: `atleta`, `clube`, `suporte`, `admin`.
+RN-02  Prioridade na resolução de papel ativo (quando o usuário possui
+       mais de um): suporte > admin > clube > atleta.
+RN-03  Auto-cadastro só concede o papel `atleta`. Clube e admin exigem
+       solicitação aprovada pelo suporte.
+RN-04  Suporte pode conceder/revogar apenas papéis `atleta` e `clube`.
+RN-05  Apenas admin pode conceder/revogar `admin` ou `suporte`.
+
+--------------------------------------------------------------------------------
+3.2 Peneiras e Inscrições
+--------------------------------------------------------------------------------
+RN-06  Somente admin pode criar, editar ou cancelar peneiras.
+RN-07  Atleta só pode se inscrever uma vez por peneira.
+RN-08  Inscrição só é permitida em peneiras com status `aberta` e até a
+       data limite definida.
+RN-09  Encerramento da peneira congela a lista de candidatos para
+       avaliação.
+
+--------------------------------------------------------------------------------
+3.3 Avaliações
+--------------------------------------------------------------------------------
+RN-10  Somente admin/olheiro pode registrar avaliações.
+RN-11  Cada avaliação pertence a um candidato dentro de uma peneira
+       específica.
+RN-12  A nota geral deve ser consistente com o radar (validação no
+       backend via Zod).
+RN-13  Avaliações são consideradas parte do "pacote desbloqueado" e
+       visíveis ao clube somente após `contatos_desbloqueados`.
+
+--------------------------------------------------------------------------------
+3.4 Desbloqueio de Contato
+--------------------------------------------------------------------------------
+RN-14  Um desbloqueio (`contatos_desbloqueados`) é único por par
+       (clube, atleta) — não há cobrança duplicada.
+RN-15  Desbloqueio é permanente para o clube enquanto a conta existir.
+RN-16  Sem desbloqueio, o clube vê apenas dados resumidos públicos
+       (nome, posição, idade, cidade, nota média) — nunca contato,
+       vídeo ou avaliações.
+RN-17  Admin e suporte enxergam todos os atletas independente de
+       desbloqueio (acesso operacional).
+
+--------------------------------------------------------------------------------
+3.5 Chat
+--------------------------------------------------------------------------------
+RN-18  Conversa clube↔atleta só pode ser iniciada pelo clube e somente
+       após desbloqueio.
+RN-19  Conversa admin↔atleta pode ser iniciada por qualquer um dos
+       dois lados.
+RN-20  Conversa atleta↔atleta e clube↔clube não são permitidas.
+RN-21  Usuário bloqueado (`chat_blocks`) não pode iniciar nem enviar
+       mensagens à parte que o bloqueou.
+RN-22  Denúncia (`chat_reports`) gera fila de moderação para o suporte.
+
+--------------------------------------------------------------------------------
+3.6 Vídeos e Mídia
+--------------------------------------------------------------------------------
+RN-23  Vídeos do atleta ficam em bucket privado; download requer
+       assinatura temporária.
+RN-24  Acesso aos vídeos: o próprio atleta sempre; admin/suporte sempre;
+       clube somente com desbloqueio.
+
+--------------------------------------------------------------------------------
+3.7 Wearables
+--------------------------------------------------------------------------------
+RN-25  Conexão de wearable pertence exclusivamente ao atleta autenticado.
+RN-26  Métricas sincronizadas são privadas ao atleta e visíveis ao
+       admin/suporte; clubes só com desbloqueio.
+RN-27  Webhook de sincronização (`/api/public/hooks/sync-wearables`)
+       só processa payload com assinatura HMAC válida.
+
+--------------------------------------------------------------------------------
+3.8 Exclusão e Retenção
+--------------------------------------------------------------------------------
+RN-28  Exclusão de usuário remove em cascata: profile, user_roles,
+       inscrições, vídeos, mensagens e desbloqueios relacionados.
+RN-29  Mensagens denunciadas permanecem armazenadas para auditoria
+       mesmo após bloqueio ou exclusão da conversa.
+
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
