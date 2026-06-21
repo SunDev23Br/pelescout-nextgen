@@ -17,6 +17,7 @@ import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DemoComponentesRouteImport } from './routes/demo-componentes'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ClubesRouteImport } from './routes/clubes'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -74,6 +75,11 @@ const ManualRoute = ManualRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoComponentesRoute = DemoComponentesRouteImport.update({
+  id: '/demo-componentes',
+  path: '/demo-componentes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
+  '/demo-componentes': typeof DemoComponentesRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
+  '/demo-componentes': typeof DemoComponentesRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -233,6 +241,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
+  '/demo-componentes': typeof DemoComponentesRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/clubes'
     | '/dashboard'
+    | '/demo-componentes'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/clubes'
     | '/dashboard'
+    | '/demo-componentes'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/clubes'
     | '/dashboard'
+    | '/demo-componentes'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -348,6 +360,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   ClubesRoute: typeof ClubesRoute
   DashboardRoute: typeof DashboardRoute
+  DemoComponentesRoute: typeof DemoComponentesRoute
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
   PerfilRoute: typeof PerfilRoute
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo-componentes': {
+      id: '/demo-componentes'
+      path: '/demo-componentes'
+      fullPath: '/demo-componentes'
+      preLoaderRoute: typeof DemoComponentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   ClubesRoute: ClubesRoute,
   DashboardRoute: DashboardRoute,
+  DemoComponentesRoute: DemoComponentesRoute,
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
   PerfilRoute: PerfilRoute,
