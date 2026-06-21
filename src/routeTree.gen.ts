@@ -31,6 +31,7 @@ import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
 import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
 import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
 import { Route as ApiWearablesMockConnectRouteImport } from './routes/api/wearables/mock.connect'
@@ -147,6 +148,11 @@ const AtletasAtletaIdRoute = AtletasAtletaIdRouteImport.update({
   path: '/atletas/$atletaId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWearablesSyncRoute = ApiWearablesSyncRouteImport.update({
   id: '/api/wearables/sync',
   path: '/api/wearables/sync',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
     | '/peneiras/$peneiraId'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   RegistroClubeRoute: typeof RegistroClubeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuporteRoute: typeof SuporteRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   AtletasAtletaIdRoute: typeof AtletasAtletaIdRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
@@ -539,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtletasAtletaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/wearables/sync': {
       id: '/api/wearables/sync'
       path: '/api/wearables/sync'
@@ -593,6 +613,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistroClubeRoute: RegistroClubeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuporteRoute: SuporteRoute,
+  ApiTtsRoute: ApiTtsRoute,
   AtletasAtletaIdRoute: AtletasAtletaIdRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
