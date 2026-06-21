@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, Mail, Lock, Shield, User, Building2 } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Shield, User, Building2, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,15 @@ import { type Role } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { useTTS } from "@/hooks/use-tts";
+
+const PAGE_NARRATION =
+  "Bem-vindo de volta à Pelé Next Gen. Entre na sua conta para continuar. " +
+  "Selecione o tipo de conta: atleta, clube ou administrador. " +
+  "Em seguida, informe seu e-mail e sua senha nos campos correspondentes e clique no botão Entrar. " +
+  "Você também pode entrar com sua conta Google clicando no botão Entrar com Google. " +
+  "Se ainda não tem conta, é possível se cadastrar como atleta, como clube ou como administrador " +
+  "pelos links no final da página.";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
