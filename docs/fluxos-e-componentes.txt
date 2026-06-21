@@ -1,0 +1,380 @@
+================================================================================
+PELÉ NEXT GEN — FLUXOS, COMPONENTES E NAVEGAÇÃO
+Documento técnico-funcional complementar a docs/requisitos.txt
+================================================================================
+
+SUMÁRIO
+1. Fluxos principais (perfil, tarefa, caminhos alternativos e pontos de falha)
+   1.1 Fluxo A — Atleta: cadastro e inscrição em peneira
+   1.2 Fluxo B — Clube: busca de atleta e desbloqueio de contato
+   1.3 Fluxo C — Admin/Olheiro: criação de peneira e avaliação de candidato
+2. Componentes por página (nomenclatura do Design System — shadcn/ui)
+3. Fluxograma de navegação entre páginas
+
+
+================================================================================
+1. FLUXOS PRINCIPAIS
+================================================================================
+
+--------------------------------------------------------------------------------
+1.1 FLUXO A — ATLETA: CADASTRO E INSCRIÇÃO EM PENEIRA
+--------------------------------------------------------------------------------
+
+Perfil do usuário
+  - Papel: atleta (padrão para auto-cadastro)
+  - Objetivo: criar conta, completar perfil esportivo e se inscrever em uma
+    peneira aberta para ser avaliado por olheiros/clubes.
+  - Contexto: jovem entre 12-22 anos, acesso majoritariamente mobile.
+
+Tarefa (fluxo feliz)
+  1. Usuário acessa "/" (landing) e clica em "Criar conta".
+  2. Redirecionado para "/cadastro" → preenche e-mail, senha, nome.
+  3. Sistema cria registro em auth.users, dispara trigger que cria profile
+     e atribui role 'atleta' em user_roles.
+  4. Login automático → "/perfil-atleta" para completar dados (posição,
+     altura, peso, pé dominante, cidade/UF, vídeos).
+  5. Navega para "/peneiras" → visualiza lista de peneiras abertas.
+  6. Seleciona uma peneira → "/peneiras/$peneiraId".
+  7. Clica em "Inscrever-se" → confirma em diálogo.
+  8. Sistema valida (peneira aberta, não inscrito antes) e cria registro
+     em candidatos. Toast de sucesso é exibido.
+  9. Atleta pode acompanhar inscrições no "/dashboard".
+
+Caminhos alternativos
+  A1. Login com Google: em "/login", botão "Continuar com Google" dispara
+      OAuth. Trigger cria profile/role automaticamente.
+  A2. Atleta já cadastrado tenta nova inscrição: sistema redireciona para
+      a inscrição existente.
+  A3. Vídeo: atleta pode anexar até N vídeos via AthleteVideoGallery
+      (upload ao Storage com policies de owner).
+  A4. Wearable: em "/perfil-atleta" conecta dispositivo (mock/strava/etc)
+      → callback "/api/wearables/callback/$provider" grava tokens.
+
+Pontos de falha e tratamento
+  F1. E-mail já cadastrado → mensagem "E-mail em uso" no formulário.
+  F2. Senha fraca / e-mail inválido → validação Zod no cliente, alerta
+      inline via componente Form + FormMessage.
+  F3. Peneira já encerrada (status != 'aberta') → botão de inscrição
+      desabilitado; tentativa direta na API retorna erro de regra de
+      negócio e Toast destrutivo.
+  F4. Inscrição duplicada → unique constraint dispara erro tratado e
+      mensagem "Você já está inscrito nesta peneira".
+  F5. Upload de vídeo acima do limite → Storage policy rejeita;
+      componente exibe Alert variant="destructive".
+  F6. Sessão expirada → middleware requireSupabaseAuth retorna 401 →
+      redirect automático para "/login".
+  F7. Falha de rede no submit → TanStack Query faz retry; após esgotar,
+      exibe Sonner toast "Falha de conexão, tente novamente".
+
+--------------------------------------------------------------------------------
+1.2 FLUXO B — CLUBE: BUSCA DE ATLETA E DESBLOQUEIO DE CONTATO
+--------------------------------------------------------------------------------
+
+Perfil do usuário
+  - Papel: clube (concedido apenas após aprovação do suporte)
+  - Objetivo: localizar atletas com perfil técnico desejado, desbloquear
+    contato e iniciar conversa direta.
+  - Contexto: scout profissional, uso primariamente desktop.
+
+Tarefa (fluxo feliz)
+  1. Clube acessa "/login" → autentica → redirecionado para "/dashboard".
+  2. Navega para "/clubes" (área de busca de atletas) e aplica filtros
+     (posição, idade, UF) via Select / Input / Slider.
+  3. Seleciona um atleta na lista → "/atletas/$atletaId" (perfil público).
+  4. Visualiza dados técnicos, vídeos e métricas wearable autorizadas.
+  5. Clica em "Desbloquear contato" → AlertDialog de confirmação informa
+     custo/consumo de cota.
+  6. Confirma → server function registra em contatos_desbloqueados.
+  7. Clube agora vê e-mail/telefone e botão "Iniciar conversa" → "/chat"
+     com a conversa pré-criada.
+
+Caminhos alternativos
+  B1. Registro de clube via "/registro-clube" → cria admin_request
+      pendente; só ganha role 'clube' após aprovação em "/suporte".
+  B2. Contato já desbloqueado: pula etapa de pagamento, exibe dados
+      diretamente.
+  B3. Chat reportado/bloqueado: ChatBlock impede envio; UI substitui
+      MessageComposer por Alert.
+
+Pontos de falha e tratamento
+  F1. Clube sem aprovação tenta acessar "/clubes" → guard de role
+      redireciona para "/dashboard" com Toast informativo.
+  F2. RLS bloqueia leitura de PII (clube_has_unlocked_atleta = false)
+      → campos de contato não retornam; UI mostra placeholder e CTA
+      "Desbloquear".
+  F3. Falha no desbloqueio (cota esgotada / erro de pagamento) →
+      AlertDialog mantido aberto com mensagem de erro.
+  F4. Atleta excluiu conta → "/atletas/$atletaId" retorna notFound,
+      exibe notFoundComponent com link de volta para "/clubes".
+  F5. Mensagem no chat falha ao enviar → MessageList marca status
+      "falhou" com botão de reenviar.
+
+--------------------------------------------------------------------------------
+1.3 FLUXO C — ADMIN/OLHEIRO: CRIAR PENEIRA E AVALIAR CANDIDATO
+--------------------------------------------------------------------------------
+
+Perfil do usuário
+  - Papel: admin (ou suporte, com hierarquia superior)
+  - Objetivo: organizar evento de peneira, registrar candidatos e
+    publicar avaliações técnicas.
+
+Tarefa (fluxo feliz)
+  1. Admin loga e acessa "/peneiras" → clica em "Criar peneira"
+     → "/peneiras/criar".
+  2. Preenche formulário (nome, data, local, vagas, descrição) via
+     Form + Input + Textarea + Calendar.
+  3. Submete → server function valida (has_role 'admin') e insere em
+     peneiras.
+  4. Lista de candidatos aparece em "/candidatos" → seleciona um →
+     "/candidatos/$candidatoId".
+  5. Preenche avaliação (notas, tags, comentário) usando os componentes
+     de evaluation/* (QuickScoreSelector, RadarPreview, TagSelector,
+     OverallRating, FootProfile, ScoutComment, AutoSummary).
+  6. Salva → grava em avaliacoes e atualiza dashboard com Recharts.
+
+Caminhos alternativos
+  C1. Admin pode editar/encerrar peneira existente.
+  C2. Aprovação de requests pendentes em "/suporte" (concede roles
+      'clube' ou 'atleta', conforme regra).
+  C3. Exclusão de usuário via edge function delete-user.
+
+Pontos de falha e tratamento
+  F1. Usuário não-admin tenta "/peneiras/criar" → guard redireciona +
+      Toast "Acesso restrito".
+  F2. Data inválida / vagas <= 0 → FormMessage exibe erro Zod.
+  F3. Conflito de horário/local (regra de negócio) → server function
+      retorna 409, UI exibe Alert destrutivo.
+  F4. Falha ao publicar avaliação (RLS) → toast "Sem permissão" e
+      mantém rascunho em memória.
+
+
+================================================================================
+2. COMPONENTES POR PÁGINA (nomenclatura do Design System)
+================================================================================
+
+Convenção:
+  - DS  = componentes shadcn/ui em src/components/ui/*
+  - APP = componentes de aplicação em src/components/*
+  - LAY = layout / shell
+
+ROTA "/" (src/routes/index.tsx) — Landing
+  LAY: AppLayout (opcional, sem sidebar)
+  APP: Logo
+  DS : Button, Card, Badge, Separator, AspectRatio
+
+ROTA "/login" (src/routes/login.tsx)
+  APP: Logo
+  DS : Card, CardHeader, CardContent, CardFooter, Form, FormField,
+       FormLabel, FormControl, FormMessage, Input, PasswordInput,
+       Button, Separator, Alert
+  Toast: Sonner (toaster global)
+
+ROTA "/cadastro" (src/routes/cadastro.tsx)
+  DS : Card, Form, Input, PasswordInput, Button, Checkbox, Alert,
+       FormMessage
+
+ROTA "/registro-clube" e "/registro-admin"
+  DS : Card, Form, Input, Textarea, Select, Button, Alert
+  APP: Logo
+
+ROTA "/dashboard" (src/routes/dashboard.tsx)
+  LAY: AppLayout (sidebar ativa)
+  DS : Card, Tabs, TabsList, TabsTrigger, TabsContent, Badge,
+       Skeleton, ScrollArea, Progress
+  APP: StatusBadge, WearableMetricsCard
+  Charts: Chart (Recharts wrapper)
+
+ROTA "/perfil" (src/routes/perfil.tsx)
+  DS : Card, Tabs, Form, Input, Select, Button, Avatar, Separator,
+       AlertDialog
+  APP: AthleteAvatar
+
+ROTA "/perfil-atleta" (src/routes/perfil-atleta.tsx)
+  DS : Card, Form, Input, Select, Textarea, Slider, RadioGroup,
+       Switch, Button, Tabs, Progress, Alert
+  APP: AthleteAvatar, AthleteVideoGallery, WearableConnections,
+       ScrollPicker
+
+ROTA "/peneiras" (peneiras.index.tsx)
+  DS : Input (busca), Select (filtros), Button, Badge, Skeleton,
+       Pagination, ScrollArea
+  APP: PeneiraCard, StatusBadge
+
+ROTA "/peneiras/criar" (peneiras.criar.tsx)
+  DS : Card, Form, Input, Textarea, Calendar, Popover, Select,
+       Button, Alert
+
+ROTA "/peneiras/$peneiraId" (peneiras.$peneiraId.tsx)
+  DS : Card, Tabs, Badge, Button, AlertDialog, Table, Avatar,
+       Separator, Skeleton
+  APP: StatusBadge, PeneiraCard (resumo)
+
+ROTA "/candidatos" (candidatos.index.tsx)
+  DS : Table, Input, Select, Badge, Button, Pagination, Skeleton
+  APP: StatusBadge, AthleteAvatar
+
+ROTA "/candidatos/$candidatoId" (candidatos.$candidatoId.tsx)
+  DS : Card, Tabs, Badge, Button, Separator, Dialog, Form,
+       Textarea, Slider, RadioGroup, ToggleGroup
+  APP: AthleteAvatar, AthleteVideoGallery,
+       evaluation/EvaluationCard, evaluation/QuickScoreSelector,
+       evaluation/RadarPreview, evaluation/TagSelector,
+       evaluation/OverallRating, evaluation/FootProfile,
+       evaluation/ScoutComment, evaluation/AutoSummary
+
+ROTA "/avaliacoes" (avaliacoes.tsx)
+  DS : Table, Card, Tabs, Badge, Button, Skeleton, ScrollArea
+  APP: evaluation/EvaluationCard, evaluation/RadarPreview
+
+ROTA "/clubes" (clubes.tsx)
+  DS : Input, Select, Slider, Badge, Card, Button, Pagination,
+       Skeleton, Sheet (filtros mobile)
+  APP: AthleteAvatar, StatusBadge
+
+ROTA "/atletas/$atletaId" (atletas.$atletaId.tsx)
+  DS : Card, Tabs, Badge, Button, AlertDialog, Avatar, Separator,
+       AspectRatio, HoverCard, Tooltip
+  APP: AthleteAvatar, AthleteVideoGallery, WearableMetricsCard,
+       StatusBadge
+
+ROTA "/chat" (chat.tsx)
+  DS : ScrollArea, Input, Button, Avatar, Badge, Separator,
+       Dialog, DropdownMenu, AlertDialog, Sheet, Skeleton
+  APP: chat/MessageList, chat/MessageComposer, chat/ChatMedia,
+       chat/NewConversationDialog, AthleteAvatar
+
+ROTA "/suporte" (suporte.tsx)
+  DS : Tabs, Table, Card, Badge, Button, AlertDialog, Dialog,
+       Form, Textarea, Select, Skeleton
+  APP: StatusBadge
+
+ROTA "/usuarios/$userId" (usuarios.$userId.tsx)
+  DS : Card, Tabs, Badge, Button, AlertDialog, Separator, Avatar,
+       Table
+  APP: AthleteAvatar, StatusBadge
+
+ROTA "/manual" (manual.tsx)
+  DS : Accordion, Card, Tabs, ScrollArea, Separator, Breadcrumb
+
+LAYOUT GLOBAL (src/routes/__root.tsx + AppLayout)
+  LAY: AppLayout (Sidebar colapsável, header mobile, Outlet)
+  DS : Sidebar, Sheet (drawer mobile), DropdownMenu, Avatar,
+       Button, Tooltip, Separator, Sonner (toaster)
+  APP: Logo
+
+
+================================================================================
+3. FLUXOGRAMA DE NAVEGAÇÃO ENTRE PÁGINAS (ASCII)
+================================================================================
+
+Legenda:
+  [PÚB]  = rota pública
+  [AUT]  = exige sessão
+  [ATL]  = exige role atleta
+  [CLB]  = exige role clube
+  [ADM]  = exige role admin/suporte
+  -->    = navegação por Link / redirect
+  ==>    = redirect automático (guard / pós-ação)
+
+                          +------------------+
+                          |   "/" (PÚB)      |
+                          |   Landing        |
+                          +---------+--------+
+                                    |
+            +-----------------------+-----------------------+
+            |                       |                       |
+            v                       v                       v
+   +-----------------+    +------------------+    +--------------------+
+   | "/login" (PÚB)  |    | "/cadastro"(PÚB) |    | "/manual" (PÚB)    |
+   +--------+--------+    +---------+--------+    +--------------------+
+            |                       |
+            |  OAuth/email          | cria conta (role=atleta)
+            +-----------+-----------+
+                        |
+                        v
+                +---------------+
+                |  Sessão OK    |
+                +-------+-------+
+                        |
+                        v
+                +---------------+        +-------------------------+
+                | "/dashboard"  |<------>| Sidebar (AppLayout)     |
+                |   [AUT]       |        | links por role          |
+                +-------+-------+        +-------------------------+
+                        |
+   +----------+---------+---------+--------------+-----------+--------------+
+   |          |                   |              |           |              |
+   v          v                   v              v           v              v
++--------+ +-----------+   +--------------+ +---------+ +---------+ +-----------------+
+|"/perfil"| |"/perfil- |   | "/peneiras"  | |"/chat"  | |"/clubes"| | "/suporte"      |
+| [AUT]  | | atleta"  |   |   [AUT]      | | [AUT]   | |  [CLB]  | |  [ADM]          |
++---+----+ |  [ATL]   |   +------+-------+ +----+----+ +----+----+ +--------+--------+
+    |      +-----+----+          |              |           |               |
+    |            |               |              |           |               |
+    |            v               v              |           v               v
+    |     +------------+  +-------------+       |   +---------------+ +------------------+
+    |     | upload     |  | "/peneiras/ |       |   | "/atletas/    | | aprovar/recusar  |
+    |     | vídeo /    |  |  $peneiraId"|       |   |  $atletaId"   | | admin_request    |
+    |     | wearables  |  +------+------+       |   +-------+-------+ | / clube_request  |
+    |     +------------+         |              |           |         +---------+--------+
+    |                            v              |           v                   |
+    |                    +---------------+      |   +----------------+          |
+    |                    | inscrever-se  |      |   | desbloquear    |          |
+    |                    | (ATL)         |      |   | contato (CLB)  |          |
+    |                    +-------+-------+      |   +-------+--------+          |
+    |                            |              |           |                   |
+    |                            ==> Toast      |           ==> "/chat"         |
+    |                                           |                               |
+    |                                           +<------------------------------+
+    v
++----------------------+
+| logout ==> "/login"  |
++----------------------+
+
+Sub-fluxo Admin / Olheiro
+                +---------------+
+                | "/peneiras"   |
+                +-------+-------+
+                        |
+                        v
+                +----------------+      +------------------------+
+                | "/peneiras/    |----->| "/candidatos"          |
+                |  criar" [ADM]  |      |   [ADM]                |
+                +----------------+      +-----------+------------+
+                                                    |
+                                                    v
+                                       +-------------------------+
+                                       | "/candidatos/           |
+                                       |  $candidatoId" [ADM]    |
+                                       | (formulário avaliação)  |
+                                       +-----------+-------------+
+                                                   |
+                                                   v
+                                        +--------------------+
+                                        | "/avaliacoes"      |
+                                        | (histórico)        |
+                                        +--------------------+
+
+Sub-fluxo Registro de Clube / Admin
+   "/login" --> "Sou clube?" --> "/registro-clube" [PÚB]
+                                       |
+                                       v
+                              cria admin_request
+                                       |
+                                       ==> "/login" (aguardando aprovação)
+                                       |
+                              admin aprova em "/suporte"
+                                       |
+                                       ==> role 'clube' concedida
+
+Pontos de falha globais (qualquer rota [AUT])
+   - 401 (sessão expirada)  ==> "/login"
+   - 403 (role insuficiente) ==> "/dashboard" + Toast
+   - 404 (recurso inexistente) ==> notFoundComponent da rota
+   - 500 (servidor)          ==> errorComponent + botão "Tentar novamente"
+                                  (chama router.invalidate + reset)
+
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
