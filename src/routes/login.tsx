@@ -213,12 +213,44 @@ function LoginPage() {
 
       <div className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <Link
-            to="/"
-            className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          <div className="mb-8 flex items-center justify-between gap-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Voltar ao início
+            </Link>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleNarration}
+              aria-label={isSpeaking ? "Parar leitura da página" : "Ouvir conteúdo da página"}
+              aria-pressed={isSpeaking}
+              disabled={ttsLoading}
+            >
+              {ttsLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : isSpeaking ? (
+                <VolumeX className="mr-2 h-4 w-4" />
+              ) : (
+                <Volume2 className="mr-2 h-4 w-4" />
+              )}
+              {isSpeaking ? "Parar" : "Ouvir página"}
+            </Button>
+          </div>
+
+          <div
+            role="status"
+            aria-live="polite"
+            className="sr-only"
           >
-            <ArrowLeft className="h-4 w-4" /> Voltar ao início
-          </Link>
+            {ttsLoading
+              ? "Carregando leitura da página."
+              : isSpeaking
+                ? "Lendo página em voz alta."
+                : ""}
+          </div>
 
           <div className="lg:hidden">
             <Logo className="mb-8" />
@@ -226,6 +258,7 @@ function LoginPage() {
 
           <h1 className="font-display text-3xl font-extrabold">Bem-vindo de volta</h1>
           <p className="mt-2 text-sm text-muted-foreground">Entre na sua conta para continuar.</p>
+
 
           <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl border border-border bg-bg2 p-1">
             <RoleButton
