@@ -36,6 +36,15 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const { speak, stop, isSpeaking, isLoading: ttsLoading } = useTTS();
+
+  function toggleNarration() {
+    if (isSpeaking || ttsLoading) {
+      stop();
+    } else {
+      void speak(PAGE_NARRATION);
+    }
+  }
 
   useEffect(() => {
     let active = true;
