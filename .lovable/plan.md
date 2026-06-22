@@ -1,34 +1,26 @@
-## Problema
+# Manual do Usuário — plano
 
-A aba `/clubes` consulta `candidatos`, `avaliacoes` e `profiles` direto do front. As políticas RLS atuais só liberam essas tabelas para o clube **depois** que ele já desbloqueou o contato — por isso a lista chega sempre vazia. Simplesmente afrouxar as policies expõe email/celular dos atletas via Data API (rebaixando a regra de negócio do pagamento), então a correção precisa ser feita no servidor com projeção segura de colunas.
+Criar um único arquivo Markdown navegável com índice por papel (Atleta, Olheiro/Admin, Clube, Suporte), e referenciá-lo no README.
 
-## Solução
+## Arquivos
 
-Criar uma função SQL `SECURITY DEFINER` que devolve apenas campos não-sensíveis dos atletas aprovados, e fazer a página `/clubes` consumi-la. Email e celular continuam protegidos pelas policies atuais e só aparecem após o desbloqueio (que já funciona).
+1. **`docs/manual-do-usuario.md`** (novo)
+   - Cabeçalho + sumário com âncoras para cada seção.
+   - Seção "Como usar este manual" (papéis, login, navegação geral).
+   - **Atleta**: cadastro (`/cadastro`), completar perfil (`/perfil-atleta`), explorar peneiras (`/peneiras`), inscrever-se, acompanhar avaliações (`/avaliacoes`), chat (`/chat`), conectar wearables.
+   - **Olheiro / Admin**: registro (`/registro-admin` + aprovação do suporte), dashboard (`/dashboard`), criar peneira (`/peneiras/criar`), gerenciar candidatos (`/candidatos`), avaliar atleta (`/candidatos/$id`), chat.
+   - **Clube**: registro (`/registro-clube` + aprovação), aba clubes (`/clubes`) listando atletas aprovados, liberar contato (pagamento), iniciar chat.
+   - **Suporte**: painel (`/suporte`), aprovar admins/clubes, gerenciar papéis (`user_roles`), boas práticas de segurança.
+   - **FAQ / Solução de problemas** curto (login, esqueci senha, contato bloqueado, áudio do TTS).
+   - **Glossário** (peneira, candidato, avaliação, olheiro, etc.).
+   - Cada seção usa passos numerados, blocos `> Dica`, e referências aos caminhos reais das rotas para o leitor reproduzir.
 
-### 1. Migração no banco
+2. **`README.md`** (edição mínima)
+   - Adicionar bullet em uma seção apropriada (ex.: topo de "Funcionalidades" ou nova subseção "Documentação"):
+     `📘 Manual do usuário: [docs/manual-do-usuario.md](docs/manual-do-usuario.md)`.
 
-Criar `public.list_atletas_aprovados()` (SECURITY DEFINER, `search_path = public`, GRANT EXECUTE para `authenticated`) que:
+## Fora de escopo
 
-- Faz `UNION` entre:
-  - `candidatos` com `status = 'aprovado'` e `user_id IS NOT NULL` (traz `peneira_id` → título).
-  - `avaliacoes` com `decisao = 'aprovado'` e `atleta_user_id IS NOT NULL` que ainda não estejam cobertos pela fonte 1.
-- Faz `JOIN` em `profiles` para nome, posição, cidade, data de nascimento, avatar.
-- Retorna apenas campos **seguros**: `candidato_id`, `user_id`, `nome`, `posicao`, `cidade`, `data_nascimento`, `avatar_url`, `nota_geral`, `peneira_titulo`. **Não** retorna `email` nem `celular`.
-- Restringe execução: `IF NOT (has_role(auth.uid(),'clube') OR has_role(auth.uid(),'admin') OR has_role(auth.uid(),'suporte')) THEN RAISE EXCEPTION ...`.
-
-### 2. Frontend (`src/routes/clubes.tsx`)
-
-- Substituir o `useEffect` que faz 4 queries por uma única chamada `supabase.rpc("list_atletas_aprovados")`.
-- Para cada atleta desbloqueado (`user?.contatosDesbloqueados`), buscar `email`/`celular` em `profiles`/`candidatos` em um segundo passo (as policies atuais já permitem). Atletas não desbloqueados mantêm os campos vazios e o card continua exibindo `•••••• oculto ••••••` com o botão "Liberar contato — R$ X,XX".
-- Manter o fluxo de pagamento simulado (`unlockContato`) e o botão "Enviar mensagem" pós-desbloqueio inalterados.
-
-### 3. Sem mudanças
-
-- Policies existentes em `candidatos`/`avaliacoes`/`profiles` não são alteradas (continuam restritivas).
-- Nada muda para perfis atleta/admin/suporte.
-- `PRECO_CONTATO_BRL`, dialog de pagamento e chat continuam iguais.
-
-## Resultado
-
-Clubes passam a ver **todos** os atletas aprovados com nome, posição, cidade, idade, nota e peneira de origem, mas com email/celular ocultos atrás do botão de pagamento — exatamente o comportamento pedido.
+- Nenhuma rota nova, nenhum componente React, nenhuma migração.
+- Sem screenshots/GIFs (pode ser adicionado depois pelo usuário na aba docs dele).
+- Sem alterações de lógica de negócio.
