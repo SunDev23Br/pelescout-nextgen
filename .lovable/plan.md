@@ -1,54 +1,34 @@
-## Objetivo
+## Problema
 
-Adicionar na página `/login` um botão "Ouvir página" que lê em voz alta o conteúdo principal da tela (título, instruções, labels dos campos e botões), usando Lovable AI (TTS) com streaming SSE.
+A aba `/clubes` consulta `candidatos`, `avaliacoes` e `profiles` direto do front. As políticas RLS atuais só liberam essas tabelas para o clube **depois** que ele já desbloqueou o contato — por isso a lista chega sempre vazia. Simplesmente afrouxar as policies expõe email/celular dos atletas via Data API (rebaixando a regra de negócio do pagamento), então a correção precisa ser feita no servidor com projeção segura de colunas.
 
-## Arquitetura
+## Solução
 
-```text
-[LoginPage] --click--> [POST /api/tts] --SSE--> [Lovable AI Gateway]
-     |                                              (openai/gpt-4o-mini-tts)
-     |<-- PCM 24kHz chunks (base64) ----------------|
-     |
-   AudioContext: decodifica e toca em tempo real
-```
+Criar uma função SQL `SECURITY DEFINER` que devolve apenas campos não-sensíveis dos atletas aprovados, e fazer a página `/clubes` consumi-la. Email e celular continuam protegidos pelas policies atuais e só aparecem após o desbloqueio (que já funciona).
 
-Voz padrão: `alloy`. Idioma: o texto é em português; o modelo infere o idioma automaticamente.
+### 1. Migração no banco
 
-## Mudanças
+Criar `public.list_atletas_aprovados()` (SECURITY DEFINER, `search_path = public`, GRANT EXECUTE para `authenticated`) que:
 
-1. **Backend — server route SSE** `src/routes/api/tts.ts`
-   - `POST` recebe `{ text: string, voice?: string }` (validado com Zod).
-   - Limita tamanho (`text.length <= 2000`) e faz chunking por sentença se necessário (a /login envia ~1 chunk).
-   - Chama `https://ai.gateway.lovable.dev/v1/audio/speech` com `Authorization: Bearer ${LOVABLE_API_KEY}`, `model: "openai/gpt-4o-mini-tts"`, `stream_format: "sse"`, `response_format: "pcm"`.
-   - Retorna `response.body` direto, `Content-Type: text/event-stream`.
-   - Trata `request.signal` (cancelamento) devolvendo 499.
-   - Mapeia 402/403/404/429 do gateway para mensagens claras.
+- Faz `UNION` entre:
+  - `candidatos` com `status = 'aprovado'` e `user_id IS NOT NULL` (traz `peneira_id` → título).
+  - `avaliacoes` com `decisao = 'aprovado'` e `atleta_user_id IS NOT NULL` que ainda não estejam cobertos pela fonte 1.
+- Faz `JOIN` em `profiles` para nome, posição, cidade, data de nascimento, avatar.
+- Retorna apenas campos **seguros**: `candidato_id`, `user_id`, `nome`, `posicao`, `cidade`, `data_nascimento`, `avatar_url`, `nota_geral`, `peneira_titulo`. **Não** retorna `email` nem `celular`.
+- Restringe execução: `IF NOT (has_role(auth.uid(),'clube') OR has_role(auth.uid(),'admin') OR has_role(auth.uid(),'suporte')) THEN RAISE EXCEPTION ...`.
 
-2. **Hook de cliente** `src/hooks/use-tts.ts`
-   - Expõe `{ speak(text), stop(), isSpeaking, isLoading }`.
-   - Cria `AudioContext({ sampleRate: 24000 })`, faz `resume()` dentro do handler de clique.
-   - Usa `eventsource-parser` para ler `speech.audio.delta` (base64 → PCM Int16 → Float32) e agenda buffers no `AudioContext`.
-   - Mantém `AbortController` para `stop()`.
-   - Dependência nova: `eventsource-parser` (instalar com `bun add`).
+### 2. Frontend (`src/routes/clubes.tsx`)
 
-3. **UI na /login** `src/routes/login.tsx`
-   - Adicionar botão flutuante/secundário no topo do card de login: "Ouvir página" (ícone `Volume2`) que alterna para "Parar" (ícone `VolumeX`) enquanto toca.
-   - `aria-label` dinâmico ("Ouvir conteúdo da página" / "Parar leitura"); `aria-pressed` reflete `isSpeaking`.
-   - Região `aria-live="polite"` invisível para anunciar estado ("Lendo página…", "Leitura finalizada", "Erro ao gerar áudio").
-   - Texto narrado é construído estaticamente em PT-BR cobrindo: título da página, seletor de papel (com a opção ativa), instruções dos campos email/senha, opções de login (Google), e links para cadastro (atleta, clube, administrador).
+- Substituir o `useEffect` que faz 4 queries por uma única chamada `supabase.rpc("list_atletas_aprovados")`.
+- Para cada atleta desbloqueado (`user?.contatosDesbloqueados`), buscar `email`/`celular` em `profiles`/`candidatos` em um segundo passo (as policies atuais já permitem). Atletas não desbloqueados mantêm os campos vazios e o card continua exibindo `•••••• oculto ••••••` com o botão "Liberar contato — R$ X,XX".
+- Manter o fluxo de pagamento simulado (`unlockContato`) e o botão "Enviar mensagem" pós-desbloqueio inalterados.
 
-4. **Sem mudanças** em outras rotas, design system ou lógica de auth.
+### 3. Sem mudanças
 
-## Detalhes técnicos
+- Policies existentes em `candidatos`/`avaliacoes`/`profiles` não são alteradas (continuam restritivas).
+- Nada muda para perfis atleta/admin/suporte.
+- `PRECO_CONTATO_BRL`, dialog de pagamento e chat continuam iguais.
 
-- **Chave**: `LOVABLE_API_KEY` já existe no ambiente Lovable Cloud — nada para o usuário configurar.
-- **Streaming**: PCM 24kHz mono, decodificado por chunk, com playhead acumulado (`ctx.currentTime + 0.05` no primeiro chunk para evitar corte inicial).
-- **Cancelamento**: ao clicar "Parar" ou ao desmontar a página, `AbortController.abort()` cancela o fetch; o `AudioContext` é fechado e recriado na próxima chamada.
-- **Acessibilidade**: o botão é o único elemento adicionado à UI; não substitui leitores de tela nativos (NVDA/VoiceOver) — é um complemento auditivo on-demand.
-- **Erro 402/403/429**: o hook mostra `toast.error()` com mensagem amigável.
+## Resultado
 
-## Fora de escopo
-
-- Não adicionar TTS em outras páginas (pode ser estendido depois reusando o hook).
-- Não fazer melhorias ARIA mais amplas (você escolheu apenas o botão TTS).
-- Não cachear áudio (texto da /login é curto e raramente clicado).
+Clubes passam a ver **todos** os atletas aprovados com nome, posição, cidade, idade, nota e peneira de origem, mas com email/celular ocultos atrás do botão de pagamento — exatamente o comportamento pedido.
