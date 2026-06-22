@@ -759,6 +759,20 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      list_atletas_aprovados: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          candidato_id: string
+          cidade: string
+          data_nascimento: string
+          nome: string
+          nota_geral: number
+          peneira_titulo: string
+          posicao: string
+          user_id: string
+        }[]
+      }
       reject_admin_request: {
         Args: { _request_id: string }
         Returns: undefined
