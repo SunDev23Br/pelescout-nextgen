@@ -72,113 +72,57 @@ function ClubesPage() {
     (async () => {
       setLoading(true);
 
-      // Fonte 1: candidatos aprovados em peneira
-      const candsPromise = supabase
-        .from("candidatos")
-        .select(
-          "id, user_id, nome, posicao, cidade, data_nascimento, avatar, email, celular, nota_geral, peneira_id",
-        )
-        .eq("status", "aprovado")
-        .not("user_id", "is", null)
-        .order("nota_geral", { ascending: false, nullsFirst: false });
-
-      // Fonte 2: avaliações ao vivo com decisao=aprovado (atleta_user_id)
-      const avalsPromise = supabase
-        .from("avaliacoes")
-        .select("atleta_user_id, nota_geral, created_at")
-        .eq("decisao", "aprovado")
-        .not("atleta_user_id", "is", null)
-        .order("created_at", { ascending: false });
-
-      const [{ data: cands }, { data: avals }] = await Promise.all([
-        candsPromise,
-        avalsPromise,
-      ]);
+      const { data, error } = await supabase.rpc("list_atletas_aprovados");
       if (cancelled) return;
 
-      const candsList = cands ?? [];
-      const avalsList = avals ?? [];
+      if (error) {
+        toast.error("Erro ao carregar atletas aprovados", {
+          description: error.message,
+        });
+        setAprovados([]);
+        setLoading(false);
+        return;
+      }
 
-      // user_ids cobertos pela fonte 1
-      const candUserIds = new Set(
-        candsList.map((c) => c.user_id).filter((v): v is string => !!v),
-      );
-      // atletas exclusivos da fonte 2 (mais recente por atleta, sem duplicar fonte 1)
-      const aprovadosViaAval = new Map<string, { notaGeral: number | null; createdAt: string }>();
-      for (const a of avalsList) {
-        if (!a.atleta_user_id || candUserIds.has(a.atleta_user_id)) continue;
-        if (!aprovadosViaAval.has(a.atleta_user_id)) {
-          aprovadosViaAval.set(a.atleta_user_id, {
-            notaGeral: a.nota_geral != null ? Number(a.nota_geral) : null,
-            createdAt: a.created_at,
-          });
+      const baseList: AtletaAprovado[] = (data ?? []).map((r) => ({
+        candidatoId: r.candidato_id as string,
+        userId: r.user_id as string | null,
+        nome: r.nome as string,
+        posicao: (r.posicao ?? "Meia") as string,
+        cidade: (r.cidade ?? "—") as string,
+        dataNascimento: (r.data_nascimento as string) ?? "2000-01-01",
+        avatar: (r.avatar_url as string | null) ?? null,
+        email: "",
+        celular: "",
+        notaGeral: r.nota_geral != null ? Number(r.nota_geral) : null,
+        peneiraTitulo: (r.peneira_titulo as string | null) ?? null,
+      }));
+
+      // Para atletas já desbloqueados, buscar email/celular (RLS atual permite)
+      const unlockedIds = new Set(user?.contatosDesbloqueados ?? []);
+      const toFetchUserIds = baseList
+        .filter((a) => a.userId && unlockedIds.has(a.candidatoId))
+        .map((a) => a.userId as string);
+
+      if (toFetchUserIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, email, celular")
+          .in("id", toFetchUserIds);
+        if (cancelled) return;
+        const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
+        for (const a of baseList) {
+          if (a.userId && unlockedIds.has(a.candidatoId)) {
+            const p = profMap.get(a.userId);
+            if (p) {
+              a.email = p.email ?? "";
+              a.celular = p.celular ?? "";
+            }
+          }
         }
       }
 
-      const userIds = Array.from(
-        new Set<string>([
-          ...candUserIds,
-          ...Array.from(aprovadosViaAval.keys()),
-        ]),
-      );
-      const peneiraIds = Array.from(
-        new Set(candsList.map((c) => c.peneira_id).filter((v): v is string => !!v)),
-      );
-
-      const [{ data: profs }, { data: peneiras }] = await Promise.all([
-        userIds.length
-          ? supabase
-              .from("profiles")
-              .select("id, nome, email, celular, avatar_url, data_nascimento, posicao, cidade")
-              .in("id", userIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; nome: string | null; email: string | null; celular: string | null; avatar_url: string | null; data_nascimento: string | null; posicao: string | null; cidade: string | null }> }),
-        peneiraIds.length
-          ? supabase.from("peneiras").select("id, titulo").in("id", peneiraIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; titulo: string }> }),
-      ]);
-
-      const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
-      const peneiraMap = new Map((peneiras ?? []).map((p) => [p.id, p.titulo]));
-
-      const fromCands: AtletaAprovado[] = candsList.map((c) => {
-        const p = c.user_id ? profMap.get(c.user_id) : null;
-        return {
-          candidatoId: c.id,
-          userId: c.user_id,
-          nome: p?.nome ?? c.nome,
-          posicao: (p?.posicao ?? c.posicao) as string,
-          cidade: p?.cidade ?? c.cidade,
-          dataNascimento: p?.data_nascimento ?? c.data_nascimento,
-          avatar: p?.avatar_url ?? c.avatar ?? null,
-          email: p?.email ?? c.email,
-          celular: p?.celular ?? c.celular,
-          notaGeral: c.nota_geral != null ? Number(c.nota_geral) : null,
-          peneiraTitulo: c.peneira_id ? peneiraMap.get(c.peneira_id) ?? null : null,
-        };
-      });
-
-      const fromAvals: AtletaAprovado[] = Array.from(aprovadosViaAval.entries())
-        .map(([userId, info]) => {
-          const p = profMap.get(userId);
-          if (!p) return null;
-          return {
-            // Sem candidato — usa user_id como chave de desbloqueio
-            candidatoId: userId,
-            userId,
-            nome: p.nome ?? "Atleta",
-            posicao: (p.posicao ?? "Meia") as string,
-            cidade: p.cidade ?? "—",
-            dataNascimento: p.data_nascimento ?? "2000-01-01",
-            avatar: p.avatar_url ?? null,
-            email: p.email ?? "",
-            celular: p.celular ?? "",
-            notaGeral: info.notaGeral,
-            peneiraTitulo: null,
-          } as AtletaAprovado;
-        })
-        .filter((v): v is AtletaAprovado => v !== null);
-
-      const merged = [...fromCands, ...fromAvals].sort(
+      const merged = baseList.sort(
         (a, b) => (b.notaGeral ?? -1) - (a.notaGeral ?? -1),
       );
 
@@ -189,9 +133,8 @@ function ClubesPage() {
     })();
     return () => {
       cancelled = true;
-
     };
-  }, []);
+  }, [user?.id, user?.contatosDesbloqueados?.length]);
 
   const list = useMemo(() => {
     if (!q.trim()) return aprovados;
