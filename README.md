@@ -8,6 +8,7 @@ O **Pelé Next Gen** organiza seletivas (peneiras) de futebol, hospeda perfis pr
 
 ## Sumário
 
+- [📘 Manual do Usuário](docs/manual-do-usuario.md) — guia interativo por papel (Atleta, Olheiro, Clube, Suporte)
 - [Tecnologias](#tecnologias)
 - [Arquitetura](#arquitetura)
 - [Funcionalidades](#funcionalidades)
