@@ -214,6 +214,14 @@ function PerfilAtletaPage() {
           </Button>
         </div>
 
+        <Tabs defaultValue="perfil" className="w-full">
+          <TabsList className="grid w-full max-w-sm grid-cols-2">
+            <TabsTrigger value="perfil">Perfil</TabsTrigger>
+            <TabsTrigger value="desempenho">Desempenho</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="perfil" className="mt-6 space-y-6">
+
         {/* TOP: Perfil + Sobre/Habilidades */}
         <div className="grid gap-4 lg:grid-cols-5">
           {/* COLUNA ESQUERDA: Identidade */}
