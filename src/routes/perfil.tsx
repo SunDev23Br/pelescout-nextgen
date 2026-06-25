@@ -302,6 +302,14 @@ function PerfilPage() {
         descricao: (h.descricao ?? "").trim() || undefined,
       }))
       .filter((h) => h.clube.length > 0);
+    const cleanedTitulos: TituloItem[] = (stats.titulos_lista ?? [])
+      .map((t) => ({
+        campeonato: (t.campeonato ?? "").trim(),
+        ano:
+          t.ano != null && !Number.isNaN(Number(t.ano)) ? Number(t.ano) : null,
+        time: (t.time ?? "").trim(),
+      }))
+      .filter((t) => t.campeonato.length > 0);
     const cleanedStats: AthleteStats = {
       jogos: stats.jogos != null && !Number.isNaN(stats.jogos) ? Number(stats.jogos) : null,
       gols: stats.gols != null && !Number.isNaN(stats.gols) ? Number(stats.gols) : null,
@@ -309,8 +317,8 @@ function PerfilPage() {
         stats.assistencias != null && !Number.isNaN(stats.assistencias)
           ? Number(stats.assistencias)
           : null,
-      titulos:
-        stats.titulos != null && !Number.isNaN(stats.titulos) ? Number(stats.titulos) : null,
+      titulos: cleanedTitulos.length,
+      titulos_lista: cleanedTitulos,
     };
     const { error } = await supabase
       .from("profiles")
