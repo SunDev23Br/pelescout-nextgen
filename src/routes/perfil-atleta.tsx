@@ -473,6 +473,12 @@ function PerfilAtletaPage() {
             )}
           </section>
         </div>
+          </TabsContent>
+
+          <TabsContent value="desempenho" className="mt-6">
+            <DesempenhoTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
