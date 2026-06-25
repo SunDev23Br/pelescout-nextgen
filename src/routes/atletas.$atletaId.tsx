@@ -217,11 +217,17 @@ function AthleteProfilePage() {
 
   const idade = calcIdade(profile.data_nascimento);
 
+  const titulosLista = [...(profile.stats.titulos_lista ?? [])].sort(
+    (a, b) => (b.ano ?? 0) - (a.ano ?? 0),
+  );
+  const totalTitulos = titulosLista.length || profile.stats.titulos || 0;
+  const clubes = profile.historico_clubes ?? [];
+
   const conquistas: { label: string; sub?: string }[] = [];
-  if (profile.stats.titulos)
+  if (totalTitulos)
     conquistas.push({
       label: "Campeão",
-      sub: `${profile.stats.titulos} título${profile.stats.titulos > 1 ? "s" : ""}`,
+      sub: `${totalTitulos} título${totalTitulos > 1 ? "s" : ""}`,
     });
   if (profile.stats.gols)
     conquistas.push({ label: `${profile.stats.gols} Gols`, sub: "Marcados" });
@@ -232,9 +238,10 @@ function AthleteProfilePage() {
     });
   if (profile.stats.jogos)
     conquistas.push({ label: `${profile.stats.jogos} Jogos`, sub: "Disputados" });
-  (profile.historico_clubes ?? []).slice(0, 2).forEach((c) =>
+  clubes.slice(0, 2).forEach((c) =>
     conquistas.push({ label: c.clube, sub: c.periodo ?? "Passagem" }),
   );
+
 
   return (
     <AppLayout>
