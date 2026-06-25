@@ -34,7 +34,7 @@ const ESTADOS_BASE = [
   "Brasiliense (DF)",
 ];
 
-const CATEGORIAS = ["Sub-13", "Sub-15", "Sub-17", "Sub-20"];
+const CATEGORIAS = ["Sub-11", "Sub-12", "Sub-13", "Sub-15", "Sub-17", "Sub-20"];
 
 const ESTADUAIS: string[] = ESTADOS_BASE.flatMap((uf) =>
   CATEGORIAS.map((cat) => `Campeonato ${uf} ${cat}`),
