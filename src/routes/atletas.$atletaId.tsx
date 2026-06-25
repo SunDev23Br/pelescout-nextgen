@@ -61,11 +61,18 @@ interface ClubeHistorico {
   descricao?: string;
 }
 
+interface TituloItem {
+  campeonato: string;
+  ano: number | null;
+  time: string;
+}
+
 interface AthleteStats {
   jogos?: number;
   gols?: number;
   assistencias?: number;
   titulos?: number;
+  titulos_lista?: TituloItem[];
 }
 
 interface AthleteProfile {
