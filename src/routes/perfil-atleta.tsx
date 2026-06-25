@@ -39,11 +39,17 @@ interface ClubeHistorico {
   periodo?: string;
   descricao?: string;
 }
+interface TituloItem {
+  campeonato: string;
+  ano: number | null;
+  time: string;
+}
 interface AthleteStats {
   jogos?: number | null;
   gols?: number | null;
   assistencias?: number | null;
   titulos?: number | null;
+  titulos_lista?: TituloItem[];
 }
 interface FullProfile {
   id: string;
