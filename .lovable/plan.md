@@ -1,106 +1,52 @@
-# Plano: Títulos selecionáveis + Histórico no perfil do atleta
+## 1) Adicionar Sub-11 e Sub-12 aos campeonatos
 
-## 1. Edição em `/perfil` (aba "Histórico / Estatísticas")
+**Arquivo:** `src/lib/campeonatos.ts`
 
-Substituir o campo numérico **Títulos** por uma lista de títulos conquistados. Cada item:
+- Acrescentar `"Sub-11"` e `"Sub-12"` no array `CATEGORIAS` (gera automaticamente todos os estaduais Sub-11/Sub-12 para os 23 estados já listados).
+- Adicionar entradas Sub-11/Sub-12 nos grupos "Nacionais" e "Copas de base tradicionais" onde fazem sentido:
+  - Nacionais: `Campeonato Brasileiro Sub-13` continua, adicionar referência a "Brasileirão de Clubes Formadores Sub-11" e "Sub-12" (formato comum em torneios de base).
+  - Copas tradicionais: `Taça BH Sub-11`, `Taça BH Sub-12`, `Copa Brasil Kids Sub-11`, `Copa Brasil Kids Sub-12`, `Copa 2 de Julho Sub-11/Sub-12`, `Copa Votorantim Sub-11/Sub-12`, `Mundialito de Clubes Sub-12`, `IberCup Sub-11/Sub-12`, `Danone Nations Cup Sub-12`.
+- Sem mudanças em UI — o `<optgroup>` no `/perfil` já consome `CAMPEONATOS`.
 
-- **Campeonato** (select com busca, lista curada abaixo + opção "Outro" → input livre)
-- **Ano** (input numérico, 1990–ano atual)
-- **Time** (input texto — autocomplete com os clubes já adicionados em "Clubes por onde passou")
+## 2) Aba "Desempenho" no perfil do atleta
 
-Botões "Adicionar título" e remover por linha, mesmo padrão visual do bloco de clubes já existente.
+**Objetivo:** o atleta vê todas as peneiras em que participou via Pelé Next Gen, com feedback do olheiro e métricas gráficas.
 
-A contagem total de títulos (`stats.titulos`) passa a ser derivada (`titulos_lista.length`) — mantém compatibilidade com leituras antigas.
+### Fonte de dados (já existe, sem migration)
+- `candidatos` (filtrado por `user_id = auth.uid()`) → peneira inscrita, status, nota_geral.
+- `peneiras` → título, clube_id, data_evento, local.
+- `avaliacoes` (RLS já permite leitura quando `atleta_user_id = auth.uid()` OU candidato vinculado) → tecnica, fisico, tatico, mental, intensidade, pe_bonus, nota_geral, decisao, tags_positivas/negativas, comentario, created_at.
 
-### Lista curada de campeonatos (sub-13 a sub-20)
-
-Agrupada no select:
-
-```text
-Internacionais
-  - Mundial Sub-20 (FIFA)
-  - Mundial Sub-17 (FIFA)
-  - Sul-Americano Sub-20
-  - Sul-Americano Sub-17
-  - Sul-Americano Sub-15
-  - Libertadores Sub-20
-  - Dallas Cup
-  - Nike Premier Cup
-
-Nacionais
-  - Campeonato Brasileiro Sub-20
-  - Campeonato Brasileiro Sub-17
-  - Campeonato Brasileiro Sub-15
-  - Copa do Brasil Sub-20
-  - Copa do Brasil Sub-17
-  - Brasileirão de Aspirantes
-  - Supercopa do Brasil Sub-20
-  - Supercopa do Brasil Sub-17
-
-Copas de base tradicionais
-  - Copa São Paulo de Futebol Júnior (Copinha) — Sub-20
-  - Taça BH — Sub-17
-  - Taça BH — Sub-15
-  - Copa 2 de Julho — Sub-15
-  - Copa Votorantim — Sub-15
-  - Copa Atlântico Sub-20
-  - Copa RS Sub-20 / Sub-17
-  - Copa do Nordeste Sub-20 / Sub-17
-
-Estaduais (Sub-13 / Sub-15 / Sub-17 / Sub-20)
-  - Campeonato Paulista (sub-13 a sub-20)
-  - Campeonato Carioca (sub-13 a sub-20)
-  - Campeonato Mineiro (sub-13 a sub-20)
-  - Campeonato Gaúcho (sub-13 a sub-20)
-  - Campeonato Paranaense (sub-13 a sub-20)
-  - Campeonato Catarinense (sub-13 a sub-20)
-  - Campeonato Baiano (sub-13 a sub-20)
-  - Campeonato Pernambucano (sub-13 a sub-20)
-  - Campeonato Cearense (sub-13 a sub-20)
-  - Campeonato Goiano (sub-13 a sub-20)
-  - (demais estados disponíveis via "Outro")
-
-Outro
-  - Campo livre para digitar
-```
-
-## 2. Exibição em `/perfil-atleta` (e `/atletas/$atletaId`, mesmo componente de leitura)
-
-Adicionar duas seções dedicadas, logo abaixo do bloco "Sobre / Habilidades":
-
-**Clubes por onde passou** — renderiza `historico_clubes` como uma timeline simples (nome do clube em destaque, período em texto secundário, descrição opcional). Se vazio, esconde a seção.
-
-**Títulos conquistados** — renderiza `stats.titulos_lista` como cards/linhas: nome do campeonato (destaque), ano e time (linha secundária). Ordenado por ano desc. Se vazio, esconde.
-
-A grade "Conquistas" existente continua, mas passa a usar o `titulos_lista.length` como total e mostra o título mais recente como sub-label.
-
-## 3. Persistência
-
-Sem migração de schema — usa o jsonb `stats` já existente em `profiles`.
-
-```ts
-stats = {
-  ...existentes,
-  titulos: number,                              // mantido (derivado)
-  titulos_lista: Array<{
-    campeonato: string;
-    ano: number;
-    time: string;
+### Server function nova
+**Arquivo:** `src/lib/desempenho.functions.ts` (novo)
+- `getMeuDesempenho` com `requireSupabaseAuth`. Retorna lista ordenada por data:
+  ```ts
+  Array<{
+    candidato_id, peneira: { id, titulo, data_evento, local, clube_nome },
+    status, nota_geral_candidato,
+    avaliacoes: Array<{ tecnica, fisico, tatico, mental, intensidade, pe_bonus, nota_geral, decisao, tags_positivas, tags_negativas, comentario, created_at, avaliador_nome }>
   }>
-}
-```
+  ```
+- Faz join `candidatos → peneiras → profiles(clube)` e segundo SELECT em `avaliacoes` por `candidato_id IN (...)` e também por `atleta_user_id = userId` (cobre avaliações sem candidato).
 
-Leituras antigas (apenas `titulos` numérico) continuam funcionando — a UI nova só exibe a lista quando `titulos_lista` existe.
+### UI
+**Arquivo:** `src/routes/perfil-atleta.tsx`
+- Envolver o conteúdo atual em `<Tabs>` (shadcn) com duas abas: **"Perfil"** (conteúdo atual) e **"Desempenho"** (nova).
+- Aba Desempenho:
+  - **Resumo no topo (4 cards):** total de peneiras, aprovações, nota média geral, posição mais avaliada.
+  - **Gráfico radar agregado** (recharts, já instalado) com média dos 6 atributos (técnico, físico, tático, mental, intensidade, pé) entre todas as avaliações.
+  - **Gráfico de linha** (`LineChart`) mostrando evolução da `nota_geral` ao longo do tempo (eixo X = data, Y = 0–10).
+  - **Distribuição de decisões** (`BarChart` ou pizza pequena): aprovado / em análise / rejeitado.
+  - **Lista de peneiras** (cards expansíveis/acordeão):
+    - Cabeçalho: título da peneira, clube, data, badge de status, nota geral.
+    - Expandido: radar individual da avaliação, tags positivas (verde) e negativas (vermelho) como chips, comentário do olheiro, decisão, data da avaliação. Se múltiplas avaliações, lista cada uma.
+  - **Empty state:** "Você ainda não participou de peneiras. Explore peneiras disponíveis →" com link para `/peneiras`.
 
-## Arquivos afetados
+### Componente novo
+**Arquivo:** `src/components/desempenho/DesempenhoTab.tsx` — encapsula toda a aba (resumo, gráficos, lista).
+**Arquivo:** `src/components/desempenho/AvaliacaoRadar.tsx` — radar reutilizável (recharts `RadarChart`).
 
-- `src/routes/perfil.tsx` — substitui input numérico por editor de lista; salva `titulos_lista` em `stats`.
-- `src/routes/perfil-atleta.tsx` — adiciona seções "Clubes" e "Títulos".
-- `src/routes/atletas.$atletaId.tsx` — mesmo tratamento de leitura (verificar se usa o mesmo componente; se não, replicar as duas seções).
-- `src/lib/campeonatos.ts` (novo) — constante com a lista curada acima.
-
-## Fora de escopo
-
-- Sem mudança de schema/migration.
-- Sem alterações em `cadastro`, dashboard, candidatos ou avaliações.
-- Sem upload de medalhas/imagens.
+### Fora de escopo
+- Sem mudanças em `cadastro`, `candidatos`, criação de peneira, avaliação do olheiro.
+- Sem migration/RLS — políticas já cobrem o acesso do atleta.
+- Sem alterações em `/atletas/$atletaId` (visão de olheiros/clubes) — a aba é apenas para o próprio atleta.
