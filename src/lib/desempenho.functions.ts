@@ -23,7 +23,7 @@ export interface PeneiraDesempenho {
   peneira: {
     id: string;
     titulo: string;
-    data_evento: string | null;
+    data: string | null;
     local: string | null;
     clube_nome: string | null;
   } | null;
@@ -41,7 +41,7 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
     const { data: candidatos, error: candErr } = await supabase
       .from("candidatos")
       .select(
-        "id, status, nota_geral, peneira:peneiras(id, titulo, data_evento, local, clube_id)",
+        "id, status, nota_geral, peneira:peneiras(id, titulo, data, local, created_by)",
       )
       .eq("user_id", userId);
     if (candErr) throw new Error(candErr.message);
@@ -50,7 +50,7 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
     const clubeIds = Array.from(
       new Set(
         (candidatos ?? [])
-          .map((c) => (c.peneira as any)?.clube_id)
+          .map((c) => (c.peneira as any)?.created_by)
           .filter((v): v is string => !!v),
       ),
     );
@@ -103,7 +103,7 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
     if (extraPeneiraIds.length > 0) {
       const { data: pen } = await supabase
         .from("peneiras")
-        .select("id, titulo, data_evento, local, clube_id")
+        .select("id, titulo, data, local, created_by")
         .in("id", extraPeneiraIds);
       (pen ?? []).forEach((p) => peneiraExtraMap.set(p.id, p));
     }
@@ -120,9 +120,9 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
           ? {
               id: pen.id,
               titulo: pen.titulo,
-              data_evento: pen.data_evento,
+              data: pen.data,
               local: pen.local,
-              clube_nome: pen.clube_id ? profileMap.get(pen.clube_id) ?? null : null,
+              clube_nome: pen.created_by ? profileMap.get(pen.created_by) ?? null : null,
             }
           : null,
         status: c.status,
@@ -165,9 +165,9 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
           ? {
               id: pen.id,
               titulo: pen.titulo,
-              data_evento: pen.data_evento,
+              data: pen.data,
               local: pen.local,
-              clube_nome: pen.clube_id ? profileMap.get(pen.clube_id) ?? null : null,
+              clube_nome: pen.created_by ? profileMap.get(pen.created_by) ?? null : null,
             }
           : null,
         status: null,
@@ -195,8 +195,8 @@ export const getMeuDesempenho = createServerFn({ method: "GET" })
 
     // Ordenar por data da peneira desc (sem data vai pro fim)
     groups.sort((a, b) => {
-      const da = a.peneira?.data_evento ? new Date(a.peneira.data_evento).getTime() : 0;
-      const db = b.peneira?.data_evento ? new Date(b.peneira.data_evento).getTime() : 0;
+      const da = a.peneira?.data ? new Date(a.peneira.data).getTime() : 0;
+      const db = b.peneira?.data ? new Date(b.peneira.data).getTime() : 0;
       return db - da;
     });
 
