@@ -335,6 +335,73 @@ function PerfilAtletaPage() {
         {/* Wearable metrics */}
         <WearableMetricsCard atletaId={profile.id} />
 
+        {/* Clubes + Títulos */}
+        {(clubes.length > 0 || titulosLista.length > 0) && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {clubes.length > 0 && (
+              <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                  <Building2 className="h-4 w-4" /> Clubes por onde passei
+                </h2>
+                <div className="mt-2 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
+                <ul className="mt-4 space-y-3">
+                  {clubes.map((c, i) => (
+                    <li
+                      key={i}
+                      className="rounded-xl border border-border bg-bg2 p-3"
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="font-display text-sm font-extrabold">
+                          {c.clube}
+                        </p>
+                        {c.periodo && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            {c.periodo}
+                          </span>
+                        )}
+                      </div>
+                      {c.descricao && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {c.descricao}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {titulosLista.length > 0 && (
+              <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                  <Medal className="h-4 w-4" /> Títulos conquistados
+                </h2>
+                <div className="mt-2 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
+                <ul className="mt-4 space-y-2">
+                  {titulosLista.map((t, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-border bg-bg2 p-3"
+                    >
+                      <Trophy className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-sm font-extrabold leading-tight">
+                          {t.campeonato}
+                        </p>
+                        <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                          {[t.ano, t.time].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
+
+
+
 
 
         {/* BOTTOM: Vídeo + Conquistas */}
