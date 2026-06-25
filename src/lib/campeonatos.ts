@@ -34,7 +34,7 @@ const ESTADOS_BASE = [
   "Brasiliense (DF)",
 ];
 
-const CATEGORIAS = ["Sub-13", "Sub-15", "Sub-17", "Sub-20"];
+const CATEGORIAS = ["Sub-11", "Sub-12", "Sub-13", "Sub-15", "Sub-17", "Sub-20"];
 
 const ESTADUAIS: string[] = ESTADOS_BASE.flatMap((uf) =>
   CATEGORIAS.map((cat) => `Campeonato ${uf} ${cat}`),
@@ -66,6 +66,8 @@ export const CAMPEONATOS: CampeonatoGroup[] = [
       "Brasileirão de Aspirantes",
       "Supercopa do Brasil Sub-20",
       "Supercopa do Brasil Sub-17",
+      "Brasileirão de Clubes Formadores Sub-11",
+      "Brasileirão de Clubes Formadores Sub-12",
     ],
   },
   {
@@ -74,13 +76,25 @@ export const CAMPEONATOS: CampeonatoGroup[] = [
       "Copa São Paulo de Futebol Júnior (Copinha) — Sub-20",
       "Taça BH Sub-17",
       "Taça BH Sub-15",
+      "Taça BH Sub-12",
+      "Taça BH Sub-11",
       "Copa 2 de Julho Sub-15",
+      "Copa 2 de Julho Sub-12",
+      "Copa 2 de Julho Sub-11",
       "Copa Votorantim Sub-15",
+      "Copa Votorantim Sub-12",
+      "Copa Votorantim Sub-11",
       "Copa Atlântico Sub-20",
       "Copa RS Sub-20",
       "Copa RS Sub-17",
       "Copa do Nordeste Sub-20",
       "Copa do Nordeste Sub-17",
+      "Copa Brasil Kids Sub-11",
+      "Copa Brasil Kids Sub-12",
+      "Mundialito de Clubes Sub-12",
+      "IberCup Sub-11",
+      "IberCup Sub-12",
+      "Danone Nations Cup Sub-12",
     ],
   },
   {
