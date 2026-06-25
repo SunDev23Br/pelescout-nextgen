@@ -28,17 +28,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
 
+import { CAMPEONATOS } from "@/lib/campeonatos";
+
 interface ClubeHist {
   clube: string;
   periodo?: string;
   descricao?: string;
+}
+interface TituloItem {
+  campeonato: string;
+  ano: number | null;
+  time: string;
 }
 interface AthleteStats {
   jogos?: number | null;
   gols?: number | null;
   assistencias?: number | null;
   titulos?: number | null;
+  titulos_lista?: TituloItem[];
 }
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 
 export const Route = createFileRoute("/perfil")({
