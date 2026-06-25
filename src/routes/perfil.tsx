@@ -28,17 +28,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
 
+import { CAMPEONATOS } from "@/lib/campeonatos";
+
 interface ClubeHist {
   clube: string;
   periodo?: string;
   descricao?: string;
+}
+interface TituloItem {
+  campeonato: string;
+  ano: number | null;
+  time: string;
 }
 interface AthleteStats {
   jogos?: number | null;
   gols?: number | null;
   assistencias?: number | null;
   titulos?: number | null;
+  titulos_lista?: TituloItem[];
 }
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 
 export const Route = createFileRoute("/perfil")({
@@ -292,6 +302,14 @@ function PerfilPage() {
         descricao: (h.descricao ?? "").trim() || undefined,
       }))
       .filter((h) => h.clube.length > 0);
+    const cleanedTitulos: TituloItem[] = (stats.titulos_lista ?? [])
+      .map((t) => ({
+        campeonato: (t.campeonato ?? "").trim(),
+        ano:
+          t.ano != null && !Number.isNaN(Number(t.ano)) ? Number(t.ano) : null,
+        time: (t.time ?? "").trim(),
+      }))
+      .filter((t) => t.campeonato.length > 0);
     const cleanedStats: AthleteStats = {
       jogos: stats.jogos != null && !Number.isNaN(stats.jogos) ? Number(stats.jogos) : null,
       gols: stats.gols != null && !Number.isNaN(stats.gols) ? Number(stats.gols) : null,
@@ -299,8 +317,8 @@ function PerfilPage() {
         stats.assistencias != null && !Number.isNaN(stats.assistencias)
           ? Number(stats.assistencias)
           : null,
-      titulos:
-        stats.titulos != null && !Number.isNaN(stats.titulos) ? Number(stats.titulos) : null,
+      titulos: cleanedTitulos.length,
+      titulos_lista: cleanedTitulos,
     };
     const { error } = await supabase
       .from("profiles")
@@ -594,7 +612,7 @@ function PerfilPage() {
 
             <fieldset className="space-y-3">
               <legend className="text-sm font-semibold">Estatísticas</legend>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-3 gap-3">
                 <StatInput
                   label="Jogos"
                   value={stats.jogos}
@@ -610,13 +628,193 @@ function PerfilPage() {
                   value={stats.assistencias}
                   onChange={(v) => setStatField("assistencias", v)}
                 />
-                <StatInput
-                  label="Títulos"
-                  value={stats.titulos}
-                  onChange={(v) => setStatField("titulos", v)}
-                />
               </div>
             </fieldset>
+
+            <fieldset className="space-y-3">
+              <div className="flex items-center justify-between">
+                <legend className="flex items-center gap-2 text-sm font-semibold">
+                  <Trophy className="h-4 w-4 text-primary" aria-hidden /> Títulos
+                  conquistados
+                </legend>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setStats((s) => ({
+                      ...s,
+                      titulos_lista: [
+                        ...(s.titulos_lista ?? []),
+                        { campeonato: "", ano: null, time: "" },
+                      ],
+                    }))
+                  }
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Adicionar título
+                </Button>
+              </div>
+
+              {(stats.titulos_lista ?? []).length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                  Nenhum título adicionado. Selecione os campeonatos que você
+                  conquistou.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {(stats.titulos_lista ?? []).map((t, i) => {
+                    const isOther =
+                      t.campeonato !== "" &&
+                      !CAMPEONATOS.some((g) => g.items.includes(t.campeonato));
+                    const selectValue = isOther ? "__outro__" : t.campeonato;
+                    return (
+                      <li
+                        key={i}
+                        className="space-y-2 rounded-2xl border border-border bg-bg2 p-3"
+                      >
+                        <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1.5fr]">
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Campeonato
+                            </Label>
+                            <select
+                              aria-label={`Campeonato do título ${i + 1}`}
+                              value={selectValue}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setStats((s) => ({
+                                  ...s,
+                                  titulos_lista: (s.titulos_lista ?? []).map(
+                                    (x, j) =>
+                                      j === i
+                                        ? {
+                                            ...x,
+                                            campeonato:
+                                              v === "__outro__" ? "" : v,
+                                          }
+                                        : x,
+                                  ),
+                                }));
+                              }}
+                              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                            >
+                              <option value="">Selecione…</option>
+                              {CAMPEONATOS.map((g) => (
+                                <optgroup key={g.group} label={g.group}>
+                                  {g.items.map((c) => (
+                                    <option key={c} value={c}>
+                                      {c}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ))}
+                              <option value="__outro__">Outro…</option>
+                            </select>
+                            {isOther && (
+                              <Input
+                                aria-label={`Nome do campeonato ${i + 1}`}
+                                placeholder="Digite o nome do campeonato"
+                                value={t.campeonato}
+                                onChange={(e) =>
+                                  setStats((s) => ({
+                                    ...s,
+                                    titulos_lista: (s.titulos_lista ?? []).map(
+                                      (x, j) =>
+                                        j === i
+                                          ? { ...x, campeonato: e.target.value }
+                                          : x,
+                                    ),
+                                  }))
+                                }
+                              />
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Ano
+                            </Label>
+                            <Input
+                              type="number"
+                              min={1990}
+                              max={CURRENT_YEAR}
+                              placeholder={`${CURRENT_YEAR}`}
+                              aria-label={`Ano do título ${i + 1}`}
+                              value={t.ano ?? ""}
+                              onChange={(e) =>
+                                setStats((s) => ({
+                                  ...s,
+                                  titulos_lista: (s.titulos_lista ?? []).map(
+                                    (x, j) =>
+                                      j === i
+                                        ? {
+                                            ...x,
+                                            ano:
+                                              e.target.value === ""
+                                                ? null
+                                                : Number(e.target.value),
+                                          }
+                                        : x,
+                                  ),
+                                }))
+                              }
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              Time
+                            </Label>
+                            <Input
+                              list={`clubes-list-${i}`}
+                              placeholder="Time pelo qual conquistou"
+                              aria-label={`Time do título ${i + 1}`}
+                              value={t.time}
+                              onChange={(e) =>
+                                setStats((s) => ({
+                                  ...s,
+                                  titulos_lista: (s.titulos_lista ?? []).map(
+                                    (x, j) =>
+                                      j === i
+                                        ? { ...x, time: e.target.value }
+                                        : x,
+                                  ),
+                                }))
+                              }
+                            />
+                            <datalist id={`clubes-list-${i}`}>
+                              {historico
+                                .map((h) => h.clube)
+                                .filter((c) => c && c.trim().length > 0)
+                                .map((c) => (
+                                  <option key={c} value={c} />
+                                ))}
+                            </datalist>
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Remover título ${i + 1}`}
+                            onClick={() =>
+                              setStats((s) => ({
+                                ...s,
+                                titulos_lista: (s.titulos_lista ?? []).filter(
+                                  (_, j) => j !== i,
+                                ),
+                              }))
+                            }
+                          >
+                            <Trash2 className="mr-1 h-4 w-4" /> Remover
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </fieldset>
+
 
             <fieldset className="space-y-3">
               <div className="flex items-center justify-between">
