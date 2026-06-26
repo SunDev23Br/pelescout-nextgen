@@ -1,25 +1,24 @@
-## Mudanças
+## Causa
 
-1. **Remover aba "Desempenho" do perfil do atleta** (`src/routes/perfil-atleta.tsx`):
-   - Remover o wrapper `<Tabs>` que dividia "Perfil" e "Desempenho"
-   - Voltar o conteúdo do perfil ao estado anterior (sem abas)
-   - Remover import de `DesempenhoTab`
+A nova rota `/desempenho` chama o server function `getMeuDesempenho`, que usa o middleware `requireSupabaseAuth` (exige bearer token). O projeto não tem `src/start.ts` registrando o `attachSupabaseAuth` como `functionMiddleware` cliente, então a chamada vai sem `Authorization` e o backend devolve 401 → 500 → erro `Something went wrong`.
 
-2. **Criar nova rota `/desempenho`** (`src/routes/desempenho.tsx`):
-   - Rota protegida (somente atletas logados)
-   - Usa `AppLayout` como as demais páginas
-   - Renderiza o componente `DesempenhoTab` existente (que já busca `getMeuDesempenho` e mostra peneiras anteriores, feedback dos olheiros, gráficos de evolução, radar, decisões e comentários)
-   - `head()` com title/description específicos
-   - Estado de loading e empty state já tratados dentro do `DesempenhoTab`
+(O componente `DesempenhoTab` já existia, mas só agora ficou exposto como rota própria, expondo a falta do middleware cliente.)
 
-3. **Adicionar item "Desempenho" na sidebar** (`src/components/AppLayout.tsx`):
-   - Novo `NavItem` no array `NAV`: `{ to: "/desempenho", label: "Desempenho", icon: <ícone do lucide, ex: LineChart>, roles: ["atleta"] }`
-   - Visível somente para usuários com role `atleta` (mesma lógica de filtro já existente)
+## Correção
 
-4. **Sem mudanças de backend**: o server function `getMeuDesempenho` e o componente `DesempenhoTab` já existem e continuam funcionando — apenas mudamos onde são renderizados.
+Criar `src/start.ts` registrando o middleware gerado:
 
-## Arquivos afetados
+```ts
+import { createStart } from "@tanstack/react-start";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
-- `src/routes/perfil-atleta.tsx` (editar — remover Tabs)
-- `src/routes/desempenho.tsx` (criar)
-- `src/components/AppLayout.tsx` (editar — adicionar item de menu)
+export const startInstance = createStart(() => ({
+  functionMiddleware: [attachSupabaseAuth],
+}));
+```
+
+Isso faz o navegador anexar o `Authorization: Bearer <token>` em toda chamada de `createServerFn`, permitindo que `getMeuDesempenho` (e quaisquer futuros server fns protegidos) funcione e a página `/desempenho` carregue as peneiras anteriores e o feedback.
+
+## Arquivos
+
+- `src/start.ts` (criar)
