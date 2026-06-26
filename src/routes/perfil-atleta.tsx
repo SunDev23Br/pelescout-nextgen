@@ -16,9 +16,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WearableMetricsCard } from "@/components/WearableMetricsCard";
-import { DesempenhoTab } from "@/components/desempenho/DesempenhoTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { fromISODate } from "@/lib/date";
@@ -214,13 +212,8 @@ function PerfilAtletaPage() {
           </Button>
         </div>
 
-        <Tabs defaultValue="perfil" className="w-full">
-          <TabsList className="grid w-full max-w-sm grid-cols-2">
-            <TabsTrigger value="perfil">Perfil</TabsTrigger>
-            <TabsTrigger value="desempenho">Desempenho</TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
 
-          <TabsContent value="perfil" className="mt-6 space-y-6">
 
         {/* TOP: Perfil + Sobre/Habilidades */}
         <div className="grid gap-4 lg:grid-cols-5">
@@ -473,12 +466,7 @@ function PerfilAtletaPage() {
             )}
           </section>
         </div>
-          </TabsContent>
-
-          <TabsContent value="desempenho" className="mt-6">
-            <DesempenhoTab />
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </AppLayout>
   );

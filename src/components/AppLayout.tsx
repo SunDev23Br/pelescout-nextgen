@@ -14,6 +14,7 @@ import {
   Building2,
   UserCog,
   ShieldCheck,
+  LineChart,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { AthleteAvatar } from "./AthleteAvatar";
@@ -39,6 +40,7 @@ const NAV: NavItem[] = [
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
   { to: "/perfil-atleta", label: "Perfil do Atleta", icon: Trophy, roles: ["atleta"] },
+  { to: "/desempenho", label: "Desempenho", icon: LineChart, roles: ["atleta"] },
   { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube", "suporte"] },
 ];
 
