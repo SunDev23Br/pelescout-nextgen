@@ -1,3 +1,4 @@
+Desenvolvido por : Julio Cesar Junior, Vitor Louzano, Miguel Menezes, Pedro Lucas e Arthur Moreira
 # Pelé Next Gen
 
 > Plataforma oficial de peneiras de futebol que conecta atletas, olheiros e clubes em todo o Brasil.
