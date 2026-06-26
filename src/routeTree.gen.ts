@@ -17,6 +17,7 @@ import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DesempenhoRouteImport } from './routes/desempenho'
 import { Route as DemoComponentesRouteImport } from './routes/demo-componentes'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ClubesRouteImport } from './routes/clubes'
@@ -76,6 +77,11 @@ const ManualRoute = ManualRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesempenhoRoute = DesempenhoRouteImport.update({
+  id: '/desempenho',
+  path: '/desempenho',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoComponentesRoute = DemoComponentesRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
+  '/desempenho': typeof DesempenhoRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
+  '/desempenho': typeof DesempenhoRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/clubes': typeof ClubesRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
+  '/desempenho': typeof DesempenhoRoute
   '/login': typeof LoginRoute
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/clubes'
     | '/dashboard'
     | '/demo-componentes'
+    | '/desempenho'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/clubes'
     | '/dashboard'
     | '/demo-componentes'
+    | '/desempenho'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/clubes'
     | '/dashboard'
     | '/demo-componentes'
+    | '/desempenho'
     | '/login'
     | '/manual'
     | '/perfil'
@@ -373,6 +385,7 @@ export interface RootRouteChildren {
   ClubesRoute: typeof ClubesRoute
   DashboardRoute: typeof DashboardRoute
   DemoComponentesRoute: typeof DemoComponentesRoute
+  DesempenhoRoute: typeof DesempenhoRoute
   LoginRoute: typeof LoginRoute
   ManualRoute: typeof ManualRoute
   PerfilRoute: typeof PerfilRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desempenho': {
+      id: '/desempenho'
+      path: '/desempenho'
+      fullPath: '/desempenho'
+      preLoaderRoute: typeof DesempenhoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo-componentes': {
@@ -605,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClubesRoute: ClubesRoute,
   DashboardRoute: DashboardRoute,
   DemoComponentesRoute: DemoComponentesRoute,
+  DesempenhoRoute: DesempenhoRoute,
   LoginRoute: LoginRoute,
   ManualRoute: ManualRoute,
   PerfilRoute: PerfilRoute,
@@ -630,12 +651,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
