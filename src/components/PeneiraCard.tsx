@@ -91,13 +91,19 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
           />
         </div>
 
-        <Button asChild className="mt-auto w-full" disabled={lotada}>
+        <Button
+          asChild
+          className="mt-auto w-full transition-transform duration-200 hover:scale-[1.02] hover:shadow-gold"
+          disabled={lotada && peneira.status === "aberta"}
+        >
           <Link to="/peneiras/$peneiraId" params={{ peneiraId: peneira.id }}>
             {peneira.status === "encerrada"
               ? "Ver resultados"
-              : lotada
-                ? "Vagas esgotadas"
-                : "Ver detalhes"}
+              : peneira.status === "em_andamento"
+                ? "Acompanhar ao vivo"
+                : lotada
+                  ? "Vagas esgotadas"
+                  : "Inscrever-se"}
           </Link>
         </Button>
       </div>

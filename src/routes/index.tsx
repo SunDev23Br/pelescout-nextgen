@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Trophy, Sparkles, Target } from "lucide-react";
+import { ArrowRight, Trophy, Sparkles, Target, Users, Star } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useCountUp } from "@/hooks/use-count-up";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
@@ -93,26 +94,30 @@ function Landing() {
               A nova geração do{" "}
               <span className="text-gradient-gold">futebol</span> começa aqui!
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Cadastre-se na Pelé Next Gen, participe de peneiras dos maiores clubes do Brasil e
-              seja avaliado por olheiros profissionais. Sua chance de mostrar talento começa agora.
+            <p className="mt-6 max-w-xl text-lg text-foreground/80">
+              Descubra peneiras em todo o Brasil e dê o próximo passo na sua carreira. Cadastre-se,
+              seja avaliado por olheiros profissionais e mostre seu talento para os maiores clubes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="text-base">
+              <Button
+                asChild
+                size="lg"
+                className="group text-base shadow-gold transition-transform duration-200 hover:scale-[1.03]"
+              >
                 <Link to="/cadastro">
-                  Quero ser atleta
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  Criar perfil de atleta
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="text-base">
-                <Link to="/login">Já tenho conta</Link>
+              <Button asChild size="lg" variant="outline" className="text-base transition-colors hover:bg-primary/10">
+                <Link to="/login">Entrar na minha conta</Link>
               </Button>
             </div>
 
             <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8">
-              <Stat number="120+" label="Peneiras realizadas" />
-              <Stat number="8.4k" label="Atletas cadastrados" />
-              <Stat number="320" label="Talentos descobertos" />
+              <Stat icon={Trophy} target={120} suffix="+" label="Peneiras realizadas" />
+              <Stat icon={Users} target={8400} format="k" label="Atletas cadastrados" />
+              <Stat icon={Star} target={320} label="Talentos descobertos" />
             </div>
           </div>
 
@@ -187,11 +192,33 @@ function Landing() {
   );
 }
 
-function Stat({ number, label }: { number: string; label: string }) {
+function Stat({
+  icon: Icon,
+  target,
+  label,
+  suffix = "",
+  format,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  target: number;
+  label: string;
+  suffix?: string;
+  format?: "k";
+}) {
+  const [value, ref] = useCountUp(target);
+  const display =
+    format === "k"
+      ? `${(value / 1000).toFixed(value >= 1000 ? 1 : 0)}k`
+      : `${value}${suffix}`;
   return (
-    <div>
-      <p className="font-display text-3xl font-extrabold text-gradient-gold">{number}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+    <div ref={ref as React.RefObject<HTMLDivElement>} className="animate-fade-in">
+      <div className="mb-1.5 flex items-center gap-1.5 text-primary">
+        <Icon className="h-4 w-4" />
+      </div>
+      <p className="font-display text-3xl font-extrabold text-gradient-gold tabular-nums">
+        {display}
+      </p>
+      <p className="mt-1 text-xs font-medium text-foreground/70">{label}</p>
     </div>
   );
 }
