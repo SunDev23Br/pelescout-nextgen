@@ -722,6 +722,70 @@ function PerfilPage() {
             </fieldset>
 
             <fieldset className="space-y-3">
+              <legend className="flex items-center gap-2 text-sm font-semibold">
+                <BadgeCheck className="h-4 w-4 text-primary" aria-hidden />
+                Habilidades (autoavaliação)
+              </legend>
+              <p className="text-xs text-muted-foreground">
+                Escala 0 a 100. Um clube, admin ou treinador convidado pode
+                confirmar sua avaliação — quando isso acontece, um selo dourado
+                aparece no seu perfil.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {SKILL_KEYS.map((k: SkillKey) => (
+                  <div
+                    key={k}
+                    className="rounded-xl border border-border bg-bg2 p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label
+                        htmlFor={`skill-${k}`}
+                        className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground"
+                      >
+                        {SKILL_LABELS[k]}
+                      </Label>
+                      <Input
+                        id={`skill-${k}-num`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={skills[k] ?? ""}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          setSkills((s) => ({
+                            ...s,
+                            [k]:
+                              raw === ""
+                                ? null
+                                : clampSkill(Number(raw)),
+                          }));
+                        }}
+                        className="h-8 w-20 text-right"
+                        aria-label={`${SKILL_LABELS[k]} (valor 0 a 100)`}
+                      />
+                    </div>
+                    <input
+                      id={`skill-${k}`}
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={skills[k] ?? 0}
+                      onChange={(e) =>
+                        setSkills((s) => ({
+                          ...s,
+                          [k]: clampSkill(Number(e.target.value)),
+                        }))
+                      }
+                      className="w-full accent-primary"
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+
+            <fieldset className="space-y-3">
               <div className="flex items-center justify-between">
                 <legend className="flex items-center gap-2 text-sm font-semibold">
                   <Trophy className="h-4 w-4 text-primary" aria-hidden /> Títulos
