@@ -467,6 +467,20 @@ function PerfilPage() {
     toast.success("Convite removido.");
   }
 
+  async function aceitarConvite(id: string) {
+    setAcceptingId(id);
+    const { error } = await supabase.rpc("accept_skill_validator_invite", {
+      _invite_id: id,
+    });
+    setAcceptingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setIncoming((arr) => arr.filter((x) => x.id !== id));
+    toast.success("Convite aceito. Você já pode validar as habilidades do atleta.");
+  }
+
   function setStatField(k: keyof AthleteStats, v: string) {
     const n = v === "" ? null : Number(v);
     setStats((s) => ({ ...s, [k]: n }));
