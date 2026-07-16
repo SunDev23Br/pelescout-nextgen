@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Check, MapPin, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { PeneiraCard } from "@/components/PeneiraCard";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { UF_COORDS, haversineKm } from "@/lib/geo";
 
 export const Route = createFileRoute("/peneiras/")({
   head: () => ({
