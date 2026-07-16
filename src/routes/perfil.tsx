@@ -1167,6 +1167,103 @@ function PerfilPage() {
         )}
 
         {user.role === "atleta" && (
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                <ShieldCheck className="h-5 w-5" /> Validadores das minhas habilidades
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Convide um treinador de confiança pelo e-mail dele. Depois de
+                aceitar o convite, ele poderá confirmar ou ajustar suas 5
+                habilidades — quando isso acontecer, um selo dourado aparece no
+                seu perfil. Admins e clubes que já desbloquearam seu contato
+                também podem validar automaticamente.
+              </p>
+            </div>
+
+            <form
+              onSubmit={convidarValidador}
+              className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+            >
+              <Input
+                type="email"
+                required
+                placeholder="e-mail do treinador"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                aria-label="E-mail do validador"
+              />
+              <Input
+                placeholder="Nome (opcional)"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                aria-label="Nome do validador"
+              />
+              <Button type="submit" disabled={inviting}>
+                {inviting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <MailIcon className="mr-2 h-4 w-4" />
+                )}
+                Convidar
+              </Button>
+            </form>
+
+            {validators.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                Nenhum validador convidado ainda.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {validators.map((v) => (
+                  <li
+                    key={v.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-bg2 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {v.invited_name || v.invited_email || "Validador"}
+                      </p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {v.invited_email}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
+                          (v.status === "accepted"
+                            ? "bg-primary/15 text-primary"
+                            : v.status === "revoked"
+                              ? "bg-destructive/15 text-destructive"
+                              : "bg-muted text-muted-foreground")
+                        }
+                      >
+                        {v.status === "accepted"
+                          ? "Aceito"
+                          : v.status === "revoked"
+                            ? "Revogado"
+                            : "Pendente"}
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removerValidador(v.id)}
+                        aria-label="Remover convite"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+
+        {user.role === "atleta" && (
           <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
             <AthleteVideoGallery atletaId={user.id} canManage />
           </section>
