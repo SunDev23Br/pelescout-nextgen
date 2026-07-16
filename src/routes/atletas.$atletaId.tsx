@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
   Building2,
   Footprints,
   Loader2,
   Medal,
   MessageSquarePlus,
   Ruler,
+  Save,
   Star,
   Trophy,
   Weight,
@@ -17,6 +19,16 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
+import { SkillsDisplay } from "@/components/SkillsDisplay";
+import {
+  SKILL_KEYS,
+  SKILL_LABELS,
+  cleanSkillsForSave,
+  clampSkill,
+  parseSkills,
+  type SkillKey,
+  type SkillsMap,
+} from "@/lib/skills";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
