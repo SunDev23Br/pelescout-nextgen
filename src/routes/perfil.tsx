@@ -99,8 +99,23 @@ function PerfilPage() {
   const [bio, setBio] = useState("");
   const [stats, setStats] = useState<AthleteStats>({});
   const [historico, setHistorico] = useState<ClubeHist[]>([]);
+  const [skills, setSkills] = useState<SkillsMap>({});
   const [savingAtleta, setSavingAtleta] = useState(false);
   const [loadingAtleta, setLoadingAtleta] = useState(false);
+
+  // Skill validators (invites)
+  interface ValidatorInvite {
+    id: string;
+    validator_id: string | null;
+    invited_email: string | null;
+    invited_name: string | null;
+    status: "pending" | "accepted" | "revoked";
+    created_at: string;
+  }
+  const [validators, setValidators] = useState<ValidatorInvite[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
@@ -116,7 +131,7 @@ function PerfilPage() {
     setLoadingAtleta(true);
     supabase
       .from("profiles")
-      .select("bio, historico_clubes, stats")
+      .select("bio, historico_clubes, stats, skills")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -124,8 +139,19 @@ function PerfilPage() {
           setBio(data.bio ?? "");
           setHistorico(((data.historico_clubes as ClubeHist[] | null) ?? []));
           setStats(((data.stats as AthleteStats | null) ?? {}));
+          setSkills(parseSkills(data.skills));
         }
         setLoadingAtleta(false);
+      });
+
+    // Load athlete's outgoing validator invites
+    supabase
+      .from("athlete_skill_validators")
+      .select("id, validator_id, invited_email, invited_name, status, created_at")
+      .eq("atleta_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setValidators(data as ValidatorInvite[]);
       });
   }, [user]);
 
