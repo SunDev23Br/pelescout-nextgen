@@ -138,7 +138,34 @@ function PerfilPage() {
   }, [user, ready, navigate]);
 
   useEffect(() => {
-    if (!user || user.role !== "atleta") return;
+    if (!user) return;
+
+    // Incoming invites: any user can be invited as a validator (by email or by id).
+    supabase
+      .from("athlete_skill_validators")
+      .select("id, atleta_id, status, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) {
+          setIncoming([]);
+          return;
+        }
+        const ids = data.map((d) => d.atleta_id);
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, nome")
+          .in("id", ids);
+        const nameMap = new Map((profs ?? []).map((p) => [p.id, p.nome]));
+        setIncoming(
+          data.map((d) => ({
+            ...(d as IncomingInvite),
+            atleta_nome: nameMap.get(d.atleta_id) ?? null,
+          })),
+        );
+      });
+
+    if (user.role !== "atleta") return;
     setLoadingAtleta(true);
     supabase
       .from("profiles")
