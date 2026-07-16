@@ -144,26 +144,6 @@ function ManualPage() {
                 );
               })}
             </ul>
-
-            <div className="mt-5 rounded-xl border border-primary/25 bg-primary/5 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Preparação
-              </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground">
-                  {progress}% pronto
-                </span>
-                <span className="text-muted-foreground">
-                  {CHECKLIST_ITEMS.filter((i) => checked[i]).length}/{CHECKLIST_ITEMS.length}
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg3">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
           </nav>
         </aside>
 
