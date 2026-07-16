@@ -42,18 +42,43 @@ function PeneirasPage() {
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [dbPeneiras, setDbPeneiras] = useState<Peneira[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
 
   const { user } = useSession();
   const isSuporte = user?.role === "suporte";
 
   async function loadDb() {
+    setLoading(true);
     const list = await fetchPeneirasFromDb();
     setDbPeneiras(list);
+    setLoading(false);
   }
 
   useEffect(() => {
     loadDb();
   }, []);
+
+  function requestGeo() {
+    if (!("geolocation" in navigator)) {
+      setGeoStatus("denied");
+      toast.error("Geolocalização não disponível no seu navegador.");
+      return;
+    }
+    setGeoStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoStatus("granted");
+      },
+      () => {
+        setGeoStatus("denied");
+        toast.error("Não foi possível obter sua localização.");
+      },
+      { timeout: 8000 },
+    );
+  }
 
   async function handleDelete(id: string, titulo: string) {
     if (!confirm(`Excluir a peneira "${titulo}"? Esta ação não pode ser desfeita.`)) return;
