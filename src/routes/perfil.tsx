@@ -511,6 +511,61 @@ function PerfilPage() {
           )}
         </div>
 
+        {incoming.length > 0 && (
+          <section className="space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-6 shadow-card sm:p-8">
+            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              <BadgeCheck className="h-5 w-5" /> Convites para validar atletas
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Você foi convidado a confirmar as habilidades destes atletas. Ao
+              aceitar, você poderá abrir o perfil deles e ajustar as notas.
+            </p>
+            <ul className="space-y-2">
+              {incoming.map((inv) => (
+                <li
+                  key={inv.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {inv.atleta_nome ?? "Atleta"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Convite recebido em{" "}
+                      {new Date(inv.created_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Link to="/atletas/$atletaId" params={{ atletaId: inv.atleta_id }}>
+                        Ver perfil
+                      </Link>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => aceitarConvite(inv.id)}
+                      disabled={acceptingId === inv.id}
+                    >
+                      {acceptingId === inv.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                      )}
+                      Aceitar
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+
 
         <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
           <h2 className="mb-4 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">Foto de perfil</h2>
