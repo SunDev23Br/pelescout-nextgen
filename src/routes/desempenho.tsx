@@ -54,6 +54,7 @@ interface AvaliacaoRow {
   comentario: string | null;
   created_at: string;
   avaliador_id: string | null;
+  atleta_user_id?: string | null;
 }
 
 interface CandidatoRow {
@@ -185,22 +186,20 @@ function DesempenhoContent({ userId }: { userId: string }) {
         const candidatos = (candData ?? []) as unknown as CandidatoRow[];
         const candidatoIds = candidatos.map((c) => c.id);
 
-        // 2) Avaliações: por candidato_id OU por atleta_user_id
-        let query = supabase
-          .from("avaliacoes")
-          .select(
-            "id, candidato_id, peneira_id, tecnica, fisico, tatico, mental, intensidade, pe_bonus, nota_geral, decisao, tags_positivas, tags_negativas, comentario, created_at, avaliador_id",
-          );
+        // 2) Avaliações ligadas às candidaturas do atleta.
+        // Mantemos a consulta somente por candidato_id para evitar chamar colunas
+        // opcionais de versões antigas do banco e impedir queda da página.
+        let avals: AvaliacaoRow[] = [];
         if (candidatoIds.length > 0) {
-          query = query.or(
-            `atleta_user_id.eq.${userId},candidato_id.in.(${candidatoIds.join(",")})`,
-          );
-        } else {
-          query = query.eq("atleta_user_id", userId);
+          const { data: avalData, error: avalErr } = await supabase
+            .from("avaliacoes")
+            .select(
+              "id, candidato_id, peneira_id, tecnica, fisico, tatico, mental, intensidade, pe_bonus, nota_geral, decisao, tags_positivas, tags_negativas, comentario, created_at, avaliador_id",
+            )
+            .in("candidato_id", candidatoIds);
+          if (avalErr) throw avalErr;
+          avals = (avalData ?? []) as AvaliacaoRow[];
         }
-        const { data: avalData, error: avalErr } = await query;
-        if (avalErr) throw avalErr;
-        const avals = (avalData ?? []) as AvaliacaoRow[];
 
         // 3) Nomes dos avaliadores
         const avaliadorIds = Array.from(
@@ -267,30 +266,6 @@ function DesempenhoContent({ userId }: { userId: string }) {
             status: c.status,
             notaCandidato: c.nota_geral,
             avaliacoes: minha,
-          });
-        });
-
-        // Avaliações órfãs (sem candidato)
-        const orphan = avals.filter((a) => !a.candidato_id);
-        const byPeneira = new Map<string, AvaliacaoRow[]>();
-        orphan.forEach((a) => {
-          const k = a.peneira_id ?? "__sem__";
-          const arr = byPeneira.get(k) ?? [];
-          arr.push(a);
-          byPeneira.set(k, arr);
-        });
-        byPeneira.forEach((arr, peneiraId) => {
-          const pen = peneiraId !== "__sem__" ? peneiraExtra.get(peneiraId) : undefined;
-          out.push({
-            key: `orphan-${peneiraId}`,
-            candidatoId: null,
-            peneira: pen ?? null,
-            status: null,
-            notaCandidato: null,
-            avaliacoes: arr.map((a) => ({
-              ...a,
-              avaliadorNome: a.avaliador_id ? nomeMap.get(a.avaliador_id) ?? null : null,
-            })),
           });
         });
 

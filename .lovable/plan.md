@@ -1,24 +1,11 @@
 ## Causa
 
-A nova rota `/desempenho` chama o server function `getMeuDesempenho`, que usa o middleware `requireSupabaseAuth` (exige bearer token). O projeto não tem `src/start.ts` registrando o `attachSupabaseAuth` como `functionMiddleware` cliente, então a chamada vai sem `Authorization` e o backend devolve 401 → 500 → erro `Something went wrong`.
-
-(O componente `DesempenhoTab` já existia, mas só agora ficou exposto como rota própria, expondo a falta do middleware cliente.)
+A rota `/desempenho` ainda era afetada por uma implementação antiga baseada em server function (`getMeuDesempenho`). Em desenvolvimento, o Vite/TanStack pode manter uma validação em cache para IDs antigos de server functions, gerando `Invalid server function ID` mesmo depois de a rota visual mudar.
 
 ## Correção
 
-Criar `src/start.ts` registrando o middleware gerado:
-
-```ts
-import { createStart } from "@tanstack/react-start";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
-
-export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
-}));
-```
-
-Isso faz o navegador anexar o `Authorization: Bearer <token>` em toda chamada de `createServerFn`, permitindo que `getMeuDesempenho` (e quaisquer futuros server fns protegidos) funcione e a página `/desempenho` carregue as peneiras anteriores e o feedback.
+A aba `/desempenho` foi refeita como rota independente e cliente, usando apenas o cliente autenticado do backend no navegador. Também foi removida a dependência de consultas por campos opcionais para evitar erro quando o banco não tiver avaliações avulsas vinculadas diretamente ao usuário.
 
 ## Arquivos
 
-- `src/start.ts` (criar)
+- `src/routes/desempenho.tsx`
