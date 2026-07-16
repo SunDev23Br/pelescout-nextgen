@@ -1086,15 +1086,36 @@ function PerfilPage() {
                               ),
                             )
                           }
+                          onBlur={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i
+                                  ? { ...x, clube: titleCaseClub(e.target.value) }
+                                  : x,
+                              ),
+                            )
+                          }
                         />
                         <Input
                           aria-label={`Período no clube ${i + 1}`}
-                          placeholder="Período (ex.: 2022–2024)"
+                          placeholder="Período (ex.: 2022 – 2024)"
                           value={h.periodo ?? ""}
                           onChange={(e) =>
                             setHistorico((arr) =>
                               arr.map((x, j) =>
                                 j === i ? { ...x, periodo: e.target.value } : x,
+                              ),
+                            )
+                          }
+                          onBlur={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i
+                                  ? {
+                                      ...x,
+                                      periodo: formatClubPeriod(e.target.value),
+                                    }
+                                  : x,
                               ),
                             )
                           }
