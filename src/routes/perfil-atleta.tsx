@@ -18,6 +18,7 @@ import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { WearableMetricsCard } from "@/components/WearableMetricsCard";
 import { SkillsDisplay } from "@/components/SkillsDisplay";
+import { SkillsInsights } from "@/components/SkillsInsights";
 import { parseSkills } from "@/lib/skills";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
