@@ -85,13 +85,16 @@ function ChatPage() {
 
   const canStart = user?.role === "admin" || user?.role === "clube";
 
-  const filtered = useMemo(
-    () =>
-      conversations.filter((c) =>
-        c.peer.nome.toLowerCase().includes(filter.trim().toLowerCase()),
-      ),
-    [conversations, filter],
-  );
+  const filtered = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter(
+      (c) =>
+        c.peer.nome.toLowerCase().includes(q) ||
+        (c.last_message_preview ?? "").toLowerCase().includes(q),
+    );
+  }, [conversations, filter]);
+
 
   // Auto-select first conversation on desktop
   useEffect(() => {
@@ -130,17 +133,18 @@ function ChatPage() {
             )}
           </div>
           <div className="p-3">
-            <div className="relative">
+          <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar conversas..."
+                placeholder="Buscar por nome ou mensagem..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-9"
+                className="rounded-full border-border bg-bg3/60 pl-9 focus-visible:ring-primary/40"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
+
             {loading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -169,8 +173,9 @@ function ChatPage() {
                         });
                       }}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-bg3",
-                        c.id === activeId && "bg-primary/10",
+                        "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-bg3/80 hover:translate-x-0.5",
+                        c.id === activeId &&
+                          "bg-primary/15 ring-1 ring-primary/30 shadow-sm",
                       )}
                       title={canStart ? "Clique para abrir · botão direito p/ ver perfil" : undefined}
                     >
@@ -181,24 +186,42 @@ function ChatPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-semibold">{c.peer.nome}</p>
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <p
+                            className={cn(
+                              "truncate text-sm",
+                              c.unread > 0 ? "font-bold text-foreground" : "font-semibold",
+                            )}
+                          >
+                            {c.peer.nome}
+                          </p>
+                          <span
+                            className={cn(
+                              "shrink-0 text-[10px]",
+                              c.unread > 0 ? "font-semibold text-primary" : "text-muted-foreground",
+                            )}
+                          >
                             {formatDistanceToNow(new Date(c.last_message_at), {
                               addSuffix: false,
                               locale: ptBR,
                             })}
                           </span>
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p
+                          className={cn(
+                            "truncate text-xs",
+                            c.unread > 0 ? "font-medium text-foreground/80" : "text-muted-foreground",
+                          )}
+                        >
                           {c.last_message_preview ?? "Conversa iniciada"}
                         </p>
                       </div>
                       {c.unread > 0 && (
-                        <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                          {c.unread}
+                        <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-md shadow-primary/40">
+                          {c.unread > 99 ? "99+" : c.unread}
                         </span>
                       )}
                     </button>
+
                   </li>
                 ))}
               </ul>
@@ -338,13 +361,16 @@ function ActiveConversation({
   const { peerTyping, notifyTyping } = useTyping(conversationId, peerId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingDebounceRef = useRef<number>(0);
+  const [msgSearch, setMsgSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, peerTyping]);
 
-  const statusLabel = presence?.is_online
-    ? "Online"
+  const isOnline = !!presence?.is_online;
+  const statusLabel = isOnline
+    ? "Online agora"
     : presence?.last_seen_at
       ? `Visto ${formatDistanceToNow(new Date(presence.last_seen_at), {
           addSuffix: true,
@@ -360,10 +386,20 @@ function ActiveConversation({
     }
   };
 
+  const filteredMessages = useMemo(() => {
+    const q = msgSearch.trim().toLowerCase();
+    if (!q) return messages;
+    return messages.filter((m) => (m.content ?? "").toLowerCase().includes(q));
+  }, [messages, msgSearch]);
+
+  const peerLinkProps = isScout
+    ? { to: "/atletas/$atletaId" as const, params: { atletaId: peerId } }
+    : { to: "/usuarios/$userId" as const, params: { userId: peerId } };
+
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b border-border bg-bg2 p-3">
+      <header className="flex items-center gap-3 border-b border-border bg-bg2/95 p-3 backdrop-blur">
         <button
           type="button"
           onClick={onBack}
@@ -372,47 +408,51 @@ function ActiveConversation({
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        {isScout ? (
-          <Link
-            to="/atletas/$atletaId"
-            params={{ atletaId: peerId }}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
-            onContextMenu={(e) => e.stopPropagation()}
-            title="Ver perfil do atleta"
-          >
+        <Link
+          {...peerLinkProps}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
+          onContextMenu={(e) => e.stopPropagation()}
+          title="Ver perfil"
+        >
+          <div className="relative shrink-0">
             <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
-              <p className="text-xs text-muted-foreground">
-                {peerTyping ? (
+            <span
+              className={cn(
+                "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-bg2",
+                isOnline ? "bg-emerald-500" : "bg-muted-foreground/50",
+              )}
+              aria-hidden="true"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              {peerTyping ? (
+                <>
+                  <span className="inline-flex gap-0.5">
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary [animation-delay:-200ms]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary [animation-delay:-100ms]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary" />
+                  </span>
                   <span className="text-primary">digitando…</span>
-                ) : (
-                  statusLabel
-                )}
-              </p>
-            </div>
-          </Link>
-        ) : (
-          <Link
-            to="/usuarios/$userId"
-            params={{ userId: peerId }}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
-            onContextMenu={(e) => e.stopPropagation()}
-            title="Ver perfil"
-          >
-            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
-              <p className="text-xs text-muted-foreground">
-                {peerTyping ? (
-                  <span className="text-primary">digitando…</span>
-                ) : (
-                  statusLabel
-                )}
-              </p>
-            </div>
-          </Link>
-        )}
+                </>
+              ) : isOnline ? (
+                <span className="text-emerald-500">● {statusLabel}</span>
+              ) : (
+                statusLabel
+              )}
+            </p>
+          </div>
+        </Link>
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label="Buscar em mensagens"
+          onClick={() => setShowSearch((s) => !s)}
+          className={cn(showSearch && "bg-bg3 text-primary")}
+        >
+          <Search className="h-5 w-5" />
+        </Button>
         {canInvite && (
           <Button size="sm" variant="outline" onClick={onInvite}>
             <Trophy className="mr-1 h-4 w-4" />
@@ -458,6 +498,21 @@ function ActiveConversation({
         </DropdownMenu>
       </header>
 
+      {showSearch && (
+        <div className="border-b border-border bg-bg2/60 p-2 animate-fade-in">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={msgSearch}
+              onChange={(e) => setMsgSearch(e.target.value)}
+              placeholder="Buscar nesta conversa..."
+              className="rounded-full border-border bg-bg3/60 pl-9"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {loading ? (
@@ -465,7 +520,12 @@ function ActiveConversation({
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <MessageList messages={messages} selfId={selfId} peerTyping={peerTyping} />
+          <MessageList
+            messages={filteredMessages}
+            selfId={selfId}
+            peerTyping={peerTyping}
+            searchQuery={msgSearch}
+          />
         )}
       </div>
 
@@ -478,6 +538,7 @@ function ActiveConversation({
     </div>
   );
 }
+
 
 function InvitePeneiraDialog({
   open,

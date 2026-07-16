@@ -71,7 +71,7 @@ export function MessageComposer({
 
   return (
     <form
-      className="flex items-end gap-2 border-t border-border bg-bg2 p-3"
+      className="flex items-end gap-2 border-t border-border bg-bg2 p-3 focus-within:bg-bg2/80"
       onSubmit={(e) => {
         e.preventDefault();
         void submit();
@@ -110,15 +110,18 @@ export function MessageComposer({
         }}
       />
 
-      <div className="flex gap-1">
+      <div className="flex gap-0.5">
         <Button
           type="button"
           size="icon"
           variant="ghost"
           onClick={() => imageRef.current?.click()}
           aria-label="Enviar imagem"
+          title="Enviar imagem"
+          className="h-10 w-10 rounded-full text-muted-foreground hover:text-primary"
+          disabled={sending}
         >
-          <ImageIcon className="h-5 w-5" />
+          <ImageIcon className="h-[22px] w-[22px]" />
         </Button>
         <Button
           type="button"
@@ -126,8 +129,11 @@ export function MessageComposer({
           variant="ghost"
           onClick={() => videoRef.current?.click()}
           aria-label="Enviar vídeo"
+          title="Enviar vídeo"
+          className="h-10 w-10 rounded-full text-muted-foreground hover:text-primary"
+          disabled={sending}
         >
-          <Film className="h-5 w-5" />
+          <Film className="h-[22px] w-[22px]" />
         </Button>
         <Button
           type="button"
@@ -135,8 +141,11 @@ export function MessageComposer({
           variant="ghost"
           onClick={() => fileRef.current?.click()}
           aria-label="Enviar arquivo"
+          title="Enviar arquivo"
+          className="h-10 w-10 rounded-full text-muted-foreground hover:text-primary"
+          disabled={sending}
         >
-          <Paperclip className="h-5 w-5" />
+          <Paperclip className="h-[22px] w-[22px]" />
         </Button>
       </div>
 
@@ -153,13 +162,24 @@ export function MessageComposer({
           }
         }}
         rows={1}
-        placeholder="Escreva uma mensagem..."
-        className="min-h-[40px] flex-1 resize-none"
+        placeholder="Digite sua mensagem..."
+        className="min-h-[44px] flex-1 resize-none rounded-2xl border-border bg-bg3/60 px-4 py-2.5 text-sm transition focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/40"
       />
 
-      <Button type="submit" size="icon" disabled={sending || !text.trim()} aria-label="Enviar">
-        <Send className="h-5 w-5" />
+      <Button
+        type="submit"
+        size="icon"
+        disabled={sending || !text.trim()}
+        aria-label="Enviar"
+        className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition hover:scale-105 hover:brightness-110 disabled:scale-100 disabled:opacity-50 disabled:shadow-none"
+      >
+        {sending ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground/50 border-t-primary-foreground" />
+        ) : (
+          <Send className="h-5 w-5" />
+        )}
       </Button>
     </form>
   );
 }
+
