@@ -157,7 +157,7 @@ function ClubesPage() {
 
   const desbloqueados = new Set(user?.contatosDesbloqueados ?? []);
 
-  if (ready && user && user.role === "atleta") {
+  if (ready && !canListAprovados) {
     return (
       <AppLayout>
         <div className="rounded-2xl border border-border bg-card p-12 text-center">
