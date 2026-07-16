@@ -221,6 +221,15 @@ export async function deleteConversation(conversationId: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function deleteMessage(messageId: string) {
+  const { error } = await supabase
+    .from("messages")
+    .delete()
+    .eq("id", messageId);
+  if (error) throw new Error(error.message);
+}
+
+
 export async function markRead(conversationId: string) {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;
