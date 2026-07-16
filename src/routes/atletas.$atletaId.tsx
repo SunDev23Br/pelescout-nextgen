@@ -139,13 +139,19 @@ function AthleteProfilePage() {
     if (ready && !user) navigate({ to: "/login" });
   }, [ready, user, navigate]);
 
+  // Validator state
+  const [canValidate, setCanValidate] = useState(false);
+  const [validatorPanelOpen, setValidatorPanelOpen] = useState(false);
+  const [validatorDraft, setValidatorDraft] = useState<SkillsMap>({});
+  const [savingValidation, setSavingValidation] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     supabase
       .from("profiles")
       .select(
-        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats",
+        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats, skills, skills_validated, skills_validated_at, skills_validated_by",
       )
       .eq("id", atletaId)
       .maybeSingle()
@@ -159,6 +165,10 @@ function AthleteProfilePage() {
               (data.historico_clubes as ClubeHistorico[] | null) ?? [],
             stats: (data.stats as AthleteStats | null) ?? {},
           } as AthleteProfile);
+          // Pre-fill validator draft with the current validated OR self skills.
+          const seed =
+            parseSkills(data.skills_validated) ?? parseSkills(data.skills);
+          setValidatorDraft(seed);
         } else {
           setProfile(null);
         }
@@ -170,25 +180,28 @@ function AthleteProfilePage() {
     };
   }, [atletaId]);
 
+  // Check whether current user is allowed to validate this athlete's skills.
+  useEffect(() => {
+    if (!user || user.id === atletaId) {
+      setCanValidate(false);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .rpc("can_validate_athlete", { _validator: user.id, _atleta: atletaId })
+      .then(({ data }) => {
+        if (!cancelled) setCanValidate(Boolean(data));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, atletaId]);
+
   const canManage = user?.id === atletaId && user?.role === "atleta";
   const canStartChat =
     !!user &&
     user.id !== atletaId &&
     (user.role === "admin" || user.role === "clube");
-
-  const skills = useMemo(() => {
-    const s = profile?.stats ?? {};
-    const cap = (n: number, max: number) =>
-      Math.min(100, Math.round((n / max) * 100));
-    const base = s.jogos != null ? cap(s.jogos, 100) : 70;
-    return [
-      { label: "Marcação", value: Math.min(100, base + 10) },
-      { label: "Força", value: Math.max(40, base - 5) },
-      { label: "Passe", value: s.assistencias != null ? cap(s.assistencias, 25) : 75 },
-      { label: "Velocidade", value: Math.max(50, base) },
-      { label: "Posicionamento", value: s.gols != null ? Math.min(100, cap(s.gols, 30) + 30) : 80 },
-    ];
-  }, [profile]);
 
   async function handleStartChat() {
     if (!user) return;
@@ -202,6 +215,33 @@ function AthleteProfilePage() {
     } finally {
       setStarting(false);
     }
+  }
+
+  async function saveValidation() {
+    if (!profile) return;
+    setSavingValidation(true);
+    const cleaned = cleanSkillsForSave(validatorDraft);
+    const { error } = await supabase.rpc("set_validated_skills", {
+      _atleta: profile.id,
+      _skills: cleaned,
+    });
+    setSavingValidation(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Habilidades validadas atualizadas.");
+    setProfile((p) =>
+      p
+        ? {
+            ...p,
+            skills_validated: cleaned,
+            skills_validated_at: new Date().toISOString(),
+            skills_validated_by: user?.id ?? null,
+          }
+        : p,
+    );
+    setValidatorPanelOpen(false);
   }
 
   if (!ready || loading) {
