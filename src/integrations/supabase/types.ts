@@ -62,6 +62,82 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_skill_history: {
+        Row: {
+          atleta_id: string
+          created_at: string
+          id: string
+          skills: Json
+          source: string
+          validator_id: string | null
+        }
+        Insert: {
+          atleta_id: string
+          created_at?: string
+          id?: string
+          skills: Json
+          source: string
+          validator_id?: string | null
+        }
+        Update: {
+          atleta_id?: string
+          created_at?: string
+          id?: string
+          skills?: Json
+          source?: string
+          validator_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_skill_history_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_skill_validators: {
+        Row: {
+          accepted_at: string | null
+          atleta_id: string
+          created_at: string
+          id: string
+          invited_email: string | null
+          invited_name: string | null
+          status: string
+          validator_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          atleta_id: string
+          created_at?: string
+          id?: string
+          invited_email?: string | null
+          invited_name?: string | null
+          status?: string
+          validator_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          atleta_id?: string
+          created_at?: string
+          id?: string
+          invited_email?: string | null
+          invited_name?: string | null
+          status?: string
+          validator_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_skill_validators_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_videos: {
         Row: {
           atleta_id: string
@@ -542,6 +618,10 @@ export type Database = {
           pe: Database["public"]["Enums"]["pe_dominante"] | null
           peso: number | null
           posicao: Database["public"]["Enums"]["posicao"] | null
+          skills: Json
+          skills_validated: Json | null
+          skills_validated_at: string | null
+          skills_validated_by: string | null
           stats: Json
           updated_at: string
         }
@@ -562,6 +642,10 @@ export type Database = {
           pe?: Database["public"]["Enums"]["pe_dominante"] | null
           peso?: number | null
           posicao?: Database["public"]["Enums"]["posicao"] | null
+          skills?: Json
+          skills_validated?: Json | null
+          skills_validated_at?: string | null
+          skills_validated_by?: string | null
           stats?: Json
           updated_at?: string
         }
@@ -582,6 +666,10 @@ export type Database = {
           pe?: Database["public"]["Enums"]["pe_dominante"] | null
           peso?: number | null
           posicao?: Database["public"]["Enums"]["posicao"] | null
+          skills?: Json
+          skills_validated?: Json | null
+          skills_validated_at?: string | null
+          skills_validated_by?: string | null
           stats?: Json
           updated_at?: string
         }
@@ -727,6 +815,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_skill_validator_invite: {
+        Args: { _invite_id: string }
+        Returns: undefined
+      }
       approve_admin_request: {
         Args: { _request_id: string }
         Returns: undefined
@@ -734,6 +826,10 @@ export type Database = {
       approve_clube_request: {
         Args: { _request_id: string }
         Returns: undefined
+      }
+      can_validate_athlete: {
+        Args: { _atleta: string; _validator: string }
+        Returns: boolean
       }
       clube_has_unlocked_atleta: {
         Args: { _atleta_user_id: string; _clube_id: string }
@@ -779,6 +875,10 @@ export type Database = {
       }
       reject_clube_request: {
         Args: { _request_id: string }
+        Returns: undefined
+      }
+      set_validated_skills: {
+        Args: { _atleta: string; _skills: Json }
         Returns: undefined
       }
       users_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
