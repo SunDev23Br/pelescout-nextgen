@@ -173,21 +173,6 @@ function ManualPage() {
               </Button>
             </div>
 
-            {/* Mobile progress */}
-            <div className="mt-6 rounded-xl border border-primary/25 bg-bg2/40 p-3 backdrop-blur lg:hidden">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold uppercase tracking-wider text-primary">
-                  Preparação
-                </span>
-                <span className="font-semibold text-foreground">{progress}%</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg3">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Mobile pill nav */}
