@@ -835,6 +835,16 @@ export type Database = {
         Args: { _atleta_user_id: string; _clube_id: string }
         Returns: boolean
       }
+      get_athlete_skill_percentiles: {
+        Args: { _atleta: string }
+        Returns: {
+          avg_value: number
+          peer_count: number
+          percentile: number
+          skill: string
+          value: number
+        }[]
+      }
       get_conversation_peers: {
         Args: { _conv_ids: string[] }
         Returns: {
