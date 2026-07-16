@@ -17,8 +17,8 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
   const pct = Math.min(100, (peneira.inscritos / peneira.vagas) * 100);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold">
-      <div className="relative h-44 overflow-hidden">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold">
+      <div className="relative h-28 overflow-hidden">
         <img
           src={peneira.imagem}
           alt={peneira.titulo}
@@ -26,37 +26,36 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-        <div className="absolute left-4 top-4 flex items-center gap-2">
+        <div className="absolute left-3 top-3 flex items-center gap-1.5">
           <StatusBadge status={peneira.status} />
           {peneira.visibilidade === "privada" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/80 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
-              <Lock className="h-3 w-3" /> Privada (olheiros)
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-dark/80 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground backdrop-blur">
+              <Lock className="h-2.5 w-2.5" /> Privada
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <h3 className="line-clamp-2 min-h-[2.75rem] font-display text-lg font-bold leading-tight">
+      <div className="flex flex-1 flex-col gap-2.5 p-3.5">
+        <h3 className="line-clamp-2 min-h-[2.25rem] font-display text-base font-bold leading-tight">
           {peneira.titulo}
         </h3>
 
-
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-primary" />
             <span className="truncate">
               {peneira.local} · {peneira.cidade}/{peneira.estado}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
             <span>
               {formatDate(peneira.data)} · {peneira.horario}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
             <span>
               {peneira.inscritos}/{peneira.vagas} inscritos
             </span>
@@ -66,25 +65,24 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
         <ul
           role="list"
           aria-label="Categorias da peneira"
-          className="flex h-6 flex-nowrap gap-1.5 overflow-hidden"
+          className="flex h-5 flex-nowrap gap-1 overflow-hidden"
         >
           {peneira.categorias.slice(0, 3).map((c) => (
             <li
               key={c}
-              className="shrink-0 rounded-full border border-border bg-bg2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-50"
+              className="shrink-0 rounded-full border border-border bg-bg2 px-2 py-0 text-[9px] font-bold uppercase tracking-wider text-slate-50"
             >
               {c}
             </li>
           ))}
           {peneira.categorias.length > 3 && (
-            <li className="shrink-0 rounded-full border border-border bg-bg2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-50">
+            <li className="shrink-0 rounded-full border border-border bg-bg2 px-2 py-0 text-[9px] font-bold uppercase tracking-wider text-slate-50">
               +{peneira.categorias.length - 3}
             </li>
           )}
         </ul>
 
-
-        <div className="h-1.5 overflow-hidden rounded-full bg-bg3">
+        <div className="h-1 overflow-hidden rounded-full bg-bg3">
           <div
             className="h-full rounded-full bg-gradient-gold transition-all"
             style={{ width: `${pct}%` }}
@@ -93,7 +91,8 @@ export function PeneiraCard({ peneira }: { peneira: Peneira }) {
 
         <Button
           asChild
-          className="mt-auto w-full transition-transform duration-200 hover:scale-[1.02] hover:shadow-gold"
+          size="sm"
+          className="mt-auto w-full text-xs transition-transform duration-200 hover:scale-[1.02] hover:shadow-gold"
           disabled={lotada && peneira.status === "aberta"}
         >
           <Link to="/peneiras/$peneiraId" params={{ peneiraId: peneira.id }}>
