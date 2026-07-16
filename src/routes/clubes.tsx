@@ -92,6 +92,52 @@ function ClubesPage() {
         setLoading(false);
         return;
       }
+
+      const baseList: AtletaAprovado[] = (data ?? []).map((r) => ({
+        candidatoId: r.candidato_id as string,
+        userId: r.user_id as string | null,
+        nome: r.nome as string,
+        posicao: (r.posicao ?? "Meia") as string,
+        cidade: (r.cidade ?? "—") as string,
+        dataNascimento: (r.data_nascimento as string) ?? "2000-01-01",
+        avatar: (r.avatar_url as string | null) ?? null,
+        email: "",
+        celular: "",
+        notaGeral: r.nota_geral != null ? Number(r.nota_geral) : null,
+        peneiraTitulo: (r.peneira_titulo as string | null) ?? null,
+      }));
+
+      const unlockedIds = new Set(user?.contatosDesbloqueados ?? []);
+      const toFetchUserIds = baseList
+        .filter((a) => a.userId && unlockedIds.has(a.candidatoId))
+        .map((a) => a.userId as string);
+
+      if (toFetchUserIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, email, celular")
+          .in("id", toFetchUserIds);
+        if (cancelled) return;
+        const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
+        for (const a of baseList) {
+          if (a.userId && unlockedIds.has(a.candidatoId)) {
+            const p = profMap.get(a.userId);
+            if (p) {
+              a.email = p.email ?? "";
+              a.celular = p.celular ?? "";
+            }
+          }
+        }
+      }
+
+      const merged = baseList.sort(
+        (a, b) => (b.notaGeral ?? -1) - (a.notaGeral ?? -1),
+      );
+
+      if (!cancelled) {
+        setAprovados(merged);
+        setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
