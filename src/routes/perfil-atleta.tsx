@@ -18,6 +18,7 @@ import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { WearableMetricsCard } from "@/components/WearableMetricsCard";
 import { SkillsDisplay } from "@/components/SkillsDisplay";
+import { SkillsInsights } from "@/components/SkillsInsights";
 import { parseSkills } from "@/lib/skills";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
@@ -304,6 +305,14 @@ function PerfilAtletaPage() {
 
         {/* Wearable metrics */}
         <WearableMetricsCard atletaId={profile.id} />
+
+        {/* Insights: radar + percentis + evolução */}
+        <SkillsInsights
+          atletaId={profile.id}
+          self={parseSkills(profile.skills)}
+          validated={parseSkills(profile.skills_validated)}
+        />
+
 
         {/* Clubes + Títulos */}
         {(clubes.length > 0 || titulosLista.length > 0) && (
