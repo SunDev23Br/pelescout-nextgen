@@ -1,13 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
+  BadgeCheck,
   Camera,
   CheckCircle2,
   KeyRound,
   Loader2,
   Lock,
   Mail,
+  Mail as MailIcon,
   Plus,
+  ShieldCheck,
   Trash2,
   Trophy,
   UserCircle2,
@@ -27,6 +30,17 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
+import {
+  SKILL_KEYS,
+  SKILL_LABELS,
+  cleanSkillsForSave,
+  clampSkill,
+  formatClubPeriod,
+  parseSkills,
+  titleCaseClub,
+  type SkillKey,
+  type SkillsMap,
+} from "@/lib/skills";
 
 import { CAMPEONATOS } from "@/lib/campeonatos";
 
@@ -85,8 +99,34 @@ function PerfilPage() {
   const [bio, setBio] = useState("");
   const [stats, setStats] = useState<AthleteStats>({});
   const [historico, setHistorico] = useState<ClubeHist[]>([]);
+  const [skills, setSkills] = useState<SkillsMap>({});
   const [savingAtleta, setSavingAtleta] = useState(false);
   const [loadingAtleta, setLoadingAtleta] = useState(false);
+
+  // Skill validators (invites)
+  interface ValidatorInvite {
+    id: string;
+    validator_id: string | null;
+    invited_email: string | null;
+    invited_name: string | null;
+    status: "pending" | "accepted" | "revoked";
+    created_at: string;
+  }
+  const [validators, setValidators] = useState<ValidatorInvite[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviting, setInviting] = useState(false);
+
+  // Incoming invites (I was invited as a validator)
+  interface IncomingInvite {
+    id: string;
+    atleta_id: string;
+    status: "pending" | "accepted" | "revoked";
+    created_at: string;
+    atleta_nome?: string | null;
+  }
+  const [incoming, setIncoming] = useState<IncomingInvite[]>([]);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
@@ -98,11 +138,38 @@ function PerfilPage() {
   }, [user, ready, navigate]);
 
   useEffect(() => {
-    if (!user || user.role !== "atleta") return;
+    if (!user) return;
+
+    // Incoming invites: any user can be invited as a validator (by email or by id).
+    supabase
+      .from("athlete_skill_validators")
+      .select("id, atleta_id, status, created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) {
+          setIncoming([]);
+          return;
+        }
+        const ids = data.map((d) => d.atleta_id);
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, nome")
+          .in("id", ids);
+        const nameMap = new Map((profs ?? []).map((p) => [p.id, p.nome]));
+        setIncoming(
+          data.map((d) => ({
+            ...(d as IncomingInvite),
+            atleta_nome: nameMap.get(d.atleta_id) ?? null,
+          })),
+        );
+      });
+
+    if (user.role !== "atleta") return;
     setLoadingAtleta(true);
     supabase
       .from("profiles")
-      .select("bio, historico_clubes, stats")
+      .select("bio, historico_clubes, stats, skills")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -110,8 +177,19 @@ function PerfilPage() {
           setBio(data.bio ?? "");
           setHistorico(((data.historico_clubes as ClubeHist[] | null) ?? []));
           setStats(((data.stats as AthleteStats | null) ?? {}));
+          setSkills(parseSkills(data.skills));
         }
         setLoadingAtleta(false);
+      });
+
+    // Load athlete's outgoing validator invites
+    supabase
+      .from("athlete_skill_validators")
+      .select("id, validator_id, invited_email, invited_name, status, created_at")
+      .eq("atleta_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setValidators(data as ValidatorInvite[]);
       });
   }, [user]);
 
@@ -297,8 +375,8 @@ function PerfilPage() {
     setSavingAtleta(true);
     const cleanedHist = historico
       .map((h) => ({
-        clube: (h.clube ?? "").trim(),
-        periodo: (h.periodo ?? "").trim() || undefined,
+        clube: titleCaseClub((h.clube ?? "").trim()),
+        periodo: formatClubPeriod((h.periodo ?? "").trim()) || undefined,
         descricao: (h.descricao ?? "").trim() || undefined,
       }))
       .filter((h) => h.clube.length > 0);
@@ -307,7 +385,7 @@ function PerfilPage() {
         campeonato: (t.campeonato ?? "").trim(),
         ano:
           t.ano != null && !Number.isNaN(Number(t.ano)) ? Number(t.ano) : null,
-        time: (t.time ?? "").trim(),
+        time: titleCaseClub((t.time ?? "").trim()),
       }))
       .filter((t) => t.campeonato.length > 0);
     const cleanedStats: AthleteStats = {
@@ -320,14 +398,15 @@ function PerfilPage() {
       titulos: cleanedTitulos.length,
       titulos_lista: cleanedTitulos,
     };
+    const cleanedSkills = cleanSkillsForSave(skills);
     const { error } = await supabase
       .from("profiles")
       .update({
         bio: bio.trim() || null,
         historico_clubes: cleanedHist as unknown as never,
         stats: cleanedStats as unknown as never,
+        skills: cleanedSkills as unknown as never,
       })
-
       .eq("id", user.id);
     setSavingAtleta(false);
     if (error) {
@@ -336,7 +415,70 @@ function PerfilPage() {
     }
     setHistorico(cleanedHist);
     setStats(cleanedStats);
+    setSkills(cleanedSkills);
     toast.success("Perfil de atleta atualizado!");
+  }
+
+  async function convidarValidador(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Informe um e-mail válido.");
+      return;
+    }
+    if (email === user.email.toLowerCase()) {
+      toast.error("Você não pode se convidar como validador.");
+      return;
+    }
+    setInviting(true);
+    const { data, error } = await supabase
+      .from("athlete_skill_validators")
+      .insert({
+        atleta_id: user.id,
+        invited_email: email,
+        invited_name: inviteName.trim() || null,
+      })
+      .select("id, validator_id, invited_email, invited_name, status, created_at")
+      .single();
+    setInviting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data) {
+      setValidators((v) => [data as ValidatorInvite, ...v]);
+      setInviteEmail("");
+      setInviteName("");
+      toast.success("Convite enviado.");
+    }
+  }
+
+  async function removerValidador(id: string) {
+    const { error } = await supabase
+      .from("athlete_skill_validators")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setValidators((v) => v.filter((x) => x.id !== id));
+    toast.success("Convite removido.");
+  }
+
+  async function aceitarConvite(id: string) {
+    setAcceptingId(id);
+    const { error } = await supabase.rpc("accept_skill_validator_invite", {
+      _invite_id: id,
+    });
+    setAcceptingId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setIncoming((arr) => arr.filter((x) => x.id !== id));
+    toast.success("Convite aceito. Você já pode validar as habilidades do atleta.");
   }
 
   function setStatField(k: keyof AthleteStats, v: string) {
@@ -368,6 +510,61 @@ function PerfilPage() {
             </Button>
           )}
         </div>
+
+        {incoming.length > 0 && (
+          <section className="space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-6 shadow-card sm:p-8">
+            <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+              <BadgeCheck className="h-5 w-5" /> Convites para validar atletas
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Você foi convidado a confirmar as habilidades destes atletas. Ao
+              aceitar, você poderá abrir o perfil deles e ajustar as notas.
+            </p>
+            <ul className="space-y-2">
+              {incoming.map((inv) => (
+                <li
+                  key={inv.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {inv.atleta_nome ?? "Atleta"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Convite recebido em{" "}
+                      {new Date(inv.created_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Link to="/atletas/$atletaId" params={{ atletaId: inv.atleta_id }}>
+                        Ver perfil
+                      </Link>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => aceitarConvite(inv.id)}
+                      disabled={acceptingId === inv.id}
+                    >
+                      {acceptingId === inv.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                      )}
+                      Aceitar
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
 
 
         <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
@@ -632,6 +829,70 @@ function PerfilPage() {
             </fieldset>
 
             <fieldset className="space-y-3">
+              <legend className="flex items-center gap-2 text-sm font-semibold">
+                <BadgeCheck className="h-4 w-4 text-primary" aria-hidden />
+                Habilidades (autoavaliação)
+              </legend>
+              <p className="text-xs text-muted-foreground">
+                Escala 0 a 100. Um clube, admin ou treinador convidado pode
+                confirmar sua avaliação — quando isso acontece, um selo dourado
+                aparece no seu perfil.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {SKILL_KEYS.map((k: SkillKey) => (
+                  <div
+                    key={k}
+                    className="rounded-xl border border-border bg-bg2 p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label
+                        htmlFor={`skill-${k}`}
+                        className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground"
+                      >
+                        {SKILL_LABELS[k]}
+                      </Label>
+                      <Input
+                        id={`skill-${k}-num`}
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={skills[k] ?? ""}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          setSkills((s) => ({
+                            ...s,
+                            [k]:
+                              raw === ""
+                                ? null
+                                : clampSkill(Number(raw)),
+                          }));
+                        }}
+                        className="h-8 w-20 text-right"
+                        aria-label={`${SKILL_LABELS[k]} (valor 0 a 100)`}
+                      />
+                    </div>
+                    <input
+                      id={`skill-${k}`}
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={skills[k] ?? 0}
+                      onChange={(e) =>
+                        setSkills((s) => ({
+                          ...s,
+                          [k]: clampSkill(Number(e.target.value)),
+                        }))
+                      }
+                      className="w-full accent-primary"
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+
+            <fieldset className="space-y-3">
               <div className="flex items-center justify-between">
                 <legend className="flex items-center gap-2 text-sm font-semibold">
                   <Trophy className="h-4 w-4 text-primary" aria-hidden /> Títulos
@@ -761,33 +1022,108 @@ function PerfilPage() {
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Time
+                              Clube na conquista
                             </Label>
-                            <Input
-                              list={`clubes-list-${i}`}
-                              placeholder="Time pelo qual conquistou"
-                              aria-label={`Time do título ${i + 1}`}
-                              value={t.time}
-                              onChange={(e) =>
-                                setStats((s) => ({
-                                  ...s,
-                                  titulos_lista: (s.titulos_lista ?? []).map(
-                                    (x, j) =>
-                                      j === i
-                                        ? { ...x, time: e.target.value }
-                                        : x,
-                                  ),
-                                }))
-                              }
-                            />
-                            <datalist id={`clubes-list-${i}`}>
-                              {historico
-                                .map((h) => h.clube)
-                                .filter((c) => c && c.trim().length > 0)
-                                .map((c) => (
-                                  <option key={c} value={c} />
-                                ))}
-                            </datalist>
+                            {(() => {
+                              const clubOptions = historico
+                                .map((h) => h.clube.trim())
+                                .filter((c) => c.length > 0);
+                              const isOtherClub =
+                                t.time !== "" && !clubOptions.includes(t.time);
+                              const selectVal = isOtherClub
+                                ? "__outro__"
+                                : t.time;
+                              const linked = historico.find(
+                                (h) => h.clube.trim() === t.time.trim(),
+                              );
+                              const yearMatch = linked?.periodo?.match(
+                                /(\d{4})\s*[–-]\s*(\d{4}|Atual)/i,
+                              );
+                              const yearOk =
+                                !linked ||
+                                !yearMatch ||
+                                t.ano == null ||
+                                (t.ano >= Number(yearMatch[1]) &&
+                                  (yearMatch[2].toLowerCase() === "atual"
+                                    ? t.ano <= CURRENT_YEAR
+                                    : t.ano <= Number(yearMatch[2])));
+                              return (
+                                <>
+                                  <select
+                                    aria-label={`Clube do título ${i + 1}`}
+                                    value={selectVal}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      setStats((s) => ({
+                                        ...s,
+                                        titulos_lista: (
+                                          s.titulos_lista ?? []
+                                        ).map((x, j) =>
+                                          j === i
+                                            ? {
+                                                ...x,
+                                                time:
+                                                  v === "__outro__" ? "" : v,
+                                              }
+                                            : x,
+                                        ),
+                                      }));
+                                    }}
+                                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                  >
+                                    <option value="">Selecione…</option>
+                                    {clubOptions.map((c) => (
+                                      <option key={c} value={c}>
+                                        {c}
+                                      </option>
+                                    ))}
+                                    <option value="__outro__">Outro…</option>
+                                  </select>
+                                  {isOtherClub && (
+                                    <Input
+                                      aria-label={`Nome do clube (outro) do título ${i + 1}`}
+                                      placeholder="Digite o clube"
+                                      value={t.time}
+                                      onChange={(e) =>
+                                        setStats((s) => ({
+                                          ...s,
+                                          titulos_lista: (
+                                            s.titulos_lista ?? []
+                                          ).map((x, j) =>
+                                            j === i
+                                              ? { ...x, time: e.target.value }
+                                              : x,
+                                          ),
+                                        }))
+                                      }
+                                      onBlur={(e) =>
+                                        setStats((s) => ({
+                                          ...s,
+                                          titulos_lista: (
+                                            s.titulos_lista ?? []
+                                          ).map((x, j) =>
+                                            j === i
+                                              ? {
+                                                  ...x,
+                                                  time: titleCaseClub(
+                                                    e.target.value,
+                                                  ),
+                                                }
+                                              : x,
+                                          ),
+                                        }))
+                                      }
+                                    />
+                                  )}
+                                  {!yearOk && (
+                                    <p className="text-[10px] font-semibold text-amber-500">
+                                      Ano fora do período em que você jogou
+                                      neste clube ({linked?.periodo}).
+                                    </p>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div className="flex justify-end">
@@ -857,15 +1193,36 @@ function PerfilPage() {
                               ),
                             )
                           }
+                          onBlur={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i
+                                  ? { ...x, clube: titleCaseClub(e.target.value) }
+                                  : x,
+                              ),
+                            )
+                          }
                         />
                         <Input
                           aria-label={`Período no clube ${i + 1}`}
-                          placeholder="Período (ex.: 2022–2024)"
+                          placeholder="Período (ex.: 2022 – 2024)"
                           value={h.periodo ?? ""}
                           onChange={(e) =>
                             setHistorico((arr) =>
                               arr.map((x, j) =>
                                 j === i ? { ...x, periodo: e.target.value } : x,
+                              ),
+                            )
+                          }
+                          onBlur={(e) =>
+                            setHistorico((arr) =>
+                              arr.map((x, j) =>
+                                j === i
+                                  ? {
+                                      ...x,
+                                      periodo: formatClubPeriod(e.target.value),
+                                    }
+                                  : x,
                               ),
                             )
                           }
@@ -915,6 +1272,103 @@ function PerfilPage() {
             </div>
           </form>
         )}
+
+        {user.role === "atleta" && (
+          <section className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">
+            <div>
+              <h2 className="flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                <ShieldCheck className="h-5 w-5" /> Validadores das minhas habilidades
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Convide um treinador de confiança pelo e-mail dele. Depois de
+                aceitar o convite, ele poderá confirmar ou ajustar suas 5
+                habilidades — quando isso acontecer, um selo dourado aparece no
+                seu perfil. Admins e clubes que já desbloquearam seu contato
+                também podem validar automaticamente.
+              </p>
+            </div>
+
+            <form
+              onSubmit={convidarValidador}
+              className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+            >
+              <Input
+                type="email"
+                required
+                placeholder="e-mail do treinador"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                aria-label="E-mail do validador"
+              />
+              <Input
+                placeholder="Nome (opcional)"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                aria-label="Nome do validador"
+              />
+              <Button type="submit" disabled={inviting}>
+                {inviting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <MailIcon className="mr-2 h-4 w-4" />
+                )}
+                Convidar
+              </Button>
+            </form>
+
+            {validators.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                Nenhum validador convidado ainda.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {validators.map((v) => (
+                  <li
+                    key={v.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-bg2 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {v.invited_name || v.invited_email || "Validador"}
+                      </p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {v.invited_email}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
+                          (v.status === "accepted"
+                            ? "bg-primary/15 text-primary"
+                            : v.status === "revoked"
+                              ? "bg-destructive/15 text-destructive"
+                              : "bg-muted text-muted-foreground")
+                        }
+                      >
+                        {v.status === "accepted"
+                          ? "Aceito"
+                          : v.status === "revoked"
+                            ? "Revogado"
+                            : "Pendente"}
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removerValidador(v.id)}
+                        aria-label="Remover convite"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
 
         {user.role === "atleta" && (
           <section className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8">

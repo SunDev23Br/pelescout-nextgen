@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  BadgeCheck,
   Building2,
   Footprints,
   Loader2,
   Medal,
   MessageSquarePlus,
   Ruler,
+  Save,
   Star,
   Trophy,
   Weight,
@@ -17,6 +19,16 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
+import { SkillsDisplay } from "@/components/SkillsDisplay";
+import {
+  SKILL_KEYS,
+  SKILL_LABELS,
+  cleanSkillsForSave,
+  clampSkill,
+  parseSkills,
+  type SkillKey,
+  type SkillsMap,
+} from "@/lib/skills";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { startConversation } from "@/lib/chat";
@@ -88,6 +100,10 @@ interface AthleteProfile {
   bio: string | null;
   historico_clubes: ClubeHistorico[];
   stats: AthleteStats;
+  skills: unknown;
+  skills_validated: unknown;
+  skills_validated_at: string | null;
+  skills_validated_by: string | null;
 }
 
 function calcIdade(dob: string | null): number | null {
@@ -123,13 +139,19 @@ function AthleteProfilePage() {
     if (ready && !user) navigate({ to: "/login" });
   }, [ready, user, navigate]);
 
+  // Validator state
+  const [canValidate, setCanValidate] = useState(false);
+  const [validatorPanelOpen, setValidatorPanelOpen] = useState(false);
+  const [validatorDraft, setValidatorDraft] = useState<SkillsMap>({});
+  const [savingValidation, setSavingValidation] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     supabase
       .from("profiles")
       .select(
-        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats",
+        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats, skills, skills_validated, skills_validated_at, skills_validated_by",
       )
       .eq("id", atletaId)
       .maybeSingle()
@@ -143,6 +165,10 @@ function AthleteProfilePage() {
               (data.historico_clubes as ClubeHistorico[] | null) ?? [],
             stats: (data.stats as AthleteStats | null) ?? {},
           } as AthleteProfile);
+          // Pre-fill validator draft with the current validated OR self skills.
+          const seed =
+            parseSkills(data.skills_validated) ?? parseSkills(data.skills);
+          setValidatorDraft(seed);
         } else {
           setProfile(null);
         }
@@ -154,25 +180,28 @@ function AthleteProfilePage() {
     };
   }, [atletaId]);
 
+  // Check whether current user is allowed to validate this athlete's skills.
+  useEffect(() => {
+    if (!user || user.id === atletaId) {
+      setCanValidate(false);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .rpc("can_validate_athlete", { _validator: user.id, _atleta: atletaId })
+      .then(({ data }) => {
+        if (!cancelled) setCanValidate(Boolean(data));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, atletaId]);
+
   const canManage = user?.id === atletaId && user?.role === "atleta";
   const canStartChat =
     !!user &&
     user.id !== atletaId &&
     (user.role === "admin" || user.role === "clube");
-
-  const skills = useMemo(() => {
-    const s = profile?.stats ?? {};
-    const cap = (n: number, max: number) =>
-      Math.min(100, Math.round((n / max) * 100));
-    const base = s.jogos != null ? cap(s.jogos, 100) : 70;
-    return [
-      { label: "Marcação", value: Math.min(100, base + 10) },
-      { label: "Força", value: Math.max(40, base - 5) },
-      { label: "Passe", value: s.assistencias != null ? cap(s.assistencias, 25) : 75 },
-      { label: "Velocidade", value: Math.max(50, base) },
-      { label: "Posicionamento", value: s.gols != null ? Math.min(100, cap(s.gols, 30) + 30) : 80 },
-    ];
-  }, [profile]);
 
   async function handleStartChat() {
     if (!user) return;
@@ -186,6 +215,33 @@ function AthleteProfilePage() {
     } finally {
       setStarting(false);
     }
+  }
+
+  async function saveValidation() {
+    if (!profile) return;
+    setSavingValidation(true);
+    const cleaned = cleanSkillsForSave(validatorDraft);
+    const { error } = await supabase.rpc("set_validated_skills", {
+      _atleta: profile.id,
+      _skills: cleaned,
+    });
+    setSavingValidation(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Habilidades validadas atualizadas.");
+    setProfile((p) =>
+      p
+        ? {
+            ...p,
+            skills_validated: cleaned,
+            skills_validated_at: new Date().toISOString(),
+            skills_validated_by: user?.id ?? null,
+          }
+        : p,
+    );
+    setValidatorPanelOpen(false);
   }
 
   if (!ready || loading) {
@@ -374,30 +430,91 @@ function AthleteProfilePage() {
             </div>
 
             <div className="mt-6">
-              <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                Habilidades
-              </h2>
-              <div className="mt-2 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
-              <ul className="mt-4 space-y-3">
-                {skills.map((s) => (
-                  <li key={s.label}>
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label}
-                      </span>
-                      <span className="font-display text-xs font-bold text-primary">
-                        {s.value}
-                      </span>
+              <SkillsDisplay
+                self={parseSkills(profile.skills)}
+                validated={parseSkills(profile.skills_validated)}
+                validatedAt={profile.skills_validated_at}
+                animate={animateBars}
+              />
+
+              {canValidate && (
+                <div className="mt-4">
+                  {!validatorPanelOpen ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setValidatorPanelOpen(true)}
+                    >
+                      <BadgeCheck className="mr-2 h-4 w-4" />
+                      {profile.skills_validated
+                        ? "Ajustar validação"
+                        : "Validar habilidades"}
+                    </Button>
+                  ) : (
+                    <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                        <BadgeCheck className="h-4 w-4" />
+                        Sua avaliação como validador
+                      </p>
+                      <div className="space-y-3">
+                        {SKILL_KEYS.map((k: SkillKey) => (
+                          <div key={k}>
+                            <div className="mb-1 flex items-center justify-between">
+                              <label
+                                htmlFor={`val-${k}`}
+                                className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground"
+                              >
+                                {SKILL_LABELS[k]}
+                              </label>
+                              <span className="font-display text-xs font-bold text-primary">
+                                {validatorDraft[k] ?? 0}
+                              </span>
+                            </div>
+                            <input
+                              id={`val-${k}`}
+                              type="range"
+                              min={0}
+                              max={100}
+                              value={validatorDraft[k] ?? 0}
+                              onChange={(e) =>
+                                setValidatorDraft((d) => ({
+                                  ...d,
+                                  [k]: clampSkill(Number(e.target.value)),
+                                }))
+                              }
+                              className="w-full accent-primary"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setValidatorPanelOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={saveValidation}
+                          disabled={savingValidation}
+                        >
+                          {savingValidation ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Salvar validação
+                        </Button>
+                      </div>
                     </div>
-                    <div className="relative h-2 overflow-hidden rounded-full bg-bg3">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary transition-[width] duration-[1200ms] ease-out"
-                        style={{ width: animateBars ? `${s.value}%` : "0%" }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         </div>

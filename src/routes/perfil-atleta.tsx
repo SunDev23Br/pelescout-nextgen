@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Footprints,
@@ -17,6 +17,8 @@ import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { AthleteVideoGallery } from "@/components/AthleteVideoGallery";
 import { Button } from "@/components/ui/button";
 import { WearableMetricsCard } from "@/components/WearableMetricsCard";
+import { SkillsDisplay } from "@/components/SkillsDisplay";
+import { parseSkills } from "@/lib/skills";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { fromISODate } from "@/lib/date";
@@ -66,6 +68,10 @@ interface FullProfile {
   bio: string | null;
   historico_clubes: ClubeHistorico[];
   stats: AthleteStats;
+  skills: unknown;
+  skills_validated: unknown;
+  skills_validated_at: string | null;
+  skills_validated_by: string | null;
 }
 
 function calcIdade(dob: string | null): number | null {
@@ -94,7 +100,7 @@ function PerfilAtletaPage() {
     supabase
       .from("profiles")
       .select(
-        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats",
+        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats, skills, skills_validated, skills_validated_at, skills_validated_by",
       )
       .eq("id", user.id)
       .maybeSingle()
@@ -117,25 +123,6 @@ function PerfilAtletaPage() {
     };
   }, [user]);
 
-  const skills = useMemo(() => {
-    const s = profile?.stats ?? {};
-    const cap = (n: number, max: number) =>
-      Math.min(100, Math.round((n / max) * 100));
-    const base = s.jogos != null ? cap(s.jogos, 100) : 70;
-    return [
-      { label: "Marcação", value: Math.min(100, base + 10) },
-      { label: "Força", value: Math.max(40, base - 5) },
-      {
-        label: "Passe",
-        value: s.assistencias != null ? cap(s.assistencias, 25) : 75,
-      },
-      { label: "Velocidade", value: Math.max(50, base) },
-      {
-        label: "Posicionamento",
-        value: s.gols != null ? cap(s.gols, 30) + 30 : 80,
-      },
-    ];
-  }, [profile]);
 
   if (!ready || loading || !user) {
     return (
@@ -305,32 +292,12 @@ function PerfilAtletaPage() {
             </div>
 
             <div className="mt-6">
-              <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                Habilidades
-              </h2>
-              <div className="mt-2 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
-              <ul className="mt-4 space-y-3">
-                {skills.map((s) => (
-                  <li key={s.label}>
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label}
-                      </span>
-                      <span className="font-display text-xs font-bold text-primary">
-                        {s.value}
-                      </span>
-                    </div>
-                    <div className="relative h-2 overflow-hidden rounded-full bg-bg3">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary transition-[width] duration-[1200ms] ease-out"
-                        style={{
-                          width: animateBars ? `${s.value}%` : "0%",
-                        }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <SkillsDisplay
+                self={parseSkills(profile.skills)}
+                validated={parseSkills(profile.skills_validated)}
+                validatedAt={profile.skills_validated_at}
+                animate={animateBars}
+              />
             </div>
           </section>
         </div>
