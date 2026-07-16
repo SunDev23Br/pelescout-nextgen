@@ -248,55 +248,9 @@ function ManualPage() {
               onToggle={() => toggleSection("levar")}
             >
               <p className="text-foreground/90">
-                Marque cada item conforme separar. O progresso é salvo automaticamente.
+                Leve tudo organizado para chegar tranquilo e focado na peneira.
               </p>
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {CHECKLIST_ITEMS.map((item) => {
-                  const active = !!checked[item];
-                  return (
-                    <li key={item}>
-                      <button
-                        type="button"
-                        onClick={() => toggleCheck(item)}
-                        className={cn(
-                          "group flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition-all",
-                          active
-                            ? "border-primary/40 bg-primary/10 text-foreground"
-                            : "border-border bg-bg2/50 text-foreground/80 hover:border-primary/30 hover:bg-bg3/60",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all",
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-transparent",
-                          )}
-                        >
-                          {active && <CheckCircle2 className="h-4 w-4" />}
-                        </span>
-                        <span className={cn(active && "line-through opacity-70")}>
-                          {item}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                    Preparação
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">{progress}% pronto</p>
-                </div>
-                <div className="h-2 w-40 overflow-hidden rounded-full bg-bg3">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
+              <BulletList items={LEAD_ITEMS} />
             </Accordion>
 
             <Accordion
