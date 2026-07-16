@@ -361,13 +361,16 @@ function ActiveConversation({
   const { peerTyping, notifyTyping } = useTyping(conversationId, peerId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingDebounceRef = useRef<number>(0);
+  const [msgSearch, setMsgSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, peerTyping]);
 
-  const statusLabel = presence?.is_online
-    ? "Online"
+  const isOnline = !!presence?.is_online;
+  const statusLabel = isOnline
+    ? "Online agora"
     : presence?.last_seen_at
       ? `Visto ${formatDistanceToNow(new Date(presence.last_seen_at), {
           addSuffix: true,
@@ -383,10 +386,20 @@ function ActiveConversation({
     }
   };
 
+  const filteredMessages = useMemo(() => {
+    const q = msgSearch.trim().toLowerCase();
+    if (!q) return messages;
+    return messages.filter((m) => (m.content ?? "").toLowerCase().includes(q));
+  }, [messages, msgSearch]);
+
+  const peerLinkProps = isScout
+    ? { to: "/atletas/$atletaId" as const, params: { atletaId: peerId } }
+    : { to: "/usuarios/$userId" as const, params: { userId: peerId } };
+
   return (
     <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b border-border bg-bg2 p-3">
+      <header className="flex items-center gap-3 border-b border-border bg-bg2/95 p-3 backdrop-blur">
         <button
           type="button"
           onClick={onBack}
@@ -395,47 +408,51 @@ function ActiveConversation({
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        {isScout ? (
-          <Link
-            to="/atletas/$atletaId"
-            params={{ atletaId: peerId }}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
-            onContextMenu={(e) => e.stopPropagation()}
-            title="Ver perfil do atleta"
-          >
+        <Link
+          {...peerLinkProps}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
+          onContextMenu={(e) => e.stopPropagation()}
+          title="Ver perfil"
+        >
+          <div className="relative shrink-0">
             <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
-              <p className="text-xs text-muted-foreground">
-                {peerTyping ? (
+            <span
+              className={cn(
+                "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-bg2",
+                isOnline ? "bg-emerald-500" : "bg-muted-foreground/50",
+              )}
+              aria-hidden="true"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
+            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+              {peerTyping ? (
+                <>
+                  <span className="inline-flex gap-0.5">
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary [animation-delay:-200ms]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary [animation-delay:-100ms]" />
+                    <span className="h-1 w-1 animate-bounce rounded-full bg-primary" />
+                  </span>
                   <span className="text-primary">digitando…</span>
-                ) : (
-                  statusLabel
-                )}
-              </p>
-            </div>
-          </Link>
-        ) : (
-          <Link
-            to="/usuarios/$userId"
-            params={{ userId: peerId }}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 hover:bg-bg3"
-            onContextMenu={(e) => e.stopPropagation()}
-            title="Ver perfil"
-          >
-            <AthleteAvatar src={peerAvatar} alt={peerName} className="h-10 w-10" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold hover:text-primary">{peerName}</p>
-              <p className="text-xs text-muted-foreground">
-                {peerTyping ? (
-                  <span className="text-primary">digitando…</span>
-                ) : (
-                  statusLabel
-                )}
-              </p>
-            </div>
-          </Link>
-        )}
+                </>
+              ) : isOnline ? (
+                <span className="text-emerald-500">● {statusLabel}</span>
+              ) : (
+                statusLabel
+              )}
+            </p>
+          </div>
+        </Link>
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label="Buscar em mensagens"
+          onClick={() => setShowSearch((s) => !s)}
+          className={cn(showSearch && "bg-bg3 text-primary")}
+        >
+          <Search className="h-5 w-5" />
+        </Button>
         {canInvite && (
           <Button size="sm" variant="outline" onClick={onInvite}>
             <Trophy className="mr-1 h-4 w-4" />
@@ -481,6 +498,21 @@ function ActiveConversation({
         </DropdownMenu>
       </header>
 
+      {showSearch && (
+        <div className="border-b border-border bg-bg2/60 p-2 animate-fade-in">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={msgSearch}
+              onChange={(e) => setMsgSearch(e.target.value)}
+              placeholder="Buscar nesta conversa..."
+              className="rounded-full border-border bg-bg3/60 pl-9"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {loading ? (
@@ -488,7 +520,12 @@ function ActiveConversation({
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <MessageList messages={messages} selfId={selfId} peerTyping={peerTyping} />
+          <MessageList
+            messages={filteredMessages}
+            selfId={selfId}
+            peerTyping={peerTyping}
+            searchQuery={msgSearch}
+          />
         )}
       </div>
 
@@ -501,6 +538,7 @@ function ActiveConversation({
     </div>
   );
 }
+
 
 function InvitePeneiraDialog({
   open,
