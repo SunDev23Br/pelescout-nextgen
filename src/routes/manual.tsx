@@ -56,7 +56,7 @@ const SECTIONS: Section[] = [
   { id: "apos", icon: Flag, title: "Após a peneira", short: "Depois" },
 ];
 
-const CHECKLIST_ITEMS = [
+const LEAD_ITEMS = [
   "Documento de identificação",
   "Roupa esportiva adequada",
   "Chuteira",
@@ -70,25 +70,6 @@ const CHECKLIST_ITEMS = [
 function ManualPage() {
   const [openId, setOpenId] = useState<string>("peneira");
   const [activeNav, setActiveNav] = useState<string>("peneira");
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  // Load checklist from localStorage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("png-manual-checklist");
-      if (raw) setChecked(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("png-manual-checklist", JSON.stringify(checked));
-    } catch {
-      // ignore
-    }
-  }, [checked]);
 
   // Track active section on scroll
   useEffect(() => {
@@ -109,11 +90,6 @@ function ManualPage() {
     return () => observer.disconnect();
   }, []);
 
-  const progress = useMemo(() => {
-    const done = CHECKLIST_ITEMS.filter((i) => checked[i]).length;
-    return Math.round((done / CHECKLIST_ITEMS.length) * 100);
-  }, [checked]);
-
   const scrollTo = (id: string) => {
     setOpenId(id);
     // wait a tick so section is expanded before scrolling
@@ -127,10 +103,6 @@ function ManualPage() {
 
   const toggleSection = (id: string) => {
     setOpenId((prev) => (prev === id ? "" : id));
-  };
-
-  const toggleCheck = (item: string) => {
-    setChecked((prev) => ({ ...prev, [item]: !prev[item] }));
   };
 
   return (
