@@ -85,13 +85,16 @@ function ChatPage() {
 
   const canStart = user?.role === "admin" || user?.role === "clube";
 
-  const filtered = useMemo(
-    () =>
-      conversations.filter((c) =>
-        c.peer.nome.toLowerCase().includes(filter.trim().toLowerCase()),
-      ),
-    [conversations, filter],
-  );
+  const filtered = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter(
+      (c) =>
+        c.peer.nome.toLowerCase().includes(q) ||
+        (c.last_message_preview ?? "").toLowerCase().includes(q),
+    );
+  }, [conversations, filter]);
+
 
   // Auto-select first conversation on desktop
   useEffect(() => {
