@@ -86,6 +86,20 @@ export function useMessages(conversationId: string | null) {
           setMessages((prev) => prev.map((x) => (x.id === m.id ? m : x)));
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const old = payload.old as { id?: string };
+          if (!old?.id) return;
+          setMessages((prev) => prev.filter((x) => x.id !== old.id));
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
