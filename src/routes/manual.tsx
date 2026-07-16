@@ -15,7 +15,6 @@ import {
   Flag,
   Star,
   ChevronDown,
-  CheckCircle2,
   UserCircle,
   Play,
   Lightbulb,
