@@ -133,17 +133,18 @@ function ChatPage() {
             )}
           </div>
           <div className="p-3">
-            <div className="relative">
+          <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar conversas..."
+                placeholder="Buscar por nome ou mensagem..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-9"
+                className="rounded-full border-border bg-bg3/60 pl-9 focus-visible:ring-primary/40"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
+
             {loading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
