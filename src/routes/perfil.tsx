@@ -915,33 +915,108 @@ function PerfilPage() {
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                              Time
+                              Clube na conquista
                             </Label>
-                            <Input
-                              list={`clubes-list-${i}`}
-                              placeholder="Time pelo qual conquistou"
-                              aria-label={`Time do título ${i + 1}`}
-                              value={t.time}
-                              onChange={(e) =>
-                                setStats((s) => ({
-                                  ...s,
-                                  titulos_lista: (s.titulos_lista ?? []).map(
-                                    (x, j) =>
-                                      j === i
-                                        ? { ...x, time: e.target.value }
-                                        : x,
-                                  ),
-                                }))
-                              }
-                            />
-                            <datalist id={`clubes-list-${i}`}>
-                              {historico
-                                .map((h) => h.clube)
-                                .filter((c) => c && c.trim().length > 0)
-                                .map((c) => (
-                                  <option key={c} value={c} />
-                                ))}
-                            </datalist>
+                            {(() => {
+                              const clubOptions = historico
+                                .map((h) => h.clube.trim())
+                                .filter((c) => c.length > 0);
+                              const isOtherClub =
+                                t.time !== "" && !clubOptions.includes(t.time);
+                              const selectVal = isOtherClub
+                                ? "__outro__"
+                                : t.time;
+                              const linked = historico.find(
+                                (h) => h.clube.trim() === t.time.trim(),
+                              );
+                              const yearMatch = linked?.periodo?.match(
+                                /(\d{4})\s*[–-]\s*(\d{4}|Atual)/i,
+                              );
+                              const yearOk =
+                                !linked ||
+                                !yearMatch ||
+                                t.ano == null ||
+                                (t.ano >= Number(yearMatch[1]) &&
+                                  (yearMatch[2].toLowerCase() === "atual"
+                                    ? t.ano <= CURRENT_YEAR
+                                    : t.ano <= Number(yearMatch[2])));
+                              return (
+                                <>
+                                  <select
+                                    aria-label={`Clube do título ${i + 1}`}
+                                    value={selectVal}
+                                    onChange={(e) => {
+                                      const v = e.target.value;
+                                      setStats((s) => ({
+                                        ...s,
+                                        titulos_lista: (
+                                          s.titulos_lista ?? []
+                                        ).map((x, j) =>
+                                          j === i
+                                            ? {
+                                                ...x,
+                                                time:
+                                                  v === "__outro__" ? "" : v,
+                                              }
+                                            : x,
+                                        ),
+                                      }));
+                                    }}
+                                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                  >
+                                    <option value="">Selecione…</option>
+                                    {clubOptions.map((c) => (
+                                      <option key={c} value={c}>
+                                        {c}
+                                      </option>
+                                    ))}
+                                    <option value="__outro__">Outro…</option>
+                                  </select>
+                                  {isOtherClub && (
+                                    <Input
+                                      aria-label={`Nome do clube (outro) do título ${i + 1}`}
+                                      placeholder="Digite o clube"
+                                      value={t.time}
+                                      onChange={(e) =>
+                                        setStats((s) => ({
+                                          ...s,
+                                          titulos_lista: (
+                                            s.titulos_lista ?? []
+                                          ).map((x, j) =>
+                                            j === i
+                                              ? { ...x, time: e.target.value }
+                                              : x,
+                                          ),
+                                        }))
+                                      }
+                                      onBlur={(e) =>
+                                        setStats((s) => ({
+                                          ...s,
+                                          titulos_lista: (
+                                            s.titulos_lista ?? []
+                                          ).map((x, j) =>
+                                            j === i
+                                              ? {
+                                                  ...x,
+                                                  time: titleCaseClub(
+                                                    e.target.value,
+                                                  ),
+                                                }
+                                              : x,
+                                          ),
+                                        }))
+                                      }
+                                    />
+                                  )}
+                                  {!yearOk && (
+                                    <p className="text-[10px] font-semibold text-amber-500">
+                                      Ano fora do período em que você jogou
+                                      neste clube ({linked?.periodo}).
+                                    </p>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div className="flex justify-end">
