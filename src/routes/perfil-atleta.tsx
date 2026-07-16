@@ -306,6 +306,14 @@ function PerfilAtletaPage() {
         {/* Wearable metrics */}
         <WearableMetricsCard atletaId={profile.id} />
 
+        {/* Insights: radar + percentis + evolução */}
+        <SkillsInsights
+          atletaId={profile.id}
+          self={parseSkills(profile.skills)}
+          validated={parseSkills(profile.skills_validated)}
+        />
+
+
         {/* Clubes + Títulos */}
         {(clubes.length > 0 || titulosLista.length > 0) && (
           <div className="grid gap-4 lg:grid-cols-2">
