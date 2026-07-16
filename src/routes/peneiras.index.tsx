@@ -92,16 +92,18 @@ function PeneirasPage() {
     loadDb();
   }
 
-  const list = useMemo(() => {
+  const allUnique = useMemo(() => {
     const merged: Peneira[] = [...dbPeneiras, ...mockPeneiras];
     const seen = new Set<string>();
-    const unique = merged.filter((p) => {
-      if (seen.has(p.id)) return false;
+    return merged.filter((p) => {
+      if (seen.has(p.id) || hiddenIds.has(p.id)) return false;
       seen.add(p.id);
       return true;
     });
-    return unique.filter((p) => {
-      if (hiddenIds.has(p.id)) return false;
+  }, [dbPeneiras, hiddenIds]);
+
+  const list = useMemo(() => {
+    return allUnique.filter((p) => {
       if (filter !== "todas" && p.status !== filter) return false;
       if (!q.trim()) return true;
       const term = q.toLowerCase();
@@ -111,7 +113,16 @@ function PeneirasPage() {
         p.estado.toLowerCase().includes(term)
       );
     });
-  }, [q, filter, hiddenIds, dbPeneiras]);
+  }, [q, filter, allUnique]);
+
+  const nearby = useMemo(() => {
+    if (!userCoords) return [];
+    return allUnique
+      .filter((p) => p.status === "aberta" && UF_COORDS[p.estado])
+      .map((p) => ({ p, km: haversineKm(userCoords, UF_COORDS[p.estado]) }))
+      .sort((a, b) => a.km - b.km)
+      .slice(0, 3);
+  }, [userCoords, allUnique]);
 
   return (
     <AppLayout>
