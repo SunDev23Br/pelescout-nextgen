@@ -117,6 +117,17 @@ function PerfilPage() {
   const [inviteName, setInviteName] = useState("");
   const [inviting, setInviting] = useState(false);
 
+  // Incoming invites (I was invited as a validator)
+  interface IncomingInvite {
+    id: string;
+    atleta_id: string;
+    status: "pending" | "accepted" | "revoked";
+    created_at: string;
+    atleta_nome?: string | null;
+  }
+  const [incoming, setIncoming] = useState<IncomingInvite[]>([]);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
   useEffect(() => {
     if (ready && !user) navigate({ to: "/login" });
     if (user) {
