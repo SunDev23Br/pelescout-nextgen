@@ -240,23 +240,23 @@ function PeneirasPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-[420px] animate-pulse rounded-2xl border border-border bg-card"
+              className="h-[280px] animate-pulse rounded-xl border border-border bg-card"
             />
           ))}
         </div>
       ) : list.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-          <p className="font-display text-lg font-bold">Nenhuma peneira encontrada</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+          <p className="font-display text-base font-bold">Nenhuma peneira encontrada</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             Tente ajustar os filtros ou termos de busca.
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p, idx) => (
             <div
               key={p.id}
@@ -271,9 +271,9 @@ function PeneirasPage() {
                   variant="destructive"
                   onClick={() => handleDelete(p.id, p.titulo)}
                   aria-label={`Excluir peneira ${p.titulo}`}
-                  className="absolute right-3 top-3 z-10 gap-1.5 shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  className="absolute right-2 top-2 z-10 h-7 gap-1 px-2 text-xs shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3" />
                   Excluir
                 </Button>
               )}
