@@ -337,8 +337,8 @@ function PerfilPage() {
     setSavingAtleta(true);
     const cleanedHist = historico
       .map((h) => ({
-        clube: (h.clube ?? "").trim(),
-        periodo: (h.periodo ?? "").trim() || undefined,
+        clube: titleCaseClub((h.clube ?? "").trim()),
+        periodo: formatClubPeriod((h.periodo ?? "").trim()) || undefined,
         descricao: (h.descricao ?? "").trim() || undefined,
       }))
       .filter((h) => h.clube.length > 0);
@@ -347,7 +347,7 @@ function PerfilPage() {
         campeonato: (t.campeonato ?? "").trim(),
         ano:
           t.ano != null && !Number.isNaN(Number(t.ano)) ? Number(t.ano) : null,
-        time: (t.time ?? "").trim(),
+        time: titleCaseClub((t.time ?? "").trim()),
       }))
       .filter((t) => t.campeonato.length > 0);
     const cleanedStats: AthleteStats = {
@@ -360,14 +360,15 @@ function PerfilPage() {
       titulos: cleanedTitulos.length,
       titulos_lista: cleanedTitulos,
     };
+    const cleanedSkills = cleanSkillsForSave(skills);
     const { error } = await supabase
       .from("profiles")
       .update({
         bio: bio.trim() || null,
         historico_clubes: cleanedHist as unknown as never,
         stats: cleanedStats as unknown as never,
+        skills: cleanedSkills as unknown as never,
       })
-
       .eq("id", user.id);
     setSavingAtleta(false);
     if (error) {
@@ -376,7 +377,56 @@ function PerfilPage() {
     }
     setHistorico(cleanedHist);
     setStats(cleanedStats);
+    setSkills(cleanedSkills);
     toast.success("Perfil de atleta atualizado!");
+  }
+
+  async function convidarValidador(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Informe um e-mail válido.");
+      return;
+    }
+    if (email === user.email.toLowerCase()) {
+      toast.error("Você não pode se convidar como validador.");
+      return;
+    }
+    setInviting(true);
+    const { data, error } = await supabase
+      .from("athlete_skill_validators")
+      .insert({
+        atleta_id: user.id,
+        invited_email: email,
+        invited_name: inviteName.trim() || null,
+      })
+      .select("id, validator_id, invited_email, invited_name, status, created_at")
+      .single();
+    setInviting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (data) {
+      setValidators((v) => [data as ValidatorInvite, ...v]);
+      setInviteEmail("");
+      setInviteName("");
+      toast.success("Convite enviado.");
+    }
+  }
+
+  async function removerValidador(id: string) {
+    const { error } = await supabase
+      .from("athlete_skill_validators")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setValidators((v) => v.filter((x) => x.id !== id));
+    toast.success("Convite removido.");
   }
 
   function setStatField(k: keyof AthleteStats, v: string) {
