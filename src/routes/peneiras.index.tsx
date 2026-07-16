@@ -126,29 +126,28 @@ function PeneirasPage() {
 
   return (
     <AppLayout>
-      <header className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+      <header className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           Peneiras
         </p>
-        <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">
+        <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-3xl">
           Encontre sua próxima oportunidade
         </h1>
-        <p className="mt-2 max-w-2xl text-foreground/75">
-          Descubra peneiras em todo o Brasil e dê o próximo passo na sua carreira. Inscreva-se
-          em poucos cliques e seja avaliado por olheiros profissionais.
+        <p className="mt-1 max-w-2xl text-sm text-foreground/75">
+          Descubra peneiras em todo o Brasil e dê o próximo passo na sua carreira.
         </p>
       </header>
 
       {/* Peneiras próximas de você */}
-      <section className="mb-8 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-5 shadow-card animate-fade-in">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-gold text-primary-foreground">
-              <MapPin className="h-5 w-5" />
+      <section className="mb-5 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-3.5 shadow-card animate-fade-in">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-gold text-primary-foreground">
+              <MapPin className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="font-display text-lg font-extrabold">Peneiras próximas de você</h2>
-              <p className="text-xs text-foreground/70">
+              <h2 className="font-display text-sm font-extrabold">Peneiras próximas de você</h2>
+              <p className="text-[10px] text-foreground/70">
                 {geoStatus === "granted"
                   ? "Ordenadas pela distância até sua localização"
                   : "Ative a localização para ver as peneiras mais perto"}
@@ -160,23 +159,23 @@ function PeneirasPage() {
               size="sm"
               onClick={requestGeo}
               disabled={geoStatus === "loading"}
-              className="shadow-gold"
+              className="h-8 text-xs shadow-gold"
             >
-              <MapPin className="mr-1.5 h-4 w-4" />
-              {geoStatus === "loading" ? "Localizando..." : "Usar minha localização"}
+              <MapPin className="mr-1 h-3.5 w-3.5" />
+              {geoStatus === "loading" ? "Localizando..." : "Usar localização"}
             </Button>
           )}
         </div>
         {geoStatus === "granted" && (
           nearby.length === 0 ? (
-            <p className="mt-4 text-sm text-foreground/70">
+            <p className="mt-3 text-xs text-foreground/70">
               Nenhuma peneira aberta encontrada perto de você no momento.
             </p>
           ) : (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {nearby.map(({ p, km }) => (
                 <div key={p.id} className="relative">
-                  <span className="absolute right-3 top-3 z-10 rounded-full bg-primary/90 px-2.5 py-1 text-[11px] font-bold text-primary-foreground shadow">
+                  <span className="absolute right-2 top-2 z-10 rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold text-primary-foreground shadow">
                     {Math.round(km)} km
                   </span>
                   <PeneiraCard peneira={p} />
@@ -187,32 +186,32 @@ function PeneirasPage() {
         )}
       </section>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Busque por cidade, clube ou estado..."
-            className="h-11 pl-11 text-base placeholder:text-foreground/50"
+            className="h-9 pl-9 text-sm placeholder:text-foreground/50"
           />
         </div>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               type="button"
-              className="h-11 shrink-0 gap-2 bg-primary/15 text-primary ring-1 ring-primary/30 hover:bg-primary/25"
+              className="h-9 shrink-0 gap-1.5 bg-primary/15 text-sm text-primary ring-1 ring-primary/30 hover:bg-primary/25"
             >
-              <SlidersHorizontal className="h-4 w-4" />
+              <SlidersHorizontal className="h-3.5 w-3.5" />
               Filtros
               {filter !== "todas" && (
-                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                   1
                 </span>
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 border-border bg-background p-2">
+          <PopoverContent align="end" className="w-52 border-border bg-background p-2">
             <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Status
             </p>
@@ -241,23 +240,23 @@ function PeneirasPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-[420px] animate-pulse rounded-2xl border border-border bg-card"
+              className="h-[280px] animate-pulse rounded-xl border border-border bg-card"
             />
           ))}
         </div>
       ) : list.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-          <p className="font-display text-lg font-bold">Nenhuma peneira encontrada</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+          <p className="font-display text-base font-bold">Nenhuma peneira encontrada</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             Tente ajustar os filtros ou termos de busca.
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p, idx) => (
             <div
               key={p.id}
@@ -272,9 +271,9 @@ function PeneirasPage() {
                   variant="destructive"
                   onClick={() => handleDelete(p.id, p.titulo)}
                   aria-label={`Excluir peneira ${p.titulo}`}
-                  className="absolute right-3 top-3 z-10 gap-1.5 shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  className="absolute right-2 top-2 z-10 h-7 gap-1 px-2 text-xs shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3" />
                   Excluir
                 </Button>
               )}
