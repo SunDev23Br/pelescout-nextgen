@@ -173,8 +173,9 @@ function ChatPage() {
                         });
                       }}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-colors hover:bg-bg3",
-                        c.id === activeId && "bg-primary/10",
+                        "flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-bg3/80 hover:translate-x-0.5",
+                        c.id === activeId &&
+                          "bg-primary/15 ring-1 ring-primary/30 shadow-sm",
                       )}
                       title={canStart ? "Clique para abrir · botão direito p/ ver perfil" : undefined}
                     >
@@ -185,24 +186,42 @@ function ChatPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-semibold">{c.peer.nome}</p>
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <p
+                            className={cn(
+                              "truncate text-sm",
+                              c.unread > 0 ? "font-bold text-foreground" : "font-semibold",
+                            )}
+                          >
+                            {c.peer.nome}
+                          </p>
+                          <span
+                            className={cn(
+                              "shrink-0 text-[10px]",
+                              c.unread > 0 ? "font-semibold text-primary" : "text-muted-foreground",
+                            )}
+                          >
                             {formatDistanceToNow(new Date(c.last_message_at), {
                               addSuffix: false,
                               locale: ptBR,
                             })}
                           </span>
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">
+                        <p
+                          className={cn(
+                            "truncate text-xs",
+                            c.unread > 0 ? "font-medium text-foreground/80" : "text-muted-foreground",
+                          )}
+                        >
                           {c.last_message_preview ?? "Conversa iniciada"}
                         </p>
                       </div>
                       {c.unread > 0 && (
-                        <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                          {c.unread}
+                        <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-md shadow-primary/40">
+                          {c.unread > 99 ? "99+" : c.unread}
                         </span>
                       )}
                     </button>
+
                   </li>
                 ))}
               </ul>
