@@ -100,6 +100,10 @@ interface AthleteProfile {
   bio: string | null;
   historico_clubes: ClubeHistorico[];
   stats: AthleteStats;
+  skills: unknown;
+  skills_validated: unknown;
+  skills_validated_at: string | null;
+  skills_validated_by: string | null;
 }
 
 function calcIdade(dob: string | null): number | null {
