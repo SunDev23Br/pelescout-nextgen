@@ -1,13 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
+  BadgeCheck,
   Camera,
   CheckCircle2,
   KeyRound,
   Loader2,
   Lock,
   Mail,
+  Mail as MailIcon,
   Plus,
+  ShieldCheck,
   Trash2,
   Trophy,
   UserCircle2,
@@ -27,6 +30,17 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { toast } from "sonner";
+import {
+  SKILL_KEYS,
+  SKILL_LABELS,
+  cleanSkillsForSave,
+  clampSkill,
+  formatClubPeriod,
+  parseSkills,
+  titleCaseClub,
+  type SkillKey,
+  type SkillsMap,
+} from "@/lib/skills";
 
 import { CAMPEONATOS } from "@/lib/campeonatos";
 
