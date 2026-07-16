@@ -100,7 +100,7 @@ function PerfilAtletaPage() {
     supabase
       .from("profiles")
       .select(
-        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats",
+        "id, nome, avatar_url, posicao, cidade, altura, peso, pe, data_nascimento, bio, historico_clubes, stats, skills, skills_validated, skills_validated_at, skills_validated_by",
       )
       .eq("id", user.id)
       .maybeSingle()
@@ -123,25 +123,6 @@ function PerfilAtletaPage() {
     };
   }, [user]);
 
-  const skills = useMemo(() => {
-    const s = profile?.stats ?? {};
-    const cap = (n: number, max: number) =>
-      Math.min(100, Math.round((n / max) * 100));
-    const base = s.jogos != null ? cap(s.jogos, 100) : 70;
-    return [
-      { label: "Marcação", value: Math.min(100, base + 10) },
-      { label: "Força", value: Math.max(40, base - 5) },
-      {
-        label: "Passe",
-        value: s.assistencias != null ? cap(s.assistencias, 25) : 75,
-      },
-      { label: "Velocidade", value: Math.max(50, base) },
-      {
-        label: "Posicionamento",
-        value: s.gols != null ? cap(s.gols, 30) + 30 : 80,
-      },
-    ];
-  }, [profile]);
 
   if (!ready || loading || !user) {
     return (
