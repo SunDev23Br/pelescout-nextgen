@@ -92,7 +92,6 @@ function ClubesPage() {
         setLoading(false);
         return;
       }
-...
     })();
     return () => {
       cancelled = true;
