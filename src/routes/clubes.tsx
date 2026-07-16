@@ -67,7 +67,16 @@ function ClubesPage() {
   const [loading, setLoading] = useState(true);
   const [startingChat, setStartingChat] = useState<string | null>(null);
 
+  const canListAprovados =
+    ready && !!user && (user.role === "clube" || user.role === "admin" || user.role === "suporte");
+
   useEffect(() => {
+    if (!ready) return;
+    if (!canListAprovados) {
+      setAprovados([]);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -98,7 +107,6 @@ function ClubesPage() {
         peneiraTitulo: (r.peneira_titulo as string | null) ?? null,
       }));
 
-      // Para atletas já desbloqueados, buscar email/celular (RLS atual permite)
       const unlockedIds = new Set(user?.contatosDesbloqueados ?? []);
       const toFetchUserIds = baseList
         .filter((a) => a.userId && unlockedIds.has(a.candidatoId))
@@ -134,7 +142,7 @@ function ClubesPage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, user?.contatosDesbloqueados?.length]);
+  }, [ready, canListAprovados, user?.id, user?.contatosDesbloqueados?.length]);
 
   const list = useMemo(() => {
     if (!q.trim()) return aprovados;
@@ -149,7 +157,7 @@ function ClubesPage() {
 
   const desbloqueados = new Set(user?.contatosDesbloqueados ?? []);
 
-  if (ready && user && user.role === "atleta") {
+  if (ready && !canListAprovados) {
     return (
       <AppLayout>
         <div className="rounded-2xl border border-border bg-card p-12 text-center">
