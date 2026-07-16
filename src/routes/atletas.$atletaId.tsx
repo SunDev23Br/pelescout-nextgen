@@ -430,30 +430,91 @@ function AthleteProfilePage() {
             </div>
 
             <div className="mt-6">
-              <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
-                Habilidades
-              </h2>
-              <div className="mt-2 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
-              <ul className="mt-4 space-y-3">
-                {skills.map((s) => (
-                  <li key={s.label}>
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label}
-                      </span>
-                      <span className="font-display text-xs font-bold text-primary">
-                        {s.value}
-                      </span>
+              <SkillsDisplay
+                self={parseSkills(profile.skills)}
+                validated={parseSkills(profile.skills_validated)}
+                validatedAt={profile.skills_validated_at}
+                animate={animateBars}
+              />
+
+              {canValidate && (
+                <div className="mt-4">
+                  {!validatorPanelOpen ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setValidatorPanelOpen(true)}
+                    >
+                      <BadgeCheck className="mr-2 h-4 w-4" />
+                      {profile.skills_validated
+                        ? "Ajustar validação"
+                        : "Validar habilidades"}
+                    </Button>
+                  ) : (
+                    <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                        <BadgeCheck className="h-4 w-4" />
+                        Sua avaliação como validador
+                      </p>
+                      <div className="space-y-3">
+                        {SKILL_KEYS.map((k: SkillKey) => (
+                          <div key={k}>
+                            <div className="mb-1 flex items-center justify-between">
+                              <label
+                                htmlFor={`val-${k}`}
+                                className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground"
+                              >
+                                {SKILL_LABELS[k]}
+                              </label>
+                              <span className="font-display text-xs font-bold text-primary">
+                                {validatorDraft[k] ?? 0}
+                              </span>
+                            </div>
+                            <input
+                              id={`val-${k}`}
+                              type="range"
+                              min={0}
+                              max={100}
+                              value={validatorDraft[k] ?? 0}
+                              onChange={(e) =>
+                                setValidatorDraft((d) => ({
+                                  ...d,
+                                  [k]: clampSkill(Number(e.target.value)),
+                                }))
+                              }
+                              className="w-full accent-primary"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setValidatorPanelOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={saveValidation}
+                          disabled={savingValidation}
+                        >
+                          {savingValidation ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Salvar validação
+                        </Button>
+                      </div>
                     </div>
-                    <div className="relative h-2 overflow-hidden rounded-full bg-bg3">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary transition-[width] duration-[1200ms] ease-out"
-                        style={{ width: animateBars ? `${s.value}%` : "0%" }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         </div>
