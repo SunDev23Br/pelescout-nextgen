@@ -39,9 +39,9 @@ const NAV: NavItem[] = [
   { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
-  { to: "/perfil-atleta", label: "Perfil do Atleta", icon: Trophy, roles: ["atleta"] },
+  { to: "/perfil-atleta", label: "Meu perfil de atleta", icon: UserCog, roles: ["atleta"] },
   { to: "/desempenho", label: "Desempenho", icon: LineChart, roles: ["atleta"] },
-  { to: "/perfil", label: "Meu perfil", icon: UserCog, roles: ["atleta", "admin", "clube", "suporte"] },
+  { to: "/perfil", label: "Configurações da conta", icon: UserCog, roles: ["admin", "clube", "suporte"] },
 ];
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -123,13 +123,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
                       active
-                        ? "bg-primary/15 text-primary shadow-[inset_3px_0_0_0_var(--gold)]"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                        ? "bg-gradient-to-r from-primary/25 to-primary/5 text-primary shadow-[inset_3px_0_0_0_var(--gold)] ring-1 ring-primary/20"
+                        : "text-foreground/80 hover:translate-x-0.5 hover:bg-sidebar-accent hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className={cn("h-5 w-5 transition-colors", active ? "text-primary" : "text-foreground/60 group-hover:text-foreground")} />
                     {item.label}
                   </Link>
                 );
