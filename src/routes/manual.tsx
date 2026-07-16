@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
   Trophy,
@@ -15,7 +15,6 @@ import {
   Flag,
   Star,
   ChevronDown,
-  CheckCircle2,
   UserCircle,
   Play,
   Lightbulb,
@@ -57,7 +56,7 @@ const SECTIONS: Section[] = [
   { id: "apos", icon: Flag, title: "Após a peneira", short: "Depois" },
 ];
 
-const CHECKLIST_ITEMS = [
+const LEAD_ITEMS = [
   "Documento de identificação",
   "Roupa esportiva adequada",
   "Chuteira",
@@ -71,25 +70,6 @@ const CHECKLIST_ITEMS = [
 function ManualPage() {
   const [openId, setOpenId] = useState<string>("peneira");
   const [activeNav, setActiveNav] = useState<string>("peneira");
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  // Load checklist from localStorage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("png-manual-checklist");
-      if (raw) setChecked(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("png-manual-checklist", JSON.stringify(checked));
-    } catch {
-      // ignore
-    }
-  }, [checked]);
 
   // Track active section on scroll
   useEffect(() => {
@@ -110,11 +90,6 @@ function ManualPage() {
     return () => observer.disconnect();
   }, []);
 
-  const progress = useMemo(() => {
-    const done = CHECKLIST_ITEMS.filter((i) => checked[i]).length;
-    return Math.round((done / CHECKLIST_ITEMS.length) * 100);
-  }, [checked]);
-
   const scrollTo = (id: string) => {
     setOpenId(id);
     // wait a tick so section is expanded before scrolling
@@ -128,10 +103,6 @@ function ManualPage() {
 
   const toggleSection = (id: string) => {
     setOpenId((prev) => (prev === id ? "" : id));
-  };
-
-  const toggleCheck = (item: string) => {
-    setChecked((prev) => ({ ...prev, [item]: !prev[item] }));
   };
 
   return (
@@ -173,26 +144,6 @@ function ManualPage() {
                 );
               })}
             </ul>
-
-            <div className="mt-5 rounded-xl border border-primary/25 bg-primary/5 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Preparação
-              </p>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground">
-                  {progress}% pronto
-                </span>
-                <span className="text-muted-foreground">
-                  {CHECKLIST_ITEMS.filter((i) => checked[i]).length}/{CHECKLIST_ITEMS.length}
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg3">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
           </nav>
         </aside>
 
@@ -222,21 +173,6 @@ function ManualPage() {
               </Button>
             </div>
 
-            {/* Mobile progress */}
-            <div className="mt-6 rounded-xl border border-primary/25 bg-bg2/40 p-3 backdrop-blur lg:hidden">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold uppercase tracking-wider text-primary">
-                  Preparação
-                </span>
-                <span className="font-semibold text-foreground">{progress}%</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg3">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Mobile pill nav */}
@@ -312,55 +248,9 @@ function ManualPage() {
               onToggle={() => toggleSection("levar")}
             >
               <p className="text-foreground/90">
-                Marque cada item conforme separar. O progresso é salvo automaticamente.
+                Leve tudo organizado para chegar tranquilo e focado na peneira.
               </p>
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {CHECKLIST_ITEMS.map((item) => {
-                  const active = !!checked[item];
-                  return (
-                    <li key={item}>
-                      <button
-                        type="button"
-                        onClick={() => toggleCheck(item)}
-                        className={cn(
-                          "group flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition-all",
-                          active
-                            ? "border-primary/40 bg-primary/10 text-foreground"
-                            : "border-border bg-bg2/50 text-foreground/80 hover:border-primary/30 hover:bg-bg3/60",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all",
-                            active
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-transparent",
-                          )}
-                        >
-                          {active && <CheckCircle2 className="h-4 w-4" />}
-                        </span>
-                        <span className={cn(active && "line-through opacity-70")}>
-                          {item}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                    Preparação
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">{progress}% pronto</p>
-                </div>
-                <div className="h-2 w-40 overflow-hidden rounded-full bg-bg3">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-gold-light transition-all duration-500"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
+              <BulletList items={LEAD_ITEMS} />
             </Accordion>
 
             <Accordion

@@ -1,11 +1,23 @@
-## Causa
+Alterar `src/routes/manual.tsx` para tornar a seção "O que levar no dia" apenas leitura, removendo toda a interatividade de checklist e barra de progresso.
 
-A rota `/desempenho` ainda era afetada por uma implementação antiga baseada em server function (`getMeuDesempenho`). Em desenvolvimento, o Vite/TanStack pode manter uma validação em cache para IDs antigos de server functions, gerando `Invalid server function ID` mesmo depois de a rota visual mudar.
+### Alterações
+1. **Remover estado e persistência do checklist**
+   - Excluir `checked`, `setChecked` e os dois `useEffect` que leem/salvam `localStorage`.
+   - Excluir a função `toggleCheck`.
 
-## Correção
+2. **Remover cálculo de progresso**
+   - Excluir `progress` e `useMemo` relacionados.
+   - Remover a seção de "Preparação" com porcentagem e barra de progresso da sidebar desktop.
+   - Remover a seção de progresso do hero mobile.
 
-A aba `/desempenho` foi refeita como rota independente e cliente, usando apenas o cliente autenticado do backend no navegador. Também foi removida a dependência de consultas por campos opcionais para evitar erro quando o banco não tiver avaliações avulsas vinculadas diretamente ao usuário.
+3. **Transformar a seção "levar" em leitura pura**
+   - Substituir os botões de checkbox interativos por uma lista estática (`BulletList` ou similar).
+   - Atualizar o texto introdutório, removendo a menção a "marcar" e "progresso salvo".
+   - Remover a barra de progresso interna do accordion "levar".
 
-## Arquivos
+4. **Limpeza de imports**
+   - Remover `CheckCircle2` se não for mais usado em outro lugar da página.
+   - Manter `Backpack` e demais ícones utilizados.
 
-- `src/routes/desempenho.tsx`
+### Resultado esperado
+A seção "O que levar no dia" passa a ser apenas uma lista de itens para leitura, igual às demais seções do manual, sem contadores, checkboxes ou barra de progresso.
