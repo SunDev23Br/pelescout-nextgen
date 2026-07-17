@@ -4,6 +4,24 @@ import { createClient } from "@supabase/supabase-js";
 // Curated public athlete profile for the shareable /a/:id page.
 // Uses the publishable key so unauthenticated visitors can preview a link.
 
+export interface PublicClube {
+  clube: string;
+  periodo?: string;
+  descricao?: string;
+}
+export interface PublicTitulo {
+  campeonato: string;
+  ano: number | null;
+  time: string;
+}
+export interface PublicStats {
+  jogos?: number | null;
+  gols?: number | null;
+  assistencias?: number | null;
+  titulos?: number | null;
+  titulos_lista?: PublicTitulo[];
+}
+
 export interface PublicAtleta {
   id: string;
   nome: string;
@@ -18,8 +36,8 @@ export interface PublicAtleta {
   skills: Record<string, number> | null;
   skills_validated: Record<string, number> | null;
   skills_validated_at: string | null;
-  historico_clubes: Record<string, unknown>[] | null;
-  stats: Record<string, unknown> | null;
+  historico_clubes: PublicClube[] | null;
+  stats: PublicStats | null;
 }
 
 function publicClient() {
