@@ -15,8 +15,11 @@ import {
   UserCog,
   ShieldCheck,
   LineChart,
+  BarChart3,
+  GitCompareArrows,
 } from "lucide-react";
 import { Logo } from "./Logo";
+import { NotificationsBell } from "./NotificationsBell";
 import { AthleteAvatar } from "./AthleteAvatar";
 import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";

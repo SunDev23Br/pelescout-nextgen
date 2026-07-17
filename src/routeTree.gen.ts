@@ -13,6 +13,7 @@ import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
 import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
+import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as ManualRouteImport } from './routes/manual'
@@ -20,6 +21,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DesempenhoRouteImport } from './routes/desempenho'
 import { Route as DemoComponentesRouteImport } from './routes/demo-componentes'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComparadorRouteImport } from './routes/comparador'
 import { Route as ClubesRouteImport } from './routes/clubes'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -60,6 +62,11 @@ const RegistroAdminRoute = RegistroAdminRouteImport.update({
   path: '/registro-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RankingRoute = RankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilAtletaRoute = PerfilAtletaRouteImport.update({
   id: '/perfil-atleta',
   path: '/perfil-atleta',
@@ -93,6 +100,11 @@ const DemoComponentesRoute = DemoComponentesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComparadorRoute = ComparadorRouteImport.update({
+  id: '/comparador',
+  path: '/comparador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClubesRoute = ClubesRouteImport.update({
@@ -199,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
+  '/comparador': typeof ComparadorRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
   '/desempenho': typeof DesempenhoRoute
@@ -206,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -231,6 +245,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
+  '/comparador': typeof ComparadorRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
   '/desempenho': typeof DesempenhoRoute
@@ -238,6 +253,7 @@ export interface FileRoutesByTo {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -264,6 +280,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/chat': typeof ChatRoute
   '/clubes': typeof ClubesRoute
+  '/comparador': typeof ComparadorRoute
   '/dashboard': typeof DashboardRoute
   '/demo-componentes': typeof DemoComponentesRoute
   '/desempenho': typeof DesempenhoRoute
@@ -271,6 +288,7 @@ export interface FileRoutesById {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -298,6 +316,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/chat'
     | '/clubes'
+    | '/comparador'
     | '/dashboard'
     | '/demo-componentes'
     | '/desempenho'
@@ -305,6 +324,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
     | '/sitemap.xml'
@@ -330,6 +350,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/chat'
     | '/clubes'
+    | '/comparador'
     | '/dashboard'
     | '/demo-componentes'
     | '/desempenho'
@@ -337,6 +358,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
     | '/sitemap.xml'
@@ -362,6 +384,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/chat'
     | '/clubes'
+    | '/comparador'
     | '/dashboard'
     | '/demo-componentes'
     | '/desempenho'
@@ -369,6 +392,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
     | '/sitemap.xml'
@@ -395,6 +419,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   ChatRoute: typeof ChatRoute
   ClubesRoute: typeof ClubesRoute
+  ComparadorRoute: typeof ComparadorRoute
   DashboardRoute: typeof DashboardRoute
   DemoComponentesRoute: typeof DemoComponentesRoute
   DesempenhoRoute: typeof DesempenhoRoute
@@ -402,6 +427,7 @@ export interface RootRouteChildren {
   ManualRoute: typeof ManualRoute
   PerfilRoute: typeof PerfilRoute
   PerfilAtletaRoute: typeof PerfilAtletaRoute
+  RankingRoute: typeof RankingRoute
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -452,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistroAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ranking': {
+      id: '/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof RankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil-atleta': {
       id: '/perfil-atleta'
       path: '/perfil-atleta'
@@ -499,6 +532,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comparador': {
+      id: '/comparador'
+      path: '/comparador'
+      fullPath: '/comparador'
+      preLoaderRoute: typeof ComparadorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/clubes': {
@@ -643,6 +683,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   ChatRoute: ChatRoute,
   ClubesRoute: ClubesRoute,
+  ComparadorRoute: ComparadorRoute,
   DashboardRoute: DashboardRoute,
   DemoComponentesRoute: DemoComponentesRoute,
   DesempenhoRoute: DesempenhoRoute,
@@ -650,6 +691,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManualRoute: ManualRoute,
   PerfilRoute: PerfilRoute,
   PerfilAtletaRoute: PerfilAtletaRoute,
+  RankingRoute: RankingRoute,
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
