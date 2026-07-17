@@ -119,30 +119,39 @@ function ClubesPage() {
         celular: "",
         notaGeral: r.nota_geral != null ? Number(r.nota_geral) : null,
         peneiraTitulo: (r.peneira_titulo as string | null) ?? null,
+        skills: {},
+        skillsValidated: null,
+        isValidated: false,
       }));
 
       const unlockedIds = new Set(user?.contatosDesbloqueados ?? []);
-      const toFetchUserIds = baseList
-        .filter((a) => a.userId && unlockedIds.has(a.candidatoId))
+      const allUserIds = baseList
+        .filter((a) => a.userId)
         .map((a) => a.userId as string);
 
-      if (toFetchUserIds.length > 0) {
+      if (allUserIds.length > 0) {
         const { data: profs } = await supabase
           .from("profiles")
-          .select("id, email, celular")
-          .in("id", toFetchUserIds);
+          .select("id, email, celular, skills, skills_validated")
+          .in("id", allUserIds);
         if (cancelled) return;
         const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
         for (const a of baseList) {
-          if (a.userId && unlockedIds.has(a.candidatoId)) {
-            const p = profMap.get(a.userId);
-            if (p) {
-              a.email = p.email ?? "";
-              a.celular = p.celular ?? "";
-            }
+          if (!a.userId) continue;
+          const p = profMap.get(a.userId);
+          if (!p) continue;
+          if (unlockedIds.has(a.candidatoId)) {
+            a.email = p.email ?? "";
+            a.celular = p.celular ?? "";
           }
+          const sv = (p.skills_validated ?? null) as Record<string, number> | null;
+          const s = (p.skills ?? {}) as Record<string, number>;
+          a.skills = s;
+          a.skillsValidated = sv && Object.keys(sv).length > 0 ? sv : null;
+          a.isValidated = !!a.skillsValidated;
         }
       }
+
 
       const merged = baseList.sort(
         (a, b) => (b.notaGeral ?? -1) - (a.notaGeral ?? -1),
