@@ -389,6 +389,11 @@ function PerfilPage() {
   async function salvarAtleta(e: FormEvent) {
     e.preventDefault();
     if (!user) return;
+    const bioTrim = bio.trim();
+    if (bioTrim.length > 0 && bioTrim.length < 120) {
+      toast.error("A bio precisa ter pelo menos 120 caracteres — ou deixe vazio.");
+      return;
+    }
     setSavingAtleta(true);
     const cleanedHist = historico
       .map((h) => ({
