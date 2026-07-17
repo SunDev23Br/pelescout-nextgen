@@ -80,6 +80,15 @@ function ClubesPage() {
   const [aprovados, setAprovados] = useState<AtletaAprovado[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingChat, setStartingChat] = useState<string | null>(null);
+  // filtros avançados
+  const [filtroPosicao, setFiltroPosicao] = useState("");
+  const [filtroCidade, setFiltroCidade] = useState("");
+  const [idadeMin, setIdadeMin] = useState<string>("");
+  const [idadeMax, setIdadeMax] = useState<string>("");
+  const [skillFiltro, setSkillFiltro] = useState<string>("");
+  const [skillMin, setSkillMin] = useState<number>(60);
+  const [somenteValidados, setSomenteValidados] = useState(false);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
   const canListAprovados =
     ready && !!user && (user.role === "clube" || user.role === "admin" || user.role === "suporte");
