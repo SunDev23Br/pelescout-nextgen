@@ -207,6 +207,7 @@ function PerfilPage() {
 
   async function handleAvatar(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    if (fileRef.current) fileRef.current.value = "";
     if (!file || !user) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Selecione um arquivo de imagem.");
@@ -217,30 +218,45 @@ function PerfilPage() {
       return;
     }
     setUploading(true);
-    const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
-    if (upErr) {
+    try {
+      const faceResult = await detectFaces(file);
+      if (faceResult === "no-face") {
+        const proceed = window.confirm(
+          "Não detectamos um rosto na foto. A vitrine funciona melhor com uma foto de rosto centralizada. Deseja enviar mesmo assim?",
+        );
+        if (!proceed) {
+          setUploading(false);
+          return;
+        }
+      }
+      const cropped = await cropToSquareBlob(file, 512);
+      const path = `${user.id}/avatar-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, cropped, { upsert: true, contentType: "image/jpeg" });
+      if (upErr) {
+        toast.error("Falha ao enviar imagem: " + upErr.message);
+        return;
+      }
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", user.id);
+      if (updErr) {
+        toast.error("Falha ao salvar foto: " + updErr.message);
+        return;
+      }
+      setAvatarUrl(url);
+      window.dispatchEvent(new Event("png-session"));
+      toast.success("Foto atualizada!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao processar imagem";
+      toast.error(msg);
+    } finally {
       setUploading(false);
-      toast.error("Falha ao enviar imagem: " + upErr.message);
-      return;
     }
-    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-    const url = pub.publicUrl;
-    const { error: updErr } = await supabase
-      .from("profiles")
-      .update({ avatar_url: url })
-      .eq("id", user.id);
-    setUploading(false);
-    if (updErr) {
-      toast.error("Falha ao salvar foto: " + updErr.message);
-      return;
-    }
-    setAvatarUrl(url);
-    window.dispatchEvent(new Event("png-session"));
-    toast.success("Foto atualizada!");
   }
 
   async function removerFoto() {
