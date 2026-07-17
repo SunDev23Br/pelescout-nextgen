@@ -280,21 +280,113 @@ function ClubesPage() {
         </p>
       </header>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome, posição ou cidade..."
-            className="pl-10"
-          />
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar por nome, posição ou cidade..."
+              className="pl-10"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setFiltrosAbertos((v) => !v)}
+            aria-expanded={filtrosAbertos}
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Filtros
+            {filtrosAtivos > 0 && (
+              <span className="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                {filtrosAtivos}
+              </span>
+            )}
+          </Button>
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg2 px-3 py-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            {desbloqueados.size} de {aprovados.length} liberados
+          </div>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-bg2 px-3 py-2 text-sm text-muted-foreground">
-          <CheckCircle2 className="h-4 w-4 text-success" />
-          {desbloqueados.size} de {aprovados.length} contatos liberados
-        </div>
+
+        {filtrosAbertos && (
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Posição</label>
+                <select
+                  value={filtroPosicao}
+                  onChange={(e) => setFiltroPosicao(e.target.value)}
+                  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  {POSICAO_OPTIONS.map((p) => (
+                    <option key={p} value={p}>{p || "Qualquer"}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Cidade</label>
+                <Input value={filtroCidade} onChange={(e) => setFiltroCidade(e.target.value)} placeholder="ex.: Recife" className="h-9" />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Idade</label>
+                <div className="flex items-center gap-2">
+                  <Input type="number" min={10} max={40} value={idadeMin} onChange={(e) => setIdadeMin(e.target.value)} placeholder="mín" className="h-9" />
+                  <span className="text-xs text-muted-foreground">a</span>
+                  <Input type="number" min={10} max={40} value={idadeMax} onChange={(e) => setIdadeMax(e.target.value)} placeholder="máx" className="h-9" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Habilidade ≥ {skillMin}
+                </label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={skillFiltro}
+                    onChange={(e) => setSkillFiltro(e.target.value)}
+                    className="h-9 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+                  >
+                    {SKILL_OPTIONS.map((s) => (
+                      <option key={s.key} value={s.key}>{s.label}</option>
+                    ))}
+                  </select>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={skillMin}
+                    onChange={(e) => setSkillMin(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                    className="h-9 w-16"
+                    disabled={!skillFiltro}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={somenteValidados}
+                  onChange={(e) => setSomenteValidados(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                Somente atletas com habilidades <span className="font-semibold text-primary">validadas</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {list.length} de {aprovados.length} atleta{aprovados.length === 1 ? "" : "s"}
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={resetFiltros}>
+                  Limpar filtros
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
 
       {loading ? (
         <div className="flex items-center justify-center rounded-2xl border border-border bg-card p-12">
