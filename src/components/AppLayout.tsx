@@ -181,7 +181,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Content */}
       <main className="flex-1 lg:pl-72">
-        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-8">{children}</div>
+        {user && (
+          <div className="hidden justify-end px-4 pt-6 sm:px-6 lg:flex lg:px-10">
+            <NotificationsBell />
+          </div>
+        )}
+        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-4">{children}</div>
       </main>
     </div>
   );
