@@ -18,7 +18,7 @@ export interface PublicAtleta {
   skills: Record<string, number> | null;
   skills_validated: Record<string, number> | null;
   skills_validated_at: string | null;
-  historico_clubes: unknown[] | null;
+  historico_clubes: Record<string, unknown>[] | null;
   stats: Record<string, unknown> | null;
 }
 
