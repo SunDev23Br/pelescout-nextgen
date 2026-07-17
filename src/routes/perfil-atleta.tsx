@@ -423,22 +423,27 @@ function PerfilAtletaPage() {
               </p>
             ) : (
               <ul className="mt-4 grid grid-cols-2 gap-3">
-                {conquistas.slice(0, 4).map((c, i) => (
-                  <li
-                    key={i}
-                    className="rounded-xl border border-border bg-bg2 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
-                  >
-                    <Trophy className="mx-auto mb-2 h-8 w-8 text-primary" />
-                    <p className="font-display text-sm font-extrabold leading-tight">
-                      {c.label}
-                    </p>
-                    {c.sub && (
-                      <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {c.sub}
+                {conquistas.slice(0, 4).map((c, i) => {
+                  const Icon = ACHIEVEMENT_ICONS[i % ACHIEVEMENT_ICONS.length];
+                  return (
+                    <li
+                      key={i}
+                      className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-bg2 to-bg2/60 p-4 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                    >
+                      <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary/25 via-primary/10 to-transparent ring-1 ring-primary/30 transition-transform group-hover:scale-105">
+                        <Icon size={26} className="text-primary" />
+                      </div>
+                      <p className="font-display text-sm font-extrabold leading-tight">
+                        {c.label}
                       </p>
-                    )}
-                  </li>
-                ))}
+                      {c.sub && (
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {c.sub}
+                        </p>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
