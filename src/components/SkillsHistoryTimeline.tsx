@@ -23,20 +23,17 @@ export function SkillsHistoryTimeline({ atletaId }: { atletaId: string }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    // Cast: RPC is not in the generated types yet.
-    (supabase.rpc as (fn: string, args: unknown) => Promise<{ data: unknown; error: { message: string } | null }>)(
-      "get_athlete_skill_history",
-      { _atleta: atletaId },
-    )
+    supabase
+      .rpc("get_athlete_skill_history", { _atleta: atletaId })
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) {
           setRows([]);
           return;
         }
-        setRows((data as HistoryRow[] | null) ?? []);
+        setRows((data as unknown as HistoryRow[] | null) ?? []);
       })
-      .finally(() => !cancelled && setLoading(false));
+      .then(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
