@@ -593,7 +593,9 @@ function PerfilPage() {
               className="h-24 w-24 border-2 border-primary/40 shadow-card"
             />
             <div className="flex-1 space-y-2 text-center sm:text-left">
-              <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP até 5MB.</p>
+              <p className="text-xs text-muted-foreground">
+                Envie uma foto de <strong>rosto</strong>, bem iluminada e olhando para a câmera. PNG, JPG ou WEBP até 5MB — recortamos automaticamente em quadrado.
+              </p>
               <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
                 <Button
                   type="button"
