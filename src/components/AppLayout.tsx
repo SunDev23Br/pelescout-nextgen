@@ -41,6 +41,8 @@ const NAV: NavItem[] = [
   { to: "/chat", label: "Mensagens", icon: MessageCircle, roles: ["admin", "atleta", "clube"] },
   { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
+  { to: "/comparador", label: "Comparador", icon: GitCompareArrows, roles: ["clube", "admin", "suporte"] },
+  { to: "/ranking", label: "Ranking", icon: BarChart3, roles: ["admin", "atleta", "clube", "suporte"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
   { to: "/perfil-atleta", label: "Meu perfil de atleta", icon: UserCog, roles: ["atleta"] },
   { to: "/desempenho", label: "Desempenho", icon: LineChart, roles: ["atleta"] },
