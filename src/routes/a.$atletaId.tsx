@@ -48,7 +48,7 @@ export const Route = createFileRoute("/a/$atletaId")({
       atleta?.bio?.slice(0, 155) ??
       `Perfil do atleta ${nome} na Pelé Next Gen — habilidades, estatísticas e histórico de clubes.`;
     const image = atleta?.avatar_url ?? undefined;
-    const meta: { name?: string; property?: string; content: string; title?: string }[] = [
+    const meta: Array<Record<string, string>> = [
       { title },
       { name: "description", content: description },
       { property: "og:title", content: title },
