@@ -812,19 +812,42 @@ function PerfilPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold" htmlFor="bio">
-                Sobre mim
-              </Label>
+              <div className="flex items-baseline justify-between gap-2">
+                <Label className="text-sm font-semibold" htmlFor="bio">
+                  Sobre mim
+                </Label>
+                <span
+                  className={
+                    "text-[11px] font-semibold " +
+                    (bio.trim().length > 0 && bio.trim().length < 120
+                      ? "text-destructive"
+                      : "text-muted-foreground")
+                  }
+                >
+                  {bio.trim().length}/2000
+                  {bio.trim().length > 0 && bio.trim().length < 120
+                    ? ` — mínimo 120`
+                    : ""}
+                </span>
+              </div>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Fale um pouco da sua trajetória, estilo de jogo e objetivos."
-                rows={5}
+                placeholder={
+                  "Conte sua trajetória, seu estilo de jogo e seus objetivos.\n\n" +
+                  "Ex.: comecei nas categorias de base do..., jogo como... e meu maior objetivo é..."
+                }
+                rows={6}
                 maxLength={2000}
                 disabled={loadingAtleta}
+                aria-invalid={bio.trim().length > 0 && bio.trim().length < 120}
               />
+              <p className="text-[11px] text-muted-foreground">
+                Uma bio completa ajuda olheiros a te encontrarem. Recomendado: entre 120 e 500 caracteres.
+              </p>
             </div>
+
 
             <fieldset className="space-y-3">
               <legend className="text-sm font-semibold">Estatísticas</legend>
