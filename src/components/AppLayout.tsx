@@ -82,13 +82,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-bg2/90 px-4 backdrop-blur lg:hidden">
         <Logo />
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground"
-          aria-label="Abrir menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {user && <NotificationsBell />}
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground"
+            aria-label="Abrir menu"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </header>
 
       {/* Sidebar */}
