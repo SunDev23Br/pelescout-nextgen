@@ -525,6 +525,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          link: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       peneiras: {
         Row: {
           categorias: string[]
@@ -834,6 +870,41 @@ export type Database = {
       clube_has_unlocked_atleta: {
         Args: { _atleta_user_id: string; _clube_id: string }
         Returns: boolean
+      }
+      compare_atletas: {
+        Args: { _ids: string[] }
+        Returns: {
+          altura: number
+          avatar_url: string
+          cidade: string
+          data_nascimento: string
+          id: string
+          is_validated: boolean
+          nome: string
+          pe: string
+          peso: number
+          posicao: string
+          skills: Json
+          skills_validated: Json
+        }[]
+      }
+      get_athlete_leaderboard: {
+        Args: {
+          _cidade?: string
+          _limit?: number
+          _posicao?: string
+          _skill?: string
+        }
+        Returns: {
+          avatar_url: string
+          cidade: string
+          id: string
+          is_validated: boolean
+          nome: string
+          posicao: string
+          rank: number
+          score: number
+        }[]
       }
       get_athlete_skill_history: {
         Args: { _atleta: string }

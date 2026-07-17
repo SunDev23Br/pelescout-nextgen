@@ -15,8 +15,11 @@ import {
   UserCog,
   ShieldCheck,
   LineChart,
+  BarChart3,
+  GitCompareArrows,
 } from "lucide-react";
 import { Logo } from "./Logo";
+import { NotificationsBell } from "./NotificationsBell";
 import { AthleteAvatar } from "./AthleteAvatar";
 import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,8 @@ const NAV: NavItem[] = [
   { to: "/chat", label: "Mensagens", icon: MessageCircle, roles: ["admin", "atleta", "clube"] },
   { to: "/suporte", label: "Suporte / Acessos", icon: ShieldCheck, roles: ["suporte"] },
   { to: "/clubes", label: "Atletas aprovados", icon: Building2, roles: ["clube"] },
+  { to: "/comparador", label: "Comparador", icon: GitCompareArrows, roles: ["clube", "admin", "suporte"] },
+  { to: "/ranking", label: "Ranking", icon: BarChart3, roles: ["admin", "atleta", "clube", "suporte"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
   { to: "/perfil-atleta", label: "Meu perfil de atleta", icon: UserCog, roles: ["atleta"] },
   { to: "/desempenho", label: "Desempenho", icon: LineChart, roles: ["atleta"] },
@@ -77,13 +82,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-bg2/90 px-4 backdrop-blur lg:hidden">
         <Logo />
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground"
-          aria-label="Abrir menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {user && <NotificationsBell />}
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground"
+            aria-label="Abrir menu"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </header>
 
       {/* Sidebar */}
@@ -173,7 +181,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Content */}
       <main className="flex-1 lg:pl-72">
-        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-8">{children}</div>
+        {user && (
+          <div className="hidden justify-end px-4 pt-6 sm:px-6 lg:flex lg:px-10">
+            <NotificationsBell />
+          </div>
+        )}
+        <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-4">{children}</div>
       </main>
     </div>
   );
