@@ -56,7 +56,21 @@ interface AtletaAprovado {
   celular: string;
   notaGeral: number | null;
   peneiraTitulo: string | null;
+  skills: Record<string, number>;
+  skillsValidated: Record<string, number> | null;
+  isValidated: boolean;
 }
+
+const SKILL_OPTIONS: { key: string; label: string }[] = [
+  { key: "", label: "Qualquer habilidade" },
+  { key: "marcacao", label: "Marcação" },
+  { key: "forca", label: "Força" },
+  { key: "passe", label: "Passe" },
+  { key: "velocidade", label: "Velocidade" },
+  { key: "posicionamento", label: "Posicionamento" },
+];
+
+const POSICAO_OPTIONS = ["", "Goleiro", "Zagueiro", "Lateral", "Volante", "Meia", "Atacante"];
 
 function ClubesPage() {
   const { user, ready } = useSession();
