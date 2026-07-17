@@ -1,7 +1,7 @@
 // Custom SVG football-themed icons (dourado/azul-marinho).
 // Use currentColor so parents can theme via text-primary / text-primary-foreground.
 // Small helper wrapper standardises sizing props.
-import type { SVGProps } from "react";
+import type { ReactElement, SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
@@ -96,7 +96,7 @@ export function GoalIcon(props: IconProps) {
 }
 
 /** Escolhe um ícone por chave de habilidade. */
-export const SKILL_ICON: Record<string, (p: IconProps) => JSX.Element> = {
+export const SKILL_ICON: Record<string, (p: IconProps) => ReactElement> = {
   marcacao: WhistleIcon,
   forca: BootIcon,
   passe: FieldIcon,
