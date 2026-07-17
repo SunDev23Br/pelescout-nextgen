@@ -1,5 +1,6 @@
 import { BadgeCheck } from "lucide-react";
 import { SKILL_KEYS, SKILL_LABELS, type SkillsMap } from "@/lib/skills";
+import { SKILL_ICON } from "@/components/icons/FootballIcons";
 
 interface Props {
   self: SkillsMap;
@@ -56,10 +57,12 @@ export function SkillsDisplay({
           {SKILL_KEYS.map((k) => {
             const value = source[k];
             if (value == null) return null;
+            const Icon = SKILL_ICON[k];
             return (
               <li key={k}>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    {Icon && <Icon size={14} className="text-primary" />}
                     {SKILL_LABELS[k]}
                   </span>
                   <span className="font-display text-xs font-bold text-primary">

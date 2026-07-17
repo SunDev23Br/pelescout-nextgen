@@ -41,6 +41,7 @@ import {
   type SkillKey,
   type SkillsMap,
 } from "@/lib/skills";
+import { cropToSquareBlob, detectFaces } from "@/lib/avatar-face";
 
 import { CAMPEONATOS } from "@/lib/campeonatos";
 
@@ -206,6 +207,7 @@ function PerfilPage() {
 
   async function handleAvatar(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    if (fileRef.current) fileRef.current.value = "";
     if (!file || !user) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Selecione um arquivo de imagem.");
@@ -216,30 +218,45 @@ function PerfilPage() {
       return;
     }
     setUploading(true);
-    const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
-    if (upErr) {
+    try {
+      const faceResult = await detectFaces(file);
+      if (faceResult === "no-face") {
+        const proceed = window.confirm(
+          "Não detectamos um rosto na foto. A vitrine funciona melhor com uma foto de rosto centralizada. Deseja enviar mesmo assim?",
+        );
+        if (!proceed) {
+          setUploading(false);
+          return;
+        }
+      }
+      const cropped = await cropToSquareBlob(file, 512);
+      const path = `${user.id}/avatar-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, cropped, { upsert: true, contentType: "image/jpeg" });
+      if (upErr) {
+        toast.error("Falha ao enviar imagem: " + upErr.message);
+        return;
+      }
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", user.id);
+      if (updErr) {
+        toast.error("Falha ao salvar foto: " + updErr.message);
+        return;
+      }
+      setAvatarUrl(url);
+      window.dispatchEvent(new Event("png-session"));
+      toast.success("Foto atualizada!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao processar imagem";
+      toast.error(msg);
+    } finally {
       setUploading(false);
-      toast.error("Falha ao enviar imagem: " + upErr.message);
-      return;
     }
-    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-    const url = pub.publicUrl;
-    const { error: updErr } = await supabase
-      .from("profiles")
-      .update({ avatar_url: url })
-      .eq("id", user.id);
-    setUploading(false);
-    if (updErr) {
-      toast.error("Falha ao salvar foto: " + updErr.message);
-      return;
-    }
-    setAvatarUrl(url);
-    window.dispatchEvent(new Event("png-session"));
-    toast.success("Foto atualizada!");
   }
 
   async function removerFoto() {
@@ -372,6 +389,11 @@ function PerfilPage() {
   async function salvarAtleta(e: FormEvent) {
     e.preventDefault();
     if (!user) return;
+    const bioTrim = bio.trim();
+    if (bioTrim.length > 0 && bioTrim.length < 120) {
+      toast.error("A bio precisa ter pelo menos 120 caracteres — ou deixe vazio.");
+      return;
+    }
     setSavingAtleta(true);
     const cleanedHist = historico
       .map((h) => ({
@@ -576,7 +598,9 @@ function PerfilPage() {
               className="h-24 w-24 border-2 border-primary/40 shadow-card"
             />
             <div className="flex-1 space-y-2 text-center sm:text-left">
-              <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP até 5MB.</p>
+              <p className="text-xs text-muted-foreground">
+                Envie uma foto de <strong>rosto</strong>, bem iluminada e olhando para a câmera. PNG, JPG ou WEBP até 5MB — recortamos automaticamente em quadrado.
+              </p>
               <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
                 <Button
                   type="button"
@@ -793,19 +817,42 @@ function PerfilPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold" htmlFor="bio">
-                Sobre mim
-              </Label>
+              <div className="flex items-baseline justify-between gap-2">
+                <Label className="text-sm font-semibold" htmlFor="bio">
+                  Sobre mim
+                </Label>
+                <span
+                  className={
+                    "text-[11px] font-semibold " +
+                    (bio.trim().length > 0 && bio.trim().length < 120
+                      ? "text-destructive"
+                      : "text-muted-foreground")
+                  }
+                >
+                  {bio.trim().length}/2000
+                  {bio.trim().length > 0 && bio.trim().length < 120
+                    ? ` — mínimo 120`
+                    : ""}
+                </span>
+              </div>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Fale um pouco da sua trajetória, estilo de jogo e objetivos."
-                rows={5}
+                placeholder={
+                  "Conte sua trajetória, seu estilo de jogo e seus objetivos.\n\n" +
+                  "Ex.: comecei nas categorias de base do..., jogo como... e meu maior objetivo é..."
+                }
+                rows={6}
                 maxLength={2000}
                 disabled={loadingAtleta}
+                aria-invalid={bio.trim().length > 0 && bio.trim().length < 120}
               />
+              <p className="text-[11px] text-muted-foreground">
+                Uma bio completa ajuda olheiros a te encontrarem. Recomendado: entre 120 e 500 caracteres.
+              </p>
             </div>
+
 
             <fieldset className="space-y-3">
               <legend className="text-sm font-semibold">Estatísticas</legend>
