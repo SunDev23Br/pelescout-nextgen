@@ -41,6 +41,7 @@ import {
   type SkillKey,
   type SkillsMap,
 } from "@/lib/skills";
+import { cropToSquareBlob, detectFaces } from "@/lib/avatar-face";
 
 import { CAMPEONATOS } from "@/lib/campeonatos";
 
