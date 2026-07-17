@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { WearableMetricsCard } from "@/components/WearableMetricsCard";
 import { SkillsDisplay } from "@/components/SkillsDisplay";
 import { SkillsInsights } from "@/components/SkillsInsights";
+import { SkillsHistoryTimeline } from "@/components/SkillsHistoryTimeline";
 import { parseSkills } from "@/lib/skills";
 import { ACHIEVEMENT_ICONS } from "@/components/icons/FootballIcons";
 import { supabase } from "@/integrations/supabase/client";
@@ -313,6 +314,22 @@ function PerfilAtletaPage() {
           self={parseSkills(profile.skills)}
           validated={parseSkills(profile.skills_validated)}
         />
+
+        {/* Auditoria: timeline de evolução com quem validou */}
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xs font-bold uppercase tracking-[0.22em] text-primary">
+                Histórico de evolução
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Auditoria completa das autoavaliações e validações feitas por clubes e treinadores.
+              </p>
+            </div>
+          </div>
+          <SkillsHistoryTimeline atletaId={profile.id} />
+        </section>
+
 
 
         {/* Clubes + Títulos */}

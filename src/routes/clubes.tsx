@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   CheckCircle2,
+  Filter,
   Loader2,
   Lock,
   Mail,
@@ -56,7 +57,21 @@ interface AtletaAprovado {
   celular: string;
   notaGeral: number | null;
   peneiraTitulo: string | null;
+  skills: Record<string, number>;
+  skillsValidated: Record<string, number> | null;
+  isValidated: boolean;
 }
+
+const SKILL_OPTIONS: { key: string; label: string }[] = [
+  { key: "", label: "Qualquer habilidade" },
+  { key: "marcacao", label: "Marcação" },
+  { key: "forca", label: "Força" },
+  { key: "passe", label: "Passe" },
+  { key: "velocidade", label: "Velocidade" },
+  { key: "posicionamento", label: "Posicionamento" },
+];
+
+const POSICAO_OPTIONS = ["", "Goleiro", "Zagueiro", "Lateral", "Volante", "Meia", "Atacante"];
 
 function ClubesPage() {
   const { user, ready } = useSession();
@@ -66,6 +81,15 @@ function ClubesPage() {
   const [aprovados, setAprovados] = useState<AtletaAprovado[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingChat, setStartingChat] = useState<string | null>(null);
+  // filtros avançados
+  const [filtroPosicao, setFiltroPosicao] = useState("");
+  const [filtroCidade, setFiltroCidade] = useState("");
+  const [idadeMin, setIdadeMin] = useState<string>("");
+  const [idadeMax, setIdadeMax] = useState<string>("");
+  const [skillFiltro, setSkillFiltro] = useState<string>("");
+  const [skillMin, setSkillMin] = useState<number>(60);
+  const [somenteValidados, setSomenteValidados] = useState(false);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
 
   const canListAprovados =
     ready && !!user && (user.role === "clube" || user.role === "admin" || user.role === "suporte");
@@ -105,30 +129,39 @@ function ClubesPage() {
         celular: "",
         notaGeral: r.nota_geral != null ? Number(r.nota_geral) : null,
         peneiraTitulo: (r.peneira_titulo as string | null) ?? null,
+        skills: {},
+        skillsValidated: null,
+        isValidated: false,
       }));
 
       const unlockedIds = new Set(user?.contatosDesbloqueados ?? []);
-      const toFetchUserIds = baseList
-        .filter((a) => a.userId && unlockedIds.has(a.candidatoId))
+      const allUserIds = baseList
+        .filter((a) => a.userId)
         .map((a) => a.userId as string);
 
-      if (toFetchUserIds.length > 0) {
+      if (allUserIds.length > 0) {
         const { data: profs } = await supabase
           .from("profiles")
-          .select("id, email, celular")
-          .in("id", toFetchUserIds);
+          .select("id, email, celular, skills, skills_validated")
+          .in("id", allUserIds);
         if (cancelled) return;
         const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
         for (const a of baseList) {
-          if (a.userId && unlockedIds.has(a.candidatoId)) {
-            const p = profMap.get(a.userId);
-            if (p) {
-              a.email = p.email ?? "";
-              a.celular = p.celular ?? "";
-            }
+          if (!a.userId) continue;
+          const p = profMap.get(a.userId);
+          if (!p) continue;
+          if (unlockedIds.has(a.candidatoId)) {
+            a.email = p.email ?? "";
+            a.celular = p.celular ?? "";
           }
+          const sv = (p.skills_validated ?? null) as Record<string, number> | null;
+          const s = (p.skills ?? {}) as Record<string, number>;
+          a.skills = s;
+          a.skillsValidated = sv && Object.keys(sv).length > 0 ? sv : null;
+          a.isValidated = !!a.skillsValidated;
         }
       }
+
 
       const merged = baseList.sort(
         (a, b) => (b.notaGeral ?? -1) - (a.notaGeral ?? -1),
@@ -145,15 +178,47 @@ function ClubesPage() {
   }, [ready, canListAprovados, user?.id, user?.contatosDesbloqueados?.length]);
 
   const list = useMemo(() => {
-    if (!q.trim()) return aprovados;
-    const t = q.toLowerCase();
-    return aprovados.filter(
-      (c) =>
-        c.nome.toLowerCase().includes(t) ||
-        c.posicao.toLowerCase().includes(t) ||
-        c.cidade.toLowerCase().includes(t),
-    );
-  }, [q, aprovados]);
+    const t = q.trim().toLowerCase();
+    const iMin = idadeMin ? parseInt(idadeMin, 10) : null;
+    const iMax = idadeMax ? parseInt(idadeMax, 10) : null;
+    const cidadeT = filtroCidade.trim().toLowerCase();
+    return aprovados.filter((c) => {
+      if (t && !(c.nome.toLowerCase().includes(t) || c.posicao.toLowerCase().includes(t) || c.cidade.toLowerCase().includes(t))) return false;
+      if (filtroPosicao && c.posicao !== filtroPosicao) return false;
+      if (cidadeT && !c.cidade.toLowerCase().includes(cidadeT)) return false;
+      if (somenteValidados && !c.isValidated) return false;
+      if (iMin != null || iMax != null) {
+        const idade = calcularIdade(c.dataNascimento);
+        if (iMin != null && idade < iMin) return false;
+        if (iMax != null && idade > iMax) return false;
+      }
+      if (skillFiltro) {
+        const src = c.skillsValidated ?? c.skills;
+        const v = src?.[skillFiltro];
+        if (v == null || Number(v) < skillMin) return false;
+      }
+      return true;
+    });
+  }, [q, aprovados, filtroPosicao, filtroCidade, idadeMin, idadeMax, somenteValidados, skillFiltro, skillMin]);
+
+  const filtrosAtivos =
+    (filtroPosicao ? 1 : 0) +
+    (filtroCidade.trim() ? 1 : 0) +
+    (idadeMin ? 1 : 0) +
+    (idadeMax ? 1 : 0) +
+    (skillFiltro ? 1 : 0) +
+    (somenteValidados ? 1 : 0);
+
+  function resetFiltros() {
+    setFiltroPosicao("");
+    setFiltroCidade("");
+    setIdadeMin("");
+    setIdadeMax("");
+    setSkillFiltro("");
+    setSkillMin(60);
+    setSomenteValidados(false);
+  }
+
 
   const desbloqueados = new Set(user?.contatosDesbloqueados ?? []);
 
@@ -216,21 +281,113 @@ function ClubesPage() {
         </p>
       </header>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome, posição ou cidade..."
-            className="pl-10"
-          />
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar por nome, posição ou cidade..."
+              className="pl-10"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setFiltrosAbertos((v) => !v)}
+            aria-expanded={filtrosAbertos}
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Filtros
+            {filtrosAtivos > 0 && (
+              <span className="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                {filtrosAtivos}
+              </span>
+            )}
+          </Button>
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg2 px-3 py-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            {desbloqueados.size} de {aprovados.length} liberados
+          </div>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-bg2 px-3 py-2 text-sm text-muted-foreground">
-          <CheckCircle2 className="h-4 w-4 text-success" />
-          {desbloqueados.size} de {aprovados.length} contatos liberados
-        </div>
+
+        {filtrosAbertos && (
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Posição</label>
+                <select
+                  value={filtroPosicao}
+                  onChange={(e) => setFiltroPosicao(e.target.value)}
+                  className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  {POSICAO_OPTIONS.map((p) => (
+                    <option key={p} value={p}>{p || "Qualquer"}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Cidade</label>
+                <Input value={filtroCidade} onChange={(e) => setFiltroCidade(e.target.value)} placeholder="ex.: Recife" className="h-9" />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Idade</label>
+                <div className="flex items-center gap-2">
+                  <Input type="number" min={10} max={40} value={idadeMin} onChange={(e) => setIdadeMin(e.target.value)} placeholder="mín" className="h-9" />
+                  <span className="text-xs text-muted-foreground">a</span>
+                  <Input type="number" min={10} max={40} value={idadeMax} onChange={(e) => setIdadeMax(e.target.value)} placeholder="máx" className="h-9" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Habilidade ≥ {skillMin}
+                </label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={skillFiltro}
+                    onChange={(e) => setSkillFiltro(e.target.value)}
+                    className="h-9 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+                  >
+                    {SKILL_OPTIONS.map((s) => (
+                      <option key={s.key} value={s.key}>{s.label}</option>
+                    ))}
+                  </select>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={skillMin}
+                    onChange={(e) => setSkillMin(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                    className="h-9 w-16"
+                    disabled={!skillFiltro}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={somenteValidados}
+                  onChange={(e) => setSomenteValidados(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                Somente atletas com habilidades <span className="font-semibold text-primary">validadas</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {list.length} de {aprovados.length} atleta{aprovados.length === 1 ? "" : "s"}
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={resetFiltros}>
+                  Limpar filtros
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
 
       {loading ? (
         <div className="flex items-center justify-center rounded-2xl border border-border bg-card p-12">

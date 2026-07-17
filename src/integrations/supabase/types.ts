@@ -835,6 +835,17 @@ export type Database = {
         Args: { _atleta_user_id: string; _clube_id: string }
         Returns: boolean
       }
+      get_athlete_skill_history: {
+        Args: { _atleta: string }
+        Returns: {
+          created_at: string
+          id: string
+          skills: Json
+          source: string
+          validator_id: string
+          validator_name: string
+        }[]
+      }
       get_athlete_skill_percentiles: {
         Args: { _atleta: string }
         Returns: {
@@ -852,6 +863,26 @@ export type Database = {
           conversation_id: string
           nome: string
           peer_id: string
+        }[]
+      }
+      get_public_atleta: {
+        Args: { _id: string }
+        Returns: {
+          altura: number
+          avatar_url: string
+          bio: string
+          cidade: string
+          data_nascimento: string
+          historico_clubes: Json
+          id: string
+          nome: string
+          pe: string
+          peso: number
+          posicao: string
+          skills: Json
+          skills_validated: Json
+          skills_validated_at: string
+          stats: Json
         }[]
       }
       has_role: {
@@ -886,6 +917,29 @@ export type Database = {
       reject_clube_request: {
         Args: { _request_id: string }
         Returns: undefined
+      }
+      search_public_atletas: {
+        Args: {
+          _cidade?: string
+          _idade_max?: number
+          _idade_min?: number
+          _limit?: number
+          _only_validated?: boolean
+          _posicao?: string
+          _skill?: string
+          _skill_min?: number
+        }
+        Returns: {
+          avatar_url: string
+          cidade: string
+          data_nascimento: string
+          id: string
+          is_validated: boolean
+          nome: string
+          posicao: string
+          skills: Json
+          skills_validated: Json
+        }[]
       }
       set_validated_skills: {
         Args: { _atleta: string; _skills: Json }

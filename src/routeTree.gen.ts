@@ -33,6 +33,7 @@ import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneir
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
 import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as AAtletaIdRouteImport } from './routes/a.$atletaId'
 import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
 import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
 import { Route as ApiWearablesMockConnectRouteImport } from './routes/api/wearables/mock.connect'
@@ -159,6 +160,11 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
   path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AAtletaIdRoute = AAtletaIdRouteImport.update({
+  id: '/a/$atletaId',
+  path: '/a/$atletaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWearablesSyncRoute = ApiWearablesSyncRouteImport.update({
   id: '/api/wearables/sync',
   path: '/api/wearables/sync',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/a/$atletaId': typeof AAtletaIdRoute
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByTo {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/a/$atletaId': typeof AAtletaIdRoute
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/registro-clube': typeof RegistroClubeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/suporte': typeof SuporteRoute
+  '/a/$atletaId': typeof AAtletaIdRoute
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/a/$atletaId'
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/a/$atletaId'
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/registro-clube'
     | '/sitemap.xml'
     | '/suporte'
+    | '/a/$atletaId'
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   RegistroClubeRoute: typeof RegistroClubeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SuporteRoute: typeof SuporteRoute
+  AAtletaIdRoute: typeof AAtletaIdRoute
   ApiTtsRoute: typeof ApiTtsRoute
   AtletasAtletaIdRoute: typeof AtletasAtletaIdRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
@@ -579,6 +592,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/a/$atletaId': {
+      id: '/a/$atletaId'
+      path: '/a/$atletaId'
+      fullPath: '/a/$atletaId'
+      preLoaderRoute: typeof AAtletaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/wearables/sync': {
       id: '/api/wearables/sync'
       path: '/api/wearables/sync'
@@ -634,6 +654,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistroClubeRoute: RegistroClubeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SuporteRoute: SuporteRoute,
+  AAtletaIdRoute: AAtletaIdRoute,
   ApiTtsRoute: ApiTtsRoute,
   AtletasAtletaIdRoute: AtletasAtletaIdRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
