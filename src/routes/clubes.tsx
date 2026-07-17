@@ -177,15 +177,47 @@ function ClubesPage() {
   }, [ready, canListAprovados, user?.id, user?.contatosDesbloqueados?.length]);
 
   const list = useMemo(() => {
-    if (!q.trim()) return aprovados;
-    const t = q.toLowerCase();
-    return aprovados.filter(
-      (c) =>
-        c.nome.toLowerCase().includes(t) ||
-        c.posicao.toLowerCase().includes(t) ||
-        c.cidade.toLowerCase().includes(t),
-    );
-  }, [q, aprovados]);
+    const t = q.trim().toLowerCase();
+    const iMin = idadeMin ? parseInt(idadeMin, 10) : null;
+    const iMax = idadeMax ? parseInt(idadeMax, 10) : null;
+    const cidadeT = filtroCidade.trim().toLowerCase();
+    return aprovados.filter((c) => {
+      if (t && !(c.nome.toLowerCase().includes(t) || c.posicao.toLowerCase().includes(t) || c.cidade.toLowerCase().includes(t))) return false;
+      if (filtroPosicao && c.posicao !== filtroPosicao) return false;
+      if (cidadeT && !c.cidade.toLowerCase().includes(cidadeT)) return false;
+      if (somenteValidados && !c.isValidated) return false;
+      if (iMin != null || iMax != null) {
+        const idade = calcularIdade(c.dataNascimento);
+        if (iMin != null && idade < iMin) return false;
+        if (iMax != null && idade > iMax) return false;
+      }
+      if (skillFiltro) {
+        const src = c.skillsValidated ?? c.skills;
+        const v = src?.[skillFiltro];
+        if (v == null || Number(v) < skillMin) return false;
+      }
+      return true;
+    });
+  }, [q, aprovados, filtroPosicao, filtroCidade, idadeMin, idadeMax, somenteValidados, skillFiltro, skillMin]);
+
+  const filtrosAtivos =
+    (filtroPosicao ? 1 : 0) +
+    (filtroCidade.trim() ? 1 : 0) +
+    (idadeMin ? 1 : 0) +
+    (idadeMax ? 1 : 0) +
+    (skillFiltro ? 1 : 0) +
+    (somenteValidados ? 1 : 0);
+
+  function resetFiltros() {
+    setFiltroPosicao("");
+    setFiltroCidade("");
+    setIdadeMin("");
+    setIdadeMax("");
+    setSkillFiltro("");
+    setSkillMin(60);
+    setSomenteValidados(false);
+  }
+
 
   const desbloqueados = new Set(user?.contatosDesbloqueados ?? []);
 
