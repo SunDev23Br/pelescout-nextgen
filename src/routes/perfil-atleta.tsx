@@ -20,6 +20,7 @@ import { WearableMetricsCard } from "@/components/WearableMetricsCard";
 import { SkillsDisplay } from "@/components/SkillsDisplay";
 import { SkillsInsights } from "@/components/SkillsInsights";
 import { parseSkills } from "@/lib/skills";
+import { ACHIEVEMENT_ICONS } from "@/components/icons/FootballIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/session";
 import { fromISODate } from "@/lib/date";
