@@ -3,6 +3,8 @@ import { ArrowRight, Trophy, Sparkles, Target, Users, Star } from "lucide-react"
 import { useEffect, useState } from "react";
 import { useCountUp } from "@/hooks/use-count-up";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 import { Button } from "@/components/ui/button";
 import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
 import type { Peneira } from "@/lib/mock-data";
@@ -74,6 +76,7 @@ function Landing() {
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
         <Logo />
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button asChild variant="ghost">
             <Link to="/login">Entrar</Link>
           </Button>
@@ -81,6 +84,7 @@ function Landing() {
             <Link to="/cadastro">Cadastrar</Link>
           </Button>
         </div>
+
       </header>
 
       <main>
