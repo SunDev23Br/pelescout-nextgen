@@ -241,7 +241,9 @@ function LoginPage() {
               )}
               {isSpeaking ? "Parar" : "Ouvir página"}
             </Button>
+            </div>
           </div>
+
 
           <div
             role="status"
