@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { NotificationsBell } from "./NotificationsBell";
+import { ThemeToggle } from "./ThemeToggle";
 import { AthleteAvatar } from "./AthleteAvatar";
+
 import { useSession, clearSession, type Role } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -83,6 +85,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-bg2/90 px-4 backdrop-blur lg:hidden">
         <Logo />
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {user && <NotificationsBell />}
           <button
             onClick={() => setOpen((v) => !v)}
@@ -92,6 +95,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
+
       </header>
 
       {/* Sidebar */}
@@ -182,10 +186,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Content */}
       <main className="flex-1 lg:pl-72">
         {user && (
-          <div className="hidden justify-end px-4 pt-6 sm:px-6 lg:flex lg:px-10">
+          <div className="hidden justify-end gap-2 px-4 pt-6 sm:px-6 lg:flex lg:px-10">
+            <ThemeToggle />
             <NotificationsBell />
           </div>
         )}
+
         <div className="px-4 pb-12 pt-20 sm:px-6 lg:px-10 lg:pt-4">{children}</div>
       </main>
     </div>
