@@ -1,23 +1,52 @@
-Alterar `src/routes/manual.tsx` para tornar a seção "O que levar no dia" apenas leitura, removendo toda a interatividade de checklist e barra de progresso.
+# Modo claro/escuro + varredura de bugs
 
-### Alterações
-1. **Remover estado e persistência do checklist**
-   - Excluir `checked`, `setChecked` e os dois `useEffect` que leem/salvam `localStorage`.
-   - Excluir a função `toggleCheck`.
+## 1. Sistema de tema (claro/escuro)
 
-2. **Remover cálculo de progresso**
-   - Excluir `progress` e `useMemo` relacionados.
-   - Remover a seção de "Preparação" com porcentagem e barra de progresso da sidebar desktop.
-   - Remover a seção de progresso do hero mobile.
+**Tokens de cor**
+- Em `src/styles.css`, hoje `:root` contém a paleta escura (bg azul-marinho + dourado) e `.dark` está vazio.
+- Reorganizar: mover a paleta atual para `.dark` e criar em `:root` uma paleta clara equivalente (fundo off-white, superfícies em cinza-claro, texto escuro, mantendo dourado e azul como acento). Ajustar `--background`, `--bg2`, `--bg3`, `--foreground`, `--muted-foreground`, `--border`, `--input`, `--sidebar*`, `--card`, `--popover`, gradientes e sombras para versões claras coerentes.
+- Garantir contraste WCAG AA nos dois modos (texto sobre dourado, badges, botões ghost/outline).
 
-3. **Transformar a seção "levar" em leitura pura**
-   - Substituir os botões de checkbox interativos por uma lista estática (`BulletList` ou similar).
-   - Atualizar o texto introdutório, removendo a menção a "marcar" e "progresso salvo".
-   - Remover a barra de progresso interna do accordion "levar".
+**Provider de tema**
+- Criar `src/lib/theme.tsx` com `ThemeProvider` + hook `useTheme()`:
+  - Estado: `"light" | "dark" | "system"`.
+  - Persistência em `localStorage` (`png-theme`).
+  - Aplica classe `dark` em `<html>` conforme escolha ou `prefers-color-scheme` quando `"system"`.
+  - Escuta mudanças do sistema via `matchMedia`.
+  - SSR-safe (só toca `window`/`document` no `useEffect`).
+- Injetar `<ThemeProvider>` no `RootComponent` em `src/routes/__root.tsx`.
+- Em `RootShell`, remover a classe fixa `dark` do `<html>` e adicionar um pequeno script inline no `<head>` para setar a classe antes da hidratação (evita flash claro→escuro).
 
-4. **Limpeza de imports**
-   - Remover `CheckCircle2` se não for mais usado em outro lugar da página.
-   - Manter `Backpack` e demais ícones utilizados.
+**Componente de alternância**
+- Criar `src/components/ThemeToggle.tsx`: botão ghost com ícones `Sun`/`Moon`/`Monitor` (lucide) usando `DropdownMenu` do shadcn com opções Claro / Escuro / Sistema.
+- Colocar o toggle:
+  - No `AppLayout.tsx`: ao lado do `NotificationsBell` (barra mobile e área desktop).
+  - Na landing (`src/routes/index.tsx`): no header público.
+  - Na tela `/login`: canto superior direito.
 
-### Resultado esperado
-A seção "O que levar no dia" passa a ser apenas uma lista de itens para leitura, igual às demais seções do manual, sem contadores, checkboxes ou barra de progresso.
+**Ajustes de componentes que hardcodam cores escuras**
+- Varrer usos de `bg-background/70`, gradientes fixos e classes que assumem tema escuro; substituir por tokens semânticos onde quebrar no modo claro (ex.: overlays do sidebar, backdrop, chat, cards da landing). Sem mudar layout.
+
+## 2. Correção de bugs / varredura
+
+Fazer uma passada rápida verificando:
+- Console e network nas rotas principais (`/`, `/login`, `/peneiras`, `/chat`, `/desempenho`, `/clubes`, `/perfil-atleta`, `/ranking`, `/comparador`, `/manual`, `/dashboard`).
+- Erros de hidratação após introduzir o tema (classe `dark` no `<html>` precisa bater entre servidor e cliente).
+- Realtime do chat/notificações continua funcionando em ambos os temas (nada muda de lógica).
+- Corrigir apenas o que realmente aparecer como erro/warn ou UI quebrada; listar no fim da execução o que foi encontrado e o que foi corrigido. Se nada aparecer além do tema, informar isso explicitamente em vez de inventar correções.
+
+## Detalhes técnicos
+
+- Tailwind v4: já existe `@custom-variant dark (&:is(.dark *))` em `styles.css`, então basta alternar a classe `dark` em `<html>`.
+- Não criar `tailwind.config.js`.
+- Não alterar arquivos auto-gerados (`routeTree.gen.ts`, `integrations/supabase/*`).
+- Sem novas dependências: `lucide-react` e `@radix-ui/react-dropdown-menu` já estão no projeto via shadcn.
+
+## Entregáveis
+- `src/lib/theme.tsx` (novo)
+- `src/components/ThemeToggle.tsx` (novo)
+- `src/styles.css` (paleta clara + escura)
+- `src/routes/__root.tsx` (provider + script anti-flash, remove `dark` fixo)
+- `src/components/AppLayout.tsx`, `src/routes/index.tsx`, `src/routes/login.tsx` (toggle visível)
+- Ajustes pontuais em componentes que quebrarem no modo claro
+- Relatório final dos bugs encontrados/corrigidos (ou confirmação de que não houve outros)
