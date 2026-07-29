@@ -9,117 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SuporteRouteImport } from './routes/suporte'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
-import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
-import { Route as RankingRouteImport } from './routes/ranking'
-import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
-import { Route as PerfilRouteImport } from './routes/perfil'
-import { Route as ManualRouteImport } from './routes/manual'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DesempenhoRouteImport } from './routes/desempenho'
-import { Route as DemoComponentesRouteImport } from './routes/demo-componentes'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ComparadorRouteImport } from './routes/comparador'
-import { Route as ClubesRouteImport } from './routes/clubes'
-import { Route as ChatRouteImport } from './routes/chat'
-import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as AvaliacoesRouteImport } from './routes/avaliacoes'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
-import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
-import { Route as UsuariosUserIdRouteImport } from './routes/usuarios.$userId'
-import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
-import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
-import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
-import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
-import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as AvaliacoesRouteImport } from './routes/avaliacoes'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ClubesRouteImport } from './routes/clubes'
+import { Route as ComparadorRouteImport } from './routes/comparador'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DemoComponentesRouteImport } from './routes/demo-componentes'
+import { Route as DesempenhoRouteImport } from './routes/desempenho'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ManualRouteImport } from './routes/manual'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
+import { Route as RankingRouteImport } from './routes/ranking'
+import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
+import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as AAtletaIdRouteImport } from './routes/a.$atletaId'
-import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
+import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
+import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
+import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
+import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
+import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
+import { Route as UsuariosUserIdRouteImport } from './routes/usuarios.$userId'
 import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
-import { Route as ApiWearablesMockConnectRouteImport } from './routes/api/wearables/mock.connect'
-import { Route as ApiWearablesCallbackProviderRouteImport } from './routes/api/wearables/callback.$provider'
+import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
 import { Route as ApiPublicHooksSyncWearablesRouteImport } from './routes/api/public/hooks/sync-wearables'
+import { Route as ApiWearablesCallbackProviderRouteImport } from './routes/api/wearables/callback.$provider'
+import { Route as ApiWearablesMockConnectRouteImport } from './routes/api/wearables/mock.connect'
 
-const SuporteRoute = SuporteRouteImport.update({
-  id: '/suporte',
-  path: '/suporte',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegistroClubeRoute = RegistroClubeRouteImport.update({
-  id: '/registro-clube',
-  path: '/registro-clube',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegistroAdminRoute = RegistroAdminRouteImport.update({
-  id: '/registro-admin',
-  path: '/registro-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RankingRoute = RankingRouteImport.update({
-  id: '/ranking',
-  path: '/ranking',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PerfilAtletaRoute = PerfilAtletaRouteImport.update({
-  id: '/perfil-atleta',
-  path: '/perfil-atleta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PerfilRoute = PerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ManualRoute = ManualRouteImport.update({
-  id: '/manual',
-  path: '/manual',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesempenhoRoute = DesempenhoRouteImport.update({
-  id: '/desempenho',
-  path: '/desempenho',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoComponentesRoute = DemoComponentesRouteImport.update({
-  id: '/demo-componentes',
-  path: '/demo-componentes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ComparadorRoute = ComparadorRouteImport.update({
-  id: '/comparador',
-  path: '/comparador',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClubesRoute = ClubesRouteImport.update({
-  id: '/clubes',
-  path: '/clubes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AvaliacoesRoute = AvaliacoesRouteImport.update({
@@ -127,49 +52,84 @@ const AvaliacoesRoute = AvaliacoesRouteImport.update({
   path: '/avaliacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PeneirasIndexRoute = PeneirasIndexRouteImport.update({
-  id: '/peneiras/',
-  path: '/peneiras/',
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CandidatosIndexRoute = CandidatosIndexRouteImport.update({
-  id: '/candidatos/',
-  path: '/candidatos/',
+const ClubesRoute = ClubesRouteImport.update({
+  id: '/clubes',
+  path: '/clubes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UsuariosUserIdRoute = UsuariosUserIdRouteImport.update({
-  id: '/usuarios/$userId',
-  path: '/usuarios/$userId',
+const ComparadorRoute = ComparadorRouteImport.update({
+  id: '/comparador',
+  path: '/comparador',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PeneirasCriarRoute = PeneirasCriarRouteImport.update({
-  id: '/peneiras/criar',
-  path: '/peneiras/criar',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PeneirasPeneiraIdRoute = PeneirasPeneiraIdRouteImport.update({
-  id: '/peneiras/$peneiraId',
-  path: '/peneiras/$peneiraId',
+const DemoComponentesRoute = DemoComponentesRouteImport.update({
+  id: '/demo-componentes',
+  path: '/demo-componentes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
-  id: '/candidatos/$candidatoId',
-  path: '/candidatos/$candidatoId',
+const DesempenhoRoute = DesempenhoRouteImport.update({
+  id: '/desempenho',
+  path: '/desempenho',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AtletasAtletaIdRoute = AtletasAtletaIdRouteImport.update({
-  id: '/atletas/$atletaId',
-  path: '/atletas/$atletaId',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTtsRoute = ApiTtsRouteImport.update({
-  id: '/api/tts',
-  path: '/api/tts',
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilAtletaRoute = PerfilAtletaRouteImport.update({
+  id: '/perfil-atleta',
+  path: '/perfil-atleta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RankingRoute = RankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroAdminRoute = RegistroAdminRouteImport.update({
+  id: '/registro-admin',
+  path: '/registro-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroClubeRoute = RegistroClubeRouteImport.update({
+  id: '/registro-clube',
+  path: '/registro-clube',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AAtletaIdRoute = AAtletaIdRouteImport.update({
@@ -177,9 +137,44 @@ const AAtletaIdRoute = AAtletaIdRouteImport.update({
   path: '/a/$atletaId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWearablesSyncRoute = ApiWearablesSyncRouteImport.update({
-  id: '/api/wearables/sync',
-  path: '/api/wearables/sync',
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtletasAtletaIdRoute = AtletasAtletaIdRouteImport.update({
+  id: '/atletas/$atletaId',
+  path: '/atletas/$atletaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatosIndexRoute = CandidatosIndexRouteImport.update({
+  id: '/candidatos/',
+  path: '/candidatos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
+  id: '/candidatos/$candidatoId',
+  path: '/candidatos/$candidatoId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasIndexRoute = PeneirasIndexRouteImport.update({
+  id: '/peneiras/',
+  path: '/peneiras/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasPeneiraIdRoute = PeneirasPeneiraIdRouteImport.update({
+  id: '/peneiras/$peneiraId',
+  path: '/peneiras/$peneiraId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasCriarRoute = PeneirasCriarRouteImport.update({
+  id: '/peneiras/criar',
+  path: '/peneiras/criar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsuariosUserIdRoute = UsuariosUserIdRouteImport.update({
+  id: '/usuarios/$userId',
+  path: '/usuarios/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWearablesStartRoute = ApiWearablesStartRouteImport.update({
@@ -187,23 +182,28 @@ const ApiWearablesStartRoute = ApiWearablesStartRouteImport.update({
   path: '/api/wearables/start',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWearablesMockConnectRoute = ApiWearablesMockConnectRouteImport.update({
-  id: '/api/wearables/mock/connect',
-  path: '/api/wearables/mock/connect',
+const ApiWearablesSyncRoute = ApiWearablesSyncRouteImport.update({
+  id: '/api/wearables/sync',
+  path: '/api/wearables/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiWearablesCallbackProviderRoute =
-  ApiWearablesCallbackProviderRouteImport.update({
-    id: '/api/wearables/callback/$provider',
-    path: '/api/wearables/callback/$provider',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksSyncWearablesRoute =
   ApiPublicHooksSyncWearablesRouteImport.update({
     id: '/api/public/hooks/sync-wearables',
     path: '/api/public/hooks/sync-wearables',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiWearablesCallbackProviderRoute =
+  ApiWearablesCallbackProviderRouteImport.update({
+    id: '/api/wearables/callback/$provider',
+    path: '/api/wearables/callback/$provider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiWearablesMockConnectRoute = ApiWearablesMockConnectRouteImport.update({
+  id: '/api/wearables/mock/connect',
+  path: '/api/wearables/mock/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -450,116 +450,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/suporte': {
-      id: '/suporte'
-      path: '/suporte'
-      fullPath: '/suporte'
-      preLoaderRoute: typeof SuporteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/registro-clube': {
-      id: '/registro-clube'
-      path: '/registro-clube'
-      fullPath: '/registro-clube'
-      preLoaderRoute: typeof RegistroClubeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/registro-admin': {
-      id: '/registro-admin'
-      path: '/registro-admin'
-      fullPath: '/registro-admin'
-      preLoaderRoute: typeof RegistroAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ranking': {
-      id: '/ranking'
-      path: '/ranking'
-      fullPath: '/ranking'
-      preLoaderRoute: typeof RankingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/perfil-atleta': {
-      id: '/perfil-atleta'
-      path: '/perfil-atleta'
-      fullPath: '/perfil-atleta'
-      preLoaderRoute: typeof PerfilAtletaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/perfil': {
-      id: '/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/manual': {
-      id: '/manual'
-      path: '/manual'
-      fullPath: '/manual'
-      preLoaderRoute: typeof ManualRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/desempenho': {
-      id: '/desempenho'
-      path: '/desempenho'
-      fullPath: '/desempenho'
-      preLoaderRoute: typeof DesempenhoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo-componentes': {
-      id: '/demo-componentes'
-      path: '/demo-componentes'
-      fullPath: '/demo-componentes'
-      preLoaderRoute: typeof DemoComponentesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/comparador': {
-      id: '/comparador'
-      path: '/comparador'
-      fullPath: '/comparador'
-      preLoaderRoute: typeof ComparadorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/clubes': {
-      id: '/clubes'
-      path: '/clubes'
-      fullPath: '/clubes'
-      preLoaderRoute: typeof ClubesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/avaliacoes': {
@@ -569,67 +464,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvaliacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/peneiras/': {
-      id: '/peneiras/'
-      path: '/peneiras'
-      fullPath: '/peneiras/'
-      preLoaderRoute: typeof PeneirasIndexRouteImport
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/candidatos/': {
-      id: '/candidatos/'
-      path: '/candidatos'
-      fullPath: '/candidatos/'
-      preLoaderRoute: typeof CandidatosIndexRouteImport
+    '/clubes': {
+      id: '/clubes'
+      path: '/clubes'
+      fullPath: '/clubes'
+      preLoaderRoute: typeof ClubesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/usuarios/$userId': {
-      id: '/usuarios/$userId'
-      path: '/usuarios/$userId'
-      fullPath: '/usuarios/$userId'
-      preLoaderRoute: typeof UsuariosUserIdRouteImport
+    '/comparador': {
+      id: '/comparador'
+      path: '/comparador'
+      fullPath: '/comparador'
+      preLoaderRoute: typeof ComparadorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/peneiras/criar': {
-      id: '/peneiras/criar'
-      path: '/peneiras/criar'
-      fullPath: '/peneiras/criar'
-      preLoaderRoute: typeof PeneirasCriarRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/peneiras/$peneiraId': {
-      id: '/peneiras/$peneiraId'
-      path: '/peneiras/$peneiraId'
-      fullPath: '/peneiras/$peneiraId'
-      preLoaderRoute: typeof PeneirasPeneiraIdRouteImport
+    '/demo-componentes': {
+      id: '/demo-componentes'
+      path: '/demo-componentes'
+      fullPath: '/demo-componentes'
+      preLoaderRoute: typeof DemoComponentesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/candidatos/$candidatoId': {
-      id: '/candidatos/$candidatoId'
-      path: '/candidatos/$candidatoId'
-      fullPath: '/candidatos/$candidatoId'
-      preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
+    '/desempenho': {
+      id: '/desempenho'
+      path: '/desempenho'
+      fullPath: '/desempenho'
+      preLoaderRoute: typeof DesempenhoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/atletas/$atletaId': {
-      id: '/atletas/$atletaId'
-      path: '/atletas/$atletaId'
-      fullPath: '/atletas/$atletaId'
-      preLoaderRoute: typeof AtletasAtletaIdRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tts': {
-      id: '/api/tts'
-      path: '/api/tts'
-      fullPath: '/api/tts'
-      preLoaderRoute: typeof ApiTtsRouteImport
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil-atleta': {
+      id: '/perfil-atleta'
+      path: '/perfil-atleta'
+      fullPath: '/perfil-atleta'
+      preLoaderRoute: typeof PerfilAtletaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranking': {
+      id: '/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof RankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro-admin': {
+      id: '/registro-admin'
+      path: '/registro-admin'
+      fullPath: '/registro-admin'
+      preLoaderRoute: typeof RegistroAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro-clube': {
+      id: '/registro-clube'
+      path: '/registro-clube'
+      fullPath: '/registro-clube'
+      preLoaderRoute: typeof RegistroClubeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/a/$atletaId': {
@@ -639,11 +583,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AAtletaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/wearables/sync': {
-      id: '/api/wearables/sync'
-      path: '/api/wearables/sync'
-      fullPath: '/api/wearables/sync'
-      preLoaderRoute: typeof ApiWearablesSyncRouteImport
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atletas/$atletaId': {
+      id: '/atletas/$atletaId'
+      path: '/atletas/$atletaId'
+      fullPath: '/atletas/$atletaId'
+      preLoaderRoute: typeof AtletasAtletaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidatos/': {
+      id: '/candidatos/'
+      path: '/candidatos'
+      fullPath: '/candidatos/'
+      preLoaderRoute: typeof CandidatosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidatos/$candidatoId': {
+      id: '/candidatos/$candidatoId'
+      path: '/candidatos/$candidatoId'
+      fullPath: '/candidatos/$candidatoId'
+      preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras/': {
+      id: '/peneiras/'
+      path: '/peneiras'
+      fullPath: '/peneiras/'
+      preLoaderRoute: typeof PeneirasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras/$peneiraId': {
+      id: '/peneiras/$peneiraId'
+      path: '/peneiras/$peneiraId'
+      fullPath: '/peneiras/$peneiraId'
+      preLoaderRoute: typeof PeneirasPeneiraIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras/criar': {
+      id: '/peneiras/criar'
+      path: '/peneiras/criar'
+      fullPath: '/peneiras/criar'
+      preLoaderRoute: typeof PeneirasCriarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/usuarios/$userId': {
+      id: '/usuarios/$userId'
+      path: '/usuarios/$userId'
+      fullPath: '/usuarios/$userId'
+      preLoaderRoute: typeof UsuariosUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/wearables/start': {
@@ -653,11 +646,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWearablesStartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/wearables/mock/connect': {
-      id: '/api/wearables/mock/connect'
-      path: '/api/wearables/mock/connect'
-      fullPath: '/api/wearables/mock/connect'
-      preLoaderRoute: typeof ApiWearablesMockConnectRouteImport
+    '/api/wearables/sync': {
+      id: '/api/wearables/sync'
+      path: '/api/wearables/sync'
+      fullPath: '/api/wearables/sync'
+      preLoaderRoute: typeof ApiWearablesSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sync-wearables': {
+      id: '/api/public/hooks/sync-wearables'
+      path: '/api/public/hooks/sync-wearables'
+      fullPath: '/api/public/hooks/sync-wearables'
+      preLoaderRoute: typeof ApiPublicHooksSyncWearablesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/wearables/callback/$provider': {
@@ -667,11 +667,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWearablesCallbackProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/sync-wearables': {
-      id: '/api/public/hooks/sync-wearables'
-      path: '/api/public/hooks/sync-wearables'
-      fullPath: '/api/public/hooks/sync-wearables'
-      preLoaderRoute: typeof ApiPublicHooksSyncWearablesRouteImport
+    '/api/wearables/mock/connect': {
+      id: '/api/wearables/mock/connect'
+      path: '/api/wearables/mock/connect'
+      fullPath: '/api/wearables/mock/connect'
+      preLoaderRoute: typeof ApiWearablesMockConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
