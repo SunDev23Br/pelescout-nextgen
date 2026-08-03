@@ -375,10 +375,14 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                 {isSelf && (
                   <>
                     {" "}
-                    Adicione sua biografia em{" "}
-                    <Link to="/perfil" className="text-primary underline">
+                    Adicione sua biografia clicando em{" "}
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="text-primary underline"
+                    >
                       editar dados
-                    </Link>
+                    </button>
                     .
                   </>
                 )}
