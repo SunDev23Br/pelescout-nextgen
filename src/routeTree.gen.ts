@@ -33,6 +33,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AtletasAtletaIdRouteImport } from './routes/atletas.$atletaId'
 import { Route as CandidatosIndexRouteImport } from './routes/candidatos.index'
 import { Route as CandidatosCandidatoIdRouteImport } from './routes/candidatos.$candidatoId'
+import { Route as OlheirosUserIdRouteImport } from './routes/olheiros.$userId'
 import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
@@ -164,6 +165,11 @@ const CandidatosCandidatoIdRoute = CandidatosCandidatoIdRouteImport.update({
   path: '/candidatos/$candidatoId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OlheirosUserIdRoute = OlheirosUserIdRouteImport.update({
+  id: '/olheiros/$userId',
+  path: '/olheiros/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PeneirasIndexRoute = PeneirasIndexRouteImport.update({
   id: '/peneiras/',
   path: '/peneiras/',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/olheiros/$userId': typeof OlheirosUserIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
   '/usuarios/$userId': typeof UsuariosUserIdRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/olheiros/$userId': typeof OlheirosUserIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
   '/usuarios/$userId': typeof UsuariosUserIdRoute
@@ -314,6 +322,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/atletas/$atletaId': typeof AtletasAtletaIdRoute
   '/candidatos/$candidatoId': typeof CandidatosCandidatoIdRoute
+  '/olheiros/$userId': typeof OlheirosUserIdRoute
   '/peneiras/$peneiraId': typeof PeneirasPeneiraIdRoute
   '/peneiras/criar': typeof PeneirasCriarRoute
   '/usuarios/$userId': typeof UsuariosUserIdRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
+    | '/olheiros/$userId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
     | '/usuarios/$userId'
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
+    | '/olheiros/$userId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
     | '/usuarios/$userId'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/atletas/$atletaId'
     | '/candidatos/$candidatoId'
+    | '/olheiros/$userId'
     | '/peneiras/$peneiraId'
     | '/peneiras/criar'
     | '/usuarios/$userId'
@@ -461,6 +473,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   AtletasAtletaIdRoute: typeof AtletasAtletaIdRoute
   CandidatosCandidatoIdRoute: typeof CandidatosCandidatoIdRoute
+  OlheirosUserIdRoute: typeof OlheirosUserIdRoute
   PeneirasPeneiraIdRoute: typeof PeneirasPeneiraIdRoute
   PeneirasCriarRoute: typeof PeneirasCriarRoute
   UsuariosUserIdRoute: typeof UsuariosUserIdRoute
@@ -644,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CandidatosCandidatoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/olheiros/$userId': {
+      id: '/olheiros/$userId'
+      path: '/olheiros/$userId'
+      fullPath: '/olheiros/$userId'
+      preLoaderRoute: typeof OlheirosUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/peneiras/': {
       id: '/peneiras/'
       path: '/peneiras'
@@ -741,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   AtletasAtletaIdRoute: AtletasAtletaIdRoute,
   CandidatosCandidatoIdRoute: CandidatosCandidatoIdRoute,
+  OlheirosUserIdRoute: OlheirosUserIdRoute,
   PeneirasPeneiraIdRoute: PeneirasPeneiraIdRoute,
   PeneirasCriarRoute: PeneirasCriarRoute,
   UsuariosUserIdRoute: UsuariosUserIdRoute,

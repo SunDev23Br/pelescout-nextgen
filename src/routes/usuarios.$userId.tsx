@@ -119,6 +119,12 @@ function UserProfilePage() {
     return null;
   }
 
+  // If viewing an olheiro/admin, redirect to the rich scout profile.
+  if (isAdmin && user?.id !== userId) {
+    navigate({ to: "/olheiros/$userId", params: { userId }, replace: true });
+    return null;
+  }
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-3xl space-y-6">
