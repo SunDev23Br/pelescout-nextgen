@@ -5,6 +5,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/session";
+
 
 const SKILL_KEYS = [
   { key: "marcacao", label: "Marcação" },
@@ -58,20 +60,30 @@ export const Route = createFileRoute("/comparador")({
 });
 
 function ComparadorPage() {
+  const { user, ready } = useSession();
   const [candidates, setCandidates] = useState<Array<{ id: string; nome: string; posicao: string | null; avatar_url: string | null }>>([]);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const canCompare =
+    ready && !!user && (user.role === "clube" || user.role === "admin" || user.role === "suporte");
+
   useEffect(() => {
+    if (!canCompare) { setCandidates([]); return; }
     (async () => {
-      const { data } = await supabase.rpc("search_public_atletas", { _limit: 200 });
+      const { data, error } = await supabase.rpc("search_public_atletas", {
+        _only_validated: false,
+        _limit: 200,
+      });
+      if (error) { console.error(error); return; }
       setCandidates((data ?? []).map((a) => ({
         id: a.id, nome: a.nome, posicao: a.posicao, avatar_url: a.avatar_url,
       })));
     })();
-  }, []);
+  }, [canCompare]);
+
 
   useEffect(() => {
     (async () => {
@@ -104,6 +116,23 @@ function ComparadorPage() {
     const values = atletas.map((a) => effSkill(a, key)).filter((v): v is number => v !== null);
     return values.length ? Math.max(...values) : null;
   };
+
+  if (ready && !canCompare) {
+    return (
+      <AppLayout>
+        <div className="rounded-2xl border border-border bg-card p-12 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
+          <h2 className="mt-3 font-display text-2xl font-bold">Área exclusiva para clubes</h2>
+          <p className="mt-2 text-muted-foreground">
+            Faça login como clube, admin ou suporte para comparar atletas.
+          </p>
+          <Button asChild className="mt-4">
+            <Link to="/login">Ir para login</Link>
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

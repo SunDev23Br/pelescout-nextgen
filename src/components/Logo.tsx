@@ -1,13 +1,20 @@
 import { cn } from "@/lib/utils";
-import logoImg from "@/assets/pele-next-gen-logo.png";
+import logoDark from "@/assets/pele-next-gen-logo.png";
+import logoLight from "@/assets/pele-next-gen-logo-light.png";
 
 export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("inline-flex items-center justify-center", className)}>
       <img
-        src={logoImg}
+        src={logoLight}
         alt="Pelé Next Gen"
-        className="h-20 w-auto object-contain"
+        className="h-20 w-auto object-contain dark:hidden"
+      />
+      <img
+        src={logoDark}
+        alt="Pelé Next Gen"
+        aria-hidden="true"
+        className="hidden h-20 w-auto object-contain dark:block"
       />
     </div>
   );
