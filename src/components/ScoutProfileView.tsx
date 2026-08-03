@@ -601,23 +601,27 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                     href={`https://wa.me/55${whats}`}
                   />
                 )}
-                {profile.email && (
+                {(extra.email_contato || profile.email) && (
                   <ContactButton
                     icon={Mail}
                     label="Email"
-                    href={`mailto:${profile.email}`}
+                    href={`mailto:${extra.email_contato ?? profile.email}`}
                   />
                 )}
-                <ContactButton
-                  icon={Instagram}
-                  label="Instagram"
-                  href="https://instagram.com"
-                />
-                <ContactButton
-                  icon={Linkedin}
-                  label="LinkedIn"
-                  href="https://linkedin.com"
-                />
+                {instagramHref && (
+                  <ContactButton
+                    icon={Instagram}
+                    label="Instagram"
+                    href={instagramHref}
+                  />
+                )}
+                {linkedinHref && (
+                  <ContactButton
+                    icon={Linkedin}
+                    label="LinkedIn"
+                    href={linkedinHref}
+                  />
+                )}
               </div>
             </div>
 
