@@ -241,13 +241,18 @@ function ClubesPage() {
 
   async function confirmarPagamento() {
     if (!target) return;
-    await unlockContato(target.candidatoId);
-    setAprovados((prev) => [...prev]);
-    toast.success("Pagamento confirmado!", {
-      description: `Contato de ${target.nome} desbloqueado.`,
-    });
+    try {
+      await unlockContato(target.candidatoId);
+      setAprovados((prev) => [...prev]);
+      toast.success("Pagamento confirmado!", {
+        description: `Contato de ${target.nome} desbloqueado.`,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao desbloquear contato");
+    }
     setTarget(null);
   }
+
 
   async function handleEnviarMensagem(c: AtletaAprovado) {
     if (!c.userId) return;

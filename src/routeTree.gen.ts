@@ -36,6 +36,7 @@ import { Route as PeneirasIndexRouteImport } from './routes/peneiras.index'
 import { Route as PeneirasPeneiraIdRouteImport } from './routes/peneiras.$peneiraId'
 import { Route as PeneirasCriarRouteImport } from './routes/peneiras.criar'
 import { Route as UsuariosUserIdRouteImport } from './routes/usuarios.$userId'
+import { Route as ApiContatosUnlockRouteImport } from './routes/api/contatos/unlock'
 import { Route as ApiWearablesStartRouteImport } from './routes/api/wearables/start'
 import { Route as ApiWearablesSyncRouteImport } from './routes/api/wearables/sync'
 import { Route as ApiPublicHooksSyncWearablesRouteImport } from './routes/api/public/hooks/sync-wearables'
@@ -177,6 +178,11 @@ const UsuariosUserIdRoute = UsuariosUserIdRouteImport.update({
   path: '/usuarios/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContatosUnlockRoute = ApiContatosUnlockRouteImport.update({
+  id: '/api/contatos/unlock',
+  path: '/api/contatos/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWearablesStartRoute = ApiWearablesStartRouteImport.update({
   id: '/api/wearables/start',
   path: '/api/wearables/start',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
+  '/api/contatos/unlock': typeof ApiContatosUnlockRoute
   '/api/wearables/start': typeof ApiWearablesStartRoute
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos': typeof CandidatosIndexRoute
   '/peneiras': typeof PeneirasIndexRoute
+  '/api/contatos/unlock': typeof ApiContatosUnlockRoute
   '/api/wearables/start': typeof ApiWearablesStartRoute
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/usuarios/$userId': typeof UsuariosUserIdRoute
   '/candidatos/': typeof CandidatosIndexRoute
   '/peneiras/': typeof PeneirasIndexRoute
+  '/api/contatos/unlock': typeof ApiContatosUnlockRoute
   '/api/wearables/start': typeof ApiWearablesStartRoute
   '/api/wearables/sync': typeof ApiWearablesSyncRoute
   '/api/public/hooks/sync-wearables': typeof ApiPublicHooksSyncWearablesRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos/'
     | '/peneiras/'
+    | '/api/contatos/unlock'
     | '/api/wearables/start'
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos'
     | '/peneiras'
+    | '/api/contatos/unlock'
     | '/api/wearables/start'
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/usuarios/$userId'
     | '/candidatos/'
     | '/peneiras/'
+    | '/api/contatos/unlock'
     | '/api/wearables/start'
     | '/api/wearables/sync'
     | '/api/public/hooks/sync-wearables'
@@ -441,6 +453,7 @@ export interface RootRouteChildren {
   UsuariosUserIdRoute: typeof UsuariosUserIdRoute
   CandidatosIndexRoute: typeof CandidatosIndexRoute
   PeneirasIndexRoute: typeof PeneirasIndexRoute
+  ApiContatosUnlockRoute: typeof ApiContatosUnlockRoute
   ApiWearablesStartRoute: typeof ApiWearablesStartRoute
   ApiWearablesSyncRoute: typeof ApiWearablesSyncRoute
   ApiPublicHooksSyncWearablesRoute: typeof ApiPublicHooksSyncWearablesRoute
@@ -639,6 +652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsuariosUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contatos/unlock': {
+      id: '/api/contatos/unlock'
+      path: '/api/contatos/unlock'
+      fullPath: '/api/contatos/unlock'
+      preLoaderRoute: typeof ApiContatosUnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/wearables/start': {
       id: '/api/wearables/start'
       path: '/api/wearables/start'
@@ -705,6 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   UsuariosUserIdRoute: UsuariosUserIdRoute,
   CandidatosIndexRoute: CandidatosIndexRoute,
   PeneirasIndexRoute: PeneirasIndexRoute,
+  ApiContatosUnlockRoute: ApiContatosUnlockRoute,
   ApiWearablesStartRoute: ApiWearablesStartRoute,
   ApiWearablesSyncRoute: ApiWearablesSyncRoute,
   ApiPublicHooksSyncWearablesRoute: ApiPublicHooksSyncWearablesRoute,
