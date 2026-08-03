@@ -101,7 +101,10 @@ export async function saveScoutExtra(userId: string, extra: ScoutExtra) {
       especialidades: extra.especialidades,
       posicoes: extra.posicoes,
       competicoes: extra.competicoes,
-      experiencia: extra.experiencia,
+      experiencia: extra.experiencia.map((x) => ({ ...x })) as unknown as Record<
+        string,
+        string
+      >[],
       instagram: extra.instagram,
       linkedin: extra.linkedin,
       whatsapp: extra.whatsapp,
