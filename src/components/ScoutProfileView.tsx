@@ -384,63 +384,87 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
             )}
           </Card>
 
-          <Card title="Especialidades">
-            <div className="flex flex-wrap gap-2">
-              {ESPECIALIDADES.map((e) => (
-                <span
-                  key={e}
-                  className="rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
-                >
-                  {e}
-                </span>
-              ))}
-            </div>
-          </Card>
-
-          <Card title="Posições observadas">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {POSICOES.map((p) => (
-                <div
-                  key={p.label}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-bg2 px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
-                >
-                  <span className="text-xl">{p.emoji}</span>
-                  <span className="text-sm font-semibold">{p.label}</span>
+          {(extra.especialidades.length > 0 || isSelf) && (
+            <Card title="Especialidades">
+              {extra.especialidades.length === 0 ? (
+                <EmptyHint text="Adicione suas especialidades (categorias que você observa)." />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {extra.especialidades.map((e) => (
+                    <span
+                      key={e}
+                      className="rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
+                    >
+                      {e}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Card>
+              )}
+            </Card>
+          )}
 
-          <Card title="Experiência">
-            <ol className="relative space-y-5 border-l border-border pl-6">
-              {EXPERIENCIA.map((x) => (
-                <li key={x.periodo} className="relative">
-                  <span className="absolute -left-[31px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-4 ring-primary/15" />
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                    {x.periodo}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-2 font-display text-sm font-extrabold">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    {x.cargo}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </Card>
+          {(extra.posicoes.length > 0 || isSelf) && (
+            <Card title="Posições observadas">
+              {extra.posicoes.length === 0 ? (
+                <EmptyHint text="Selecione as posições que você costuma observar." />
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {extra.posicoes.map((p) => (
+                    <div
+                      key={p}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-bg2 px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                    >
+                      <span className="text-xl">{posicaoEmoji(p)}</span>
+                      <span className="text-sm font-semibold">{p}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
 
-          <Card title="Competições acompanhadas">
-            <div className="flex flex-wrap gap-2">
-              {COMPETICOES.map((c) => (
-                <span
-                  key={c}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-bg2 px-3 py-2 text-xs font-bold transition-colors hover:border-primary/40"
-                >
-                  <Award className="h-3.5 w-3.5 text-primary" />
-                  {c}
-                </span>
-              ))}
-            </div>
-          </Card>
+          {(extra.experiencia.length > 0 || isSelf) && (
+            <Card title="Experiência">
+              {extra.experiencia.length === 0 ? (
+                <EmptyHint text="Adicione sua trajetória profissional." />
+              ) : (
+                <ol className="relative space-y-5 border-l border-border pl-6">
+                  {extra.experiencia.map((x, i) => (
+                    <li key={`${x.periodo}-${i}`} className="relative">
+                      <span className="absolute -left-[31px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-4 ring-primary/15" />
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                        {x.periodo}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-2 font-display text-sm font-extrabold">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        {x.cargo}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </Card>
+          )}
+
+          {(extra.competicoes.length > 0 || isSelf) && (
+            <Card title="Competições acompanhadas">
+              {extra.competicoes.length === 0 ? (
+                <EmptyHint text="Adicione as competições que você acompanha." />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {extra.competicoes.map((c, i) => (
+                    <span
+                      key={`${c}-${i}`}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-bg2 px-3 py-2 text-xs font-bold transition-colors hover:border-primary/40"
+                    >
+                      <Award className="h-3.5 w-3.5 text-primary" />
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
 
           <Card title="Agenda">
             {agenda.length === 0 ? (
