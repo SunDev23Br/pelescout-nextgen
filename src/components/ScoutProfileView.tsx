@@ -533,11 +533,14 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                 </span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {profile.cidade ?? "Brasil"} · Base e profissional
+                {profile.cidade ?? "Brasil"}
+                {extra.cargo ? ` · ${extra.cargo}` : ""}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Especialidade: análise técnica e tática
-              </p>
+              {extra.especialidades.length > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Especialidade: {extra.especialidades.join(", ")}
+                </p>
+              )}
               {isSelf ? (
                 <Button asChild className="mt-4 w-full">
                   <Link to="/chat">
