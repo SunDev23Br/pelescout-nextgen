@@ -761,3 +761,11 @@ function EmptyState({
     </div>
   );
 }
+
+function EmptyHint({ text }: { text: string }) {
+  return (
+    <p className="rounded-xl border border-dashed border-border px-4 py-4 text-sm italic text-muted-foreground">
+      {text}
+    </p>
+  );
+}
