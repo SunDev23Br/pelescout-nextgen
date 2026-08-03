@@ -117,6 +117,23 @@ function ComparadorPage() {
     return values.length ? Math.max(...values) : null;
   };
 
+  if (ready && !canCompare) {
+    return (
+      <AppLayout>
+        <div className="rounded-2xl border border-border bg-card p-12 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-primary" />
+          <h2 className="mt-3 font-display text-2xl font-bold">Área exclusiva para clubes</h2>
+          <p className="mt-2 text-muted-foreground">
+            Faça login como clube, admin ou suporte para comparar atletas.
+          </p>
+          <Button asChild className="mt-4">
+            <Link to="/login">Ir para login</Link>
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="mx-auto max-w-6xl space-y-6">
