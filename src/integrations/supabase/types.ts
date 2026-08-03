@@ -936,6 +936,16 @@ export type Database = {
           peer_id: string
         }[]
       }
+      get_olheiro_public_stats: {
+        Args: { _scout: string }
+        Returns: {
+          aprovados: number
+          avaliacoes: number
+          indicacoes: number
+          media: number
+          observados: number
+        }[]
+      }
       get_public_atleta: {
         Args: { _id: string }
         Returns: {
