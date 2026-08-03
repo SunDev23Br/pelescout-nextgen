@@ -325,10 +325,13 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               )}
             </Button>
             {isSelf && (
-              <Button asChild variant="ghost" size="sm" className="w-full">
-                <Link to="/perfil">
-                  <Settings className="mr-2 h-4 w-4" /> Editar dados
-                </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => setEditing(true)}
+              >
+                <Settings className="mr-2 h-4 w-4" /> Editar dados
               </Button>
             )}
           </div>
