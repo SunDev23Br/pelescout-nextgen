@@ -222,8 +222,10 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     );
   }
 
-  const whats = (profile.celular ?? "").replace(/\D/g, "");
+  const whats = (extra.whatsapp || profile.celular || "").replace(/\D/g, "");
   const isSelf = variant === "self";
+  const instagramHref = socialUrl("https://instagram.com", extra.instagram);
+  const linkedinHref = socialUrl("https://linkedin.com/in", extra.linkedin);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
