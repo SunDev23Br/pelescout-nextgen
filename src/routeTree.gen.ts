@@ -22,6 +22,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ManualRouteImport } from './routes/manual'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PerfilAtletaRouteImport } from './routes/perfil-atleta'
+import { Route as PerfilOlheiroRouteImport } from './routes/perfil-olheiro'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as RegistroAdminRouteImport } from './routes/registro-admin'
 import { Route as RegistroClubeRouteImport } from './routes/registro-clube'
@@ -106,6 +107,11 @@ const PerfilRoute = PerfilRouteImport.update({
 const PerfilAtletaRoute = PerfilAtletaRouteImport.update({
   id: '/perfil-atleta',
   path: '/perfil-atleta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilOlheiroRoute = PerfilOlheiroRouteImport.update({
+  id: '/perfil-olheiro',
+  path: '/perfil-olheiro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RankingRoute = RankingRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/perfil-olheiro': typeof PerfilOlheiroRoute
   '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/perfil-olheiro': typeof PerfilOlheiroRoute
   '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/manual': typeof ManualRoute
   '/perfil': typeof PerfilRoute
   '/perfil-atleta': typeof PerfilAtletaRoute
+  '/perfil-olheiro': typeof PerfilOlheiroRoute
   '/ranking': typeof RankingRoute
   '/registro-admin': typeof RegistroAdminRoute
   '/registro-clube': typeof RegistroClubeRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/perfil-olheiro'
     | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/perfil-olheiro'
     | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/perfil'
     | '/perfil-atleta'
+    | '/perfil-olheiro'
     | '/ranking'
     | '/registro-admin'
     | '/registro-clube'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   ManualRoute: typeof ManualRoute
   PerfilRoute: typeof PerfilRoute
   PerfilAtletaRoute: typeof PerfilAtletaRoute
+  PerfilOlheiroRoute: typeof PerfilOlheiroRoute
   RankingRoute: typeof RankingRoute
   RegistroAdminRoute: typeof RegistroAdminRoute
   RegistroClubeRoute: typeof RegistroClubeRoute
@@ -552,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil-atleta'
       fullPath: '/perfil-atleta'
       preLoaderRoute: typeof PerfilAtletaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil-olheiro': {
+      id: '/perfil-olheiro'
+      path: '/perfil-olheiro'
+      fullPath: '/perfil-olheiro'
+      preLoaderRoute: typeof PerfilOlheiroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ranking': {
@@ -711,6 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManualRoute: ManualRoute,
   PerfilRoute: PerfilRoute,
   PerfilAtletaRoute: PerfilAtletaRoute,
+  PerfilOlheiroRoute: PerfilOlheiroRoute,
   RankingRoute: RankingRoute,
   RegistroAdminRoute: RegistroAdminRoute,
   RegistroClubeRoute: RegistroClubeRoute,
