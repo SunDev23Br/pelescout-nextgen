@@ -5,6 +5,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/session";
+
 
 const SKILL_KEYS = [
   { key: "marcacao", label: "Marcação" },
