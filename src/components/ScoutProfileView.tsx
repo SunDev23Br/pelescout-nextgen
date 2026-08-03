@@ -251,7 +251,7 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               {profile.nome}
             </h1>
             <p className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-              Scout Profissional
+              {extra.cargo || "Scout Profissional"}
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
