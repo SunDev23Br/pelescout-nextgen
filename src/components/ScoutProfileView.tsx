@@ -22,9 +22,18 @@ import {
   Users,
 } from "lucide-react";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
+import { ScoutProfileEditor } from "@/components/scout/ScoutProfileEditor";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { startConversation } from "@/lib/chat";
+import {
+  loadScoutExtra,
+  posicaoEmoji,
+  SCOUT_EXTRA_VAZIO,
+  setScoutDisponibilidade,
+  socialUrl,
+  type ScoutExtra,
+} from "@/lib/scout-profile";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -60,48 +69,14 @@ interface AgendaItem {
   data: string;
 }
 
-const ESPECIALIDADES = [
-  "Sub-11",
-  "Sub-13",
-  "Sub-15",
-  "Sub-17",
-  "Sub-20",
-  "Profissional",
-  "Feminino",
-];
-
-const POSICOES = [
-  { emoji: "🥅", label: "Goleiros" },
-  { emoji: "🛡️", label: "Zagueiros" },
-  { emoji: "🏃", label: "Laterais" },
-  { emoji: "⚙️", label: "Volantes" },
-  { emoji: "🎯", label: "Meias" },
-  { emoji: "⚽", label: "Atacantes" },
-];
-
-const COMPETICOES = [
-  "Paulistão",
-  "Copinha",
-  "Brasileirão Sub-20",
-  "Mineiro",
-  "Copa do Brasil",
-  "Libertadores Sub-20",
-];
-
-const EXPERIENCIA = [
-  { periodo: "2025", cargo: "Scout Independente" },
-  { periodo: "2022 – 2025", cargo: "Palmeiras" },
-  { periodo: "2018 – 2022", cargo: "Projeto Talentos Brasil" },
-  { periodo: "2015 – 2018", cargo: "Categorias de Base" },
-];
-
 export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ScoutProfile | null>(null);
+  const [extra, setExtra] = useState<ScoutExtra>({ ...SCOUT_EXTRA_VAZIO });
   const [stats, setStats] = useState<ScoutStats | null>(null);
   const [agenda, setAgenda] = useState<AgendaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [disponivel, setDisponivel] = useState(true);
+  const [editing, setEditing] = useState(false);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
@@ -109,7 +84,7 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     setLoading(true);
 
     (async () => {
-      const [prof, statsRes, peneiras] = await Promise.all([
+      const [prof, statsRes, peneiras, extraRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, nome, email, avatar_url, cidade, celular, bio")
@@ -122,11 +97,13 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
           .gte("data", new Date().toISOString().slice(0, 10))
           .order("data", { ascending: true })
           .limit(5),
+        loadScoutExtra(userId),
       ]);
 
       if (cancelled) return;
       if (prof.error) toast.error(prof.error.message);
       setProfile((prof.data as ScoutProfile | null) ?? null);
+      setExtra(extraRes);
 
       const row = Array.isArray(statsRes.data) ? statsRes.data[0] : null;
       setStats(
@@ -154,6 +131,18 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     // notas do sistema são 0–10, exibidas em escala 0–5
     return Math.round((stats.media / 2) * 10) / 10;
   }, [stats]);
+
+  async function toggleDisponivel() {
+    const next = !extra.disponivel;
+    setExtra((e) => ({ ...e, disponivel: next }));
+    try {
+      await setScoutDisponibilidade(userId, next);
+    } catch (err) {
+      setExtra((e) => ({ ...e, disponivel: !next }));
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
+    }
+  }
+
 
   async function handleContato() {
     setStarting(true);
@@ -189,6 +178,28 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     );
   }
 
+  if (profile && editing && variant === "self") {
+    return (
+      <ScoutProfileEditor
+        userId={userId}
+        base={{
+          nome: profile.nome,
+          cidade: profile.cidade,
+          celular: profile.celular,
+          bio: profile.bio,
+          avatar_url: profile.avatar_url,
+        }}
+        extra={extra}
+        onCancel={() => setEditing(false)}
+        onSaved={(b, e) => {
+          setProfile((p) => (p ? { ...p, ...b } : p));
+          setExtra(e);
+          setEditing(false);
+        }}
+      />
+    );
+  }
+
   if (!profile) {
     return (
       <div className="mx-auto max-w-2xl py-16 text-center">
@@ -211,8 +222,10 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     );
   }
 
-  const whats = (profile.celular ?? "").replace(/\D/g, "");
+  const whats = (extra.whatsapp || profile.celular || "").replace(/\D/g, "");
   const isSelf = variant === "self";
+  const instagramHref = socialUrl("https://instagram.com", extra.instagram);
+  const linkedinHref = socialUrl("https://linkedin.com/in", extra.linkedin);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -238,7 +251,7 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               {profile.nome}
             </h1>
             <p className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-              Scout Profissional
+              {extra.cargo || "Scout Profissional"}
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
@@ -312,10 +325,13 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               )}
             </Button>
             {isSelf && (
-              <Button asChild variant="ghost" size="sm" className="w-full">
-                <Link to="/perfil">
-                  <Settings className="mr-2 h-4 w-4" /> Editar dados
-                </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => setEditing(true)}
+              >
+                <Settings className="mr-2 h-4 w-4" /> Editar dados
               </Button>
             )}
           </div>
@@ -362,10 +378,14 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                 {isSelf && (
                   <>
                     {" "}
-                    Adicione sua biografia em{" "}
-                    <Link to="/perfil" className="text-primary underline">
+                    Adicione sua biografia clicando em{" "}
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="text-primary underline"
+                    >
                       editar dados
-                    </Link>
+                    </button>
                     .
                   </>
                 )}
@@ -373,63 +393,87 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
             )}
           </Card>
 
-          <Card title="Especialidades">
-            <div className="flex flex-wrap gap-2">
-              {ESPECIALIDADES.map((e) => (
-                <span
-                  key={e}
-                  className="rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
-                >
-                  {e}
-                </span>
-              ))}
-            </div>
-          </Card>
-
-          <Card title="Posições observadas">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {POSICOES.map((p) => (
-                <div
-                  key={p.label}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-bg2 px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
-                >
-                  <span className="text-xl">{p.emoji}</span>
-                  <span className="text-sm font-semibold">{p.label}</span>
+          {(extra.especialidades.length > 0 || isSelf) && (
+            <Card title="Especialidades">
+              {extra.especialidades.length === 0 ? (
+                <EmptyHint text="Adicione suas especialidades (categorias que você observa)." />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {extra.especialidades.map((e) => (
+                    <span
+                      key={e}
+                      className="rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
+                    >
+                      {e}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Card>
+              )}
+            </Card>
+          )}
 
-          <Card title="Experiência">
-            <ol className="relative space-y-5 border-l border-border pl-6">
-              {EXPERIENCIA.map((x) => (
-                <li key={x.periodo} className="relative">
-                  <span className="absolute -left-[31px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-4 ring-primary/15" />
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                    {x.periodo}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-2 font-display text-sm font-extrabold">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    {x.cargo}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </Card>
+          {(extra.posicoes.length > 0 || isSelf) && (
+            <Card title="Posições observadas">
+              {extra.posicoes.length === 0 ? (
+                <EmptyHint text="Selecione as posições que você costuma observar." />
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {extra.posicoes.map((p) => (
+                    <div
+                      key={p}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-bg2 px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                    >
+                      <span className="text-xl">{posicaoEmoji(p)}</span>
+                      <span className="text-sm font-semibold">{p}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
 
-          <Card title="Competições acompanhadas">
-            <div className="flex flex-wrap gap-2">
-              {COMPETICOES.map((c) => (
-                <span
-                  key={c}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-bg2 px-3 py-2 text-xs font-bold transition-colors hover:border-primary/40"
-                >
-                  <Award className="h-3.5 w-3.5 text-primary" />
-                  {c}
-                </span>
-              ))}
-            </div>
-          </Card>
+          {(extra.experiencia.length > 0 || isSelf) && (
+            <Card title="Experiência">
+              {extra.experiencia.length === 0 ? (
+                <EmptyHint text="Adicione sua trajetória profissional." />
+              ) : (
+                <ol className="relative space-y-5 border-l border-border pl-6">
+                  {extra.experiencia.map((x, i) => (
+                    <li key={`${x.periodo}-${i}`} className="relative">
+                      <span className="absolute -left-[31px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-4 ring-primary/15" />
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                        {x.periodo}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-2 font-display text-sm font-extrabold">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        {x.cargo}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </Card>
+          )}
+
+          {(extra.competicoes.length > 0 || isSelf) && (
+            <Card title="Competições acompanhadas">
+              {extra.competicoes.length === 0 ? (
+                <EmptyHint text="Adicione as competições que você acompanha." />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {extra.competicoes.map((c, i) => (
+                    <span
+                      key={`${c}-${i}`}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-bg2 px-3 py-2 text-xs font-bold transition-colors hover:border-primary/40"
+                    >
+                      <Award className="h-3.5 w-3.5 text-primary" />
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
 
           <Card title="Agenda">
             {agenda.length === 0 ? (
@@ -489,11 +533,14 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                 </span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {profile.cidade ?? "Brasil"} · Base e profissional
+                {profile.cidade ?? "Brasil"}
+                {extra.cargo ? ` · ${extra.cargo}` : ""}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Especialidade: análise técnica e tática
-              </p>
+              {extra.especialidades.length > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Especialidade: {extra.especialidades.join(", ")}
+                </p>
+              )}
               {isSelf ? (
                 <Button asChild className="mt-4 w-full">
                   <Link to="/chat">
@@ -518,10 +565,10 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               {isSelf ? (
                 <button
                   type="button"
-                  onClick={() => setDisponivel((v) => !v)}
+                  onClick={() => void toggleDisponivel()}
                   className={cn(
                     "mt-3 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors",
-                    disponivel
+                    extra.disponivel
                       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
                       : "border-red-500/40 bg-red-500/10 text-red-500",
                   )}
@@ -529,15 +576,27 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                   <span
                     className={cn(
                       "h-2.5 w-2.5 rounded-full",
-                      disponivel ? "bg-emerald-500" : "bg-red-500",
+                      extra.disponivel ? "bg-emerald-500" : "bg-red-500",
                     )}
                   />
-                  {disponivel ? "Recebendo vídeos" : "Agenda fechada"}
+                  {extra.disponivel ? "Recebendo vídeos" : "Agenda fechada"}
                 </button>
               ) : (
-                <div className="mt-3 flex w-full items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-sm font-bold text-emerald-500">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  Recebendo vídeos
+                <div
+                  className={cn(
+                    "mt-3 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold",
+                    extra.disponivel
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+                      : "border-red-500/40 bg-red-500/10 text-red-500",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-2.5 w-2.5 rounded-full",
+                      extra.disponivel ? "bg-emerald-500" : "bg-red-500",
+                    )}
+                  />
+                  {extra.disponivel ? "Recebendo vídeos" : "Agenda fechada"}
                 </div>
               )}
             </div>
@@ -554,23 +613,27 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                     href={`https://wa.me/55${whats}`}
                   />
                 )}
-                {profile.email && (
+                {(extra.email_contato || profile.email) && (
                   <ContactButton
                     icon={Mail}
                     label="Email"
-                    href={`mailto:${profile.email}`}
+                    href={`mailto:${extra.email_contato ?? profile.email}`}
                   />
                 )}
-                <ContactButton
-                  icon={Instagram}
-                  label="Instagram"
-                  href="https://instagram.com"
-                />
-                <ContactButton
-                  icon={Linkedin}
-                  label="LinkedIn"
-                  href="https://linkedin.com"
-                />
+                {instagramHref && (
+                  <ContactButton
+                    icon={Instagram}
+                    label="Instagram"
+                    href={instagramHref}
+                  />
+                )}
+                {linkedinHref && (
+                  <ContactButton
+                    icon={Linkedin}
+                    label="LinkedIn"
+                    href={linkedinHref}
+                  />
+                )}
               </div>
             </div>
 
@@ -706,5 +769,13 @@ function EmptyState({
       <Icon className="mb-2 h-6 w-6 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">{text}</p>
     </div>
+  );
+}
+
+function EmptyHint({ text }: { text: string }) {
+  return (
+    <p className="rounded-xl border border-dashed border-border px-4 py-4 text-sm italic text-muted-foreground">
+      {text}
+    </p>
   );
 }

@@ -711,6 +711,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scout_profiles: {
+        Row: {
+          cargo: string | null
+          competicoes: string[]
+          created_at: string
+          disponivel: boolean
+          email_contato: string | null
+          especialidades: string[]
+          experiencia: Json
+          instagram: string | null
+          linkedin: string | null
+          posicoes: string[]
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          competicoes?: string[]
+          created_at?: string
+          disponivel?: boolean
+          email_contato?: string | null
+          especialidades?: string[]
+          experiencia?: Json
+          instagram?: string | null
+          linkedin?: string | null
+          posicoes?: string[]
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          competicoes?: string[]
+          created_at?: string
+          disponivel?: boolean
+          email_contato?: string | null
+          especialidades?: string[]
+          experiencia?: Json
+          instagram?: string | null
+          linkedin?: string | null
+          posicoes?: string[]
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           is_online: boolean
