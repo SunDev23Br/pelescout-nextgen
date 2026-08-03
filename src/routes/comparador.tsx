@@ -58,13 +58,18 @@ export const Route = createFileRoute("/comparador")({
 });
 
 function ComparadorPage() {
+  const { user, ready } = useSession();
   const [candidates, setCandidates] = useState<Array<{ id: string; nome: string; posicao: string | null; avatar_url: string | null }>>([]);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const canCompare =
+    ready && !!user && (user.role === "clube" || user.role === "admin" || user.role === "suporte");
+
   useEffect(() => {
+    if (!canCompare) { setCandidates([]); return; }
     (async () => {
       const { data, error } = await supabase.rpc("search_public_atletas", {
         _only_validated: false,
@@ -75,7 +80,8 @@ function ComparadorPage() {
         id: a.id, nome: a.nome, posicao: a.posicao, avatar_url: a.avatar_url,
       })));
     })();
-  }, []);
+  }, [canCompare]);
+
 
   useEffect(() => {
     (async () => {
