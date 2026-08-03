@@ -47,6 +47,7 @@ const NAV: NavItem[] = [
   { to: "/ranking", label: "Ranking", icon: BarChart3, roles: ["admin", "atleta", "clube", "suporte"] },
   { to: "/manual", label: "Manual do Atleta", icon: BookOpen, roles: ["atleta"] },
   { to: "/perfil-atleta", label: "Meu perfil de atleta", icon: UserCog, roles: ["atleta"] },
+  { to: "/perfil-olheiro", label: "Meu perfil de olheiro", icon: ShieldCheck, roles: ["admin", "suporte"] },
   { to: "/desempenho", label: "Desempenho", icon: LineChart, roles: ["atleta"] },
   { to: "/perfil", label: "Configurações da conta", icon: UserCog, roles: ["admin", "clube", "suporte"] },
 ];
