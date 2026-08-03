@@ -60,48 +60,14 @@ interface AgendaItem {
   data: string;
 }
 
-const ESPECIALIDADES = [
-  "Sub-11",
-  "Sub-13",
-  "Sub-15",
-  "Sub-17",
-  "Sub-20",
-  "Profissional",
-  "Feminino",
-];
-
-const POSICOES = [
-  { emoji: "🥅", label: "Goleiros" },
-  { emoji: "🛡️", label: "Zagueiros" },
-  { emoji: "🏃", label: "Laterais" },
-  { emoji: "⚙️", label: "Volantes" },
-  { emoji: "🎯", label: "Meias" },
-  { emoji: "⚽", label: "Atacantes" },
-];
-
-const COMPETICOES = [
-  "Paulistão",
-  "Copinha",
-  "Brasileirão Sub-20",
-  "Mineiro",
-  "Copa do Brasil",
-  "Libertadores Sub-20",
-];
-
-const EXPERIENCIA = [
-  { periodo: "2025", cargo: "Scout Independente" },
-  { periodo: "2022 – 2025", cargo: "Palmeiras" },
-  { periodo: "2018 – 2022", cargo: "Projeto Talentos Brasil" },
-  { periodo: "2015 – 2018", cargo: "Categorias de Base" },
-];
-
 export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ScoutProfile | null>(null);
+  const [extra, setExtra] = useState<ScoutExtra>({ ...SCOUT_EXTRA_VAZIO });
   const [stats, setStats] = useState<ScoutStats | null>(null);
   const [agenda, setAgenda] = useState<AgendaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [disponivel, setDisponivel] = useState(true);
+  const [editing, setEditing] = useState(false);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
@@ -109,7 +75,7 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     setLoading(true);
 
     (async () => {
-      const [prof, statsRes, peneiras] = await Promise.all([
+      const [prof, statsRes, peneiras, extraRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, nome, email, avatar_url, cidade, celular, bio")
@@ -122,11 +88,13 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
           .gte("data", new Date().toISOString().slice(0, 10))
           .order("data", { ascending: true })
           .limit(5),
+        loadScoutExtra(userId),
       ]);
 
       if (cancelled) return;
       if (prof.error) toast.error(prof.error.message);
       setProfile((prof.data as ScoutProfile | null) ?? null);
+      setExtra(extraRes);
 
       const row = Array.isArray(statsRes.data) ? statsRes.data[0] : null;
       setStats(
@@ -154,6 +122,18 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     // notas do sistema são 0–10, exibidas em escala 0–5
     return Math.round((stats.media / 2) * 10) / 10;
   }, [stats]);
+
+  async function toggleDisponivel() {
+    const next = !extra.disponivel;
+    setExtra((e) => ({ ...e, disponivel: next }));
+    try {
+      await setScoutDisponibilidade(userId, next);
+    } catch (err) {
+      setExtra((e) => ({ ...e, disponivel: !next }));
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
+    }
+  }
+
 
   async function handleContato() {
     setStarting(true);
