@@ -178,6 +178,28 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
     );
   }
 
+  if (profile && editing && variant === "self") {
+    return (
+      <ScoutProfileEditor
+        userId={userId}
+        base={{
+          nome: profile.nome,
+          cidade: profile.cidade,
+          celular: profile.celular,
+          bio: profile.bio,
+          avatar_url: profile.avatar_url,
+        }}
+        extra={extra}
+        onCancel={() => setEditing(false)}
+        onSaved={(b, e) => {
+          setProfile((p) => (p ? { ...p, ...b } : p));
+          setExtra(e);
+          setEditing(false);
+        }}
+      />
+    );
+  }
+
   if (!profile) {
     return (
       <div className="mx-auto max-w-2xl py-16 text-center">
