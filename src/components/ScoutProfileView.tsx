@@ -553,10 +553,10 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
               {isSelf ? (
                 <button
                   type="button"
-                  onClick={() => setDisponivel((v) => !v)}
+                  onClick={() => void toggleDisponivel()}
                   className={cn(
                     "mt-3 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors",
-                    disponivel
+                    extra.disponivel
                       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
                       : "border-red-500/40 bg-red-500/10 text-red-500",
                   )}
@@ -564,15 +564,27 @@ export function ScoutProfileView({ userId, variant }: ScoutProfileViewProps) {
                   <span
                     className={cn(
                       "h-2.5 w-2.5 rounded-full",
-                      disponivel ? "bg-emerald-500" : "bg-red-500",
+                      extra.disponivel ? "bg-emerald-500" : "bg-red-500",
                     )}
                   />
-                  {disponivel ? "Recebendo vídeos" : "Agenda fechada"}
+                  {extra.disponivel ? "Recebendo vídeos" : "Agenda fechada"}
                 </button>
               ) : (
-                <div className="mt-3 flex w-full items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-sm font-bold text-emerald-500">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  Recebendo vídeos
+                <div
+                  className={cn(
+                    "mt-3 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-bold",
+                    extra.disponivel
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+                      : "border-red-500/40 bg-red-500/10 text-red-500",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-2.5 w-2.5 rounded-full",
+                      extra.disponivel ? "bg-emerald-500" : "bg-red-500",
+                    )}
+                  />
+                  {extra.disponivel ? "Recebendo vídeos" : "Agenda fechada"}
                 </div>
               )}
             </div>
