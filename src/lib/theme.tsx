@@ -1,10 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark";
 
 interface ThemeContextValue {
   theme: Theme;
-  resolvedTheme: "light" | "dark";
   setTheme: (t: Theme) => void;
 }
 
@@ -12,12 +11,12 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const STORAGE_KEY = "png-theme";
 
-function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "dark";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+function normalizeTheme(value: string | null): Theme {
+  if (value === "light") return "light";
+  return "dark";
 }
 
-function applyTheme(theme: "light" | "dark") {
+function applyTheme(theme: Theme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   if (theme === "dark") root.classList.add("dark");
@@ -27,29 +26,14 @@ function applyTheme(theme: "light" | "dark") {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
-  const [resolved, setResolved] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? "dark";
+    const stored = normalizeTheme(localStorage.getItem(STORAGE_KEY));
     setThemeState(stored);
   }, []);
 
   useEffect(() => {
-    const eff = theme === "system" ? getSystemTheme() : theme;
-    setResolved(eff);
-    applyTheme(eff);
-  }, [theme]);
-
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const eff = getSystemTheme();
-      setResolved(eff);
-      applyTheme(eff);
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    applyTheme(theme);
   }, [theme]);
 
   const setTheme = (t: Theme) => {
@@ -58,7 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme: resolved, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -71,4 +55,4 @@ export function useTheme() {
 }
 
 /** Script inline no <head> para evitar flash. */
-export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'dark';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark');r.style.colorScheme='dark';}else{r.classList.remove('dark');r.style.colorScheme='light';}}catch(e){document.documentElement.classList.add('dark');}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}');var d=t!=='light';var r=document.documentElement;if(d){r.classList.add('dark');r.style.colorScheme='dark';}else{r.classList.remove('dark');r.style.colorScheme='light';}}catch(e){document.documentElement.classList.add('dark');}})();`;
