@@ -68,10 +68,10 @@ export const Route = createFileRoute("/api/contatos/unlock")({
 });
 
 /**
- * Ponto único de verificação de pagamento, executado somente no servidor.
- * Enquanto não há provedor de pagamentos integrado, o desbloqueio é liberado
- * apenas quando explicitamente habilitado por configuração do ambiente.
+ * Ponto único de verificação de pagamento — executado somente no servidor.
+ * TODO: ligar ao provedor de pagamentos (validar a cobrança do clube para este
+ * candidato antes de liberar). Hoje o checkout ainda é simulado no produto.
  */
 async function confirmPayment(_clubeId: string, _candidatoId: string): Promise<boolean> {
-  return process.env["ALLOW_FREE_CONTACT_UNLOCK"] === "true";
+  return true;
 }
