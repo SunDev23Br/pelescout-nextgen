@@ -22,9 +22,18 @@ import {
   Users,
 } from "lucide-react";
 import { AthleteAvatar } from "@/components/AthleteAvatar";
+import { ScoutProfileEditor } from "@/components/scout/ScoutProfileEditor";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { startConversation } from "@/lib/chat";
+import {
+  loadScoutExtra,
+  posicaoEmoji,
+  SCOUT_EXTRA_VAZIO,
+  setScoutDisponibilidade,
+  socialUrl,
+  type ScoutExtra,
+} from "@/lib/scout-profile";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
