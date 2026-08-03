@@ -67,12 +67,6 @@ function ComparadorPage() {
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.rpc("search_public_atletas", {
-        _posicao: null,
-        _cidade: null,
-        _idade_min: null,
-        _idade_max: null,
-        _skill: null,
-        _skill_min: null,
         _only_validated: false,
         _limit: 200,
       });
