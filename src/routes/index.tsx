@@ -129,7 +129,7 @@ function Landing() {
             >
               Entrar
             </Link>
-            <GoldButton href="/cadastro" className="h-10 px-5 text-[11px]">
+            <GoldButton href="/cadastro" className="h-10 px-4 text-[10px] sm:px-5 sm:text-[11px]">
               Cadastrar
             </GoldButton>
             <button
