@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, MapPin, Search, Users } from "lucide-react";
 import type { Peneira } from "@/lib/mock-data";
 import { Eyebrow, Reveal } from "./Reveal";
+import { AuthLink } from "./AuthLink";
 import { useTilt } from "@/hooks/use-tilt";
 
 const FALLBACK =
@@ -23,7 +23,7 @@ function Card({ p, delay }: { p: Peneira; delay: number }) {
   const pct = p.vagas ? Math.min(100, Math.round((p.inscritos / p.vagas) * 100)) : 0;
 
   return (
-    <Reveal as="article" delay={delay} className="[perspective:1000px]">
+    <Reveal as="article" delay={delay} className="h-full [perspective:1000px]">
       <div
         ref={ref}
         {...tiltProps}
@@ -49,25 +49,27 @@ function Card({ p, delay }: { p: Peneira; delay: number }) {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col p-6">
-          <h3 className="font-display text-xl font-bold leading-tight">
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          <h3 className="line-clamp-2 min-h-[3.25rem] font-display text-lg font-bold leading-tight sm:text-xl">
             {p.titulo}
           </h3>
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
-            {p.local} · {p.cidade}
+          <p className="mt-2 flex min-h-[2.5rem] items-start gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="line-clamp-2">
+              {p.local} · {p.cidade}
+            </span>
           </p>
 
           <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-4 text-xs">
-            <div>
+            <div className="min-w-0">
               <dt className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Idades
               </dt>
-              <dd className="mt-1 font-semibold">
+              <dd className="mt-1 truncate font-semibold">
                 {p.categorias.join(" · ") || "Livre"}
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 <Users className="h-3 w-3" /> Vagas
               </dt>
@@ -77,26 +79,26 @@ function Card({ p, delay }: { p: Peneira; delay: number }) {
             </div>
           </dl>
 
-          <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-bg3">
+          <div className="mt-auto pt-4 h-1 w-full overflow-hidden rounded-full bg-bg3">
             <div
               className="h-full rounded-full bg-primary"
               style={{ width: `${pct}%` }}
             />
           </div>
 
-          <Link
-            to="/peneiras/$peneiraId"
-            params={{ peneiraId: p.id }}
-            className="mt-6 inline-flex h-10 items-center justify-center gap-2 self-start rounded-full border border-border px-5 text-xs font-bold uppercase tracking-[0.16em] transition-all group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground"
+          <AuthLink
+            href={`/peneiras/${p.id}`}
+            className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border px-5 pt-0 text-[11px] font-bold uppercase tracking-[0.16em] transition-all group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground sm:text-xs"
           >
             Ver oportunidade
             <ArrowUpRight className="h-4 w-4" />
-          </Link>
+          </AuthLink>
         </div>
       </div>
     </Reveal>
   );
 }
+
 
 export function PeneirasSection({
   peneiras,
@@ -151,7 +153,7 @@ export function PeneirasSection({
   }, [abertas, uf, cat, quando, busca]);
 
   return (
-    <section className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-32">
+    <section id="peneiras" className="mx-auto max-w-[1400px] scroll-mt-16 px-6 py-24 lg:px-10 lg:py-32">
       <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl">
           <Eyebrow>Peneiras disponíveis</Eyebrow>
@@ -164,12 +166,12 @@ export function PeneirasSection({
             leva menos de dois minutos.
           </p>
         </div>
-        <Link
-          to="/peneiras"
+        <AuthLink
+          href="/peneiras"
           className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-border px-5 text-xs font-bold uppercase tracking-[0.16em] transition-all hover:-translate-y-0.5 hover:border-primary hover:text-primary"
         >
           Ver todas <ArrowUpRight className="h-4 w-4" />
-        </Link>
+        </AuthLink>
       </Reveal>
 
       <Reveal className="mt-10 flex flex-wrap items-center gap-3 rounded-full border border-border bg-bg2/50 p-3">

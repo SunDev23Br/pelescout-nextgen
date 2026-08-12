@@ -13,6 +13,7 @@ import {
 import { peneiras as mockPeneiras, type Peneira, type StatusPeneira } from "@/lib/mock-data";
 import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
 import { useSession } from "@/lib/session";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UF_COORDS, haversineKm } from "@/lib/geo";
@@ -38,6 +39,7 @@ const FILTERS: { value: StatusPeneira | "todas"; label: string }[] = [
 ];
 
 function PeneirasPage() {
+  useRequireAuth();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<StatusPeneira | "todas">("todas");
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());

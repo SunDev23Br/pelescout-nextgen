@@ -6,7 +6,7 @@ export function MaisQueUmaPeneira() {
   const { ref, tiltProps } = useTilt<HTMLDivElement>(4);
 
   return (
-    <section className="surface-blue">
+    <section id="proposito" className="surface-blue scroll-mt-16">
       <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-36">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <Reveal className="lg:col-span-4 lg:pt-10">

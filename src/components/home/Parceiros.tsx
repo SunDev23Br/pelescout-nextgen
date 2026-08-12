@@ -17,7 +17,7 @@ export function Parceiros() {
   const loop = [...PARCEIROS, ...PARCEIROS];
 
   return (
-    <section className="surface-paper">
+    <section id="parceiros" className="surface-paper scroll-mt-16">
       <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-24">
         <Reveal className="max-w-xl">
           <Eyebrow>Clubes e parceiros</Eyebrow>

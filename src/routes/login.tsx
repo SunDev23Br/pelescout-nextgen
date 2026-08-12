@@ -23,6 +23,10 @@ const PAGE_NARRATION =
   "pelos links no final da página.";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
+    typeof search.redirect === "string" && search.redirect.startsWith("/")
+      ? { redirect: search.redirect }
+      : {},
   head: () => ({
     meta: [
       { title: "Entrar — Pelé Next Gen" },
@@ -34,6 +38,13 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
+
+  /** Vai para o destino pretendido (se houver) ou para a área do papel. */
+  function goTo(dest: string) {
+    navigate({ href: redirect ?? dest });
+  }
+
   const [role, setRole] = useState<Role>("atleta");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -59,7 +70,7 @@ function LoginPage() {
         await supabase.auth.signOut();
         return;
       }
-      navigate({ to: dest });
+      goTo(dest);
     });
 
     return () => {
@@ -160,7 +171,7 @@ function LoginPage() {
       sessionStorage.setItem("png-selected-role", role);
     }
     toast.success("Bem-vindo!");
-    navigate({ to: dest });
+    goTo(dest);
   }
 
   async function loginWithGoogle() {
@@ -186,7 +197,7 @@ function LoginPage() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("png-selected-role", role);
       }
-      navigate({ to: dest });
+      goTo(dest);
     }
     setLoading(false);
   }

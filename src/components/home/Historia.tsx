@@ -41,7 +41,7 @@ const MARCOS = [
 
 export function Historia() {
   return (
-    <section className="border-y border-border bg-bg2/40">
+    <section id="legado" className="border-y border-border bg-bg2/40 scroll-mt-16">
       <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-32">
         <Reveal className="max-w-2xl">
           <Eyebrow>Legado</Eyebrow>

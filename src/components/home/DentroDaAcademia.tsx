@@ -67,7 +67,7 @@ export function DentroDaAcademia() {
   }, [pausado]);
 
   return (
-    <section className="surface-paper">
+    <section id="academia" className="surface-paper scroll-mt-16">
       <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-32">
         <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
