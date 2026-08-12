@@ -14,7 +14,7 @@ export function CtaFinal() {
         height={912}
         className="absolute inset-0 -z-10 h-full w-full object-cover saturate-[0.7]"
       />
-      <div className="absolute inset-0 -z-10 bg-blue-dark/80" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-dark/90 via-blue-dark/75 to-blue-dark/40" />
 
       <div className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
         <Reveal className="max-w-2xl">

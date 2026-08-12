@@ -59,7 +59,7 @@ export function MapaOportunidades({ peneiras }: { peneiras: Peneira[] }) {
         </Reveal>
 
         <Reveal delay={140}>
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-lg">
+          <div className="relative mx-auto aspect-square w-full max-w-xl">
             <svg
               viewBox="0 0 100 100"
               className="h-full w-full"
