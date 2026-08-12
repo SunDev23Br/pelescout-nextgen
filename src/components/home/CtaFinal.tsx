@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { GoldButton } from "./GoldButton";
 import campo from "@/assets/home/cta-campo.jpg";
 import { Reveal } from "./Reveal";
 
@@ -14,7 +13,7 @@ export function CtaFinal() {
         height={912}
         className="absolute inset-0 -z-10 h-full w-full object-cover saturate-[0.7]"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-blue-dark/90 via-blue-dark/75 to-blue-dark/40" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,oklch(0.18_0.06_258/0.97)_0%,oklch(0.22_0.08_258/0.9)_45%,oklch(0.26_0.09_258/0.65)_100%)]" />
 
       <div className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
         <Reveal className="max-w-2xl">
@@ -29,13 +28,9 @@ export function CtaFinal() {
             Uma peneira pode mudar o rumo de uma carreira. Crie seu perfil, seja
             avaliado e mostre o que você já treina há anos.
           </p>
-          <Link
-            to="/cadastro"
-            className="group mt-10 inline-flex h-12 items-center gap-2 bg-primary px-7 text-sm font-bold uppercase tracking-[0.12em] text-primary-foreground transition-colors hover:bg-gold-light"
-          >
-            Encontrar minha peneira
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
+          <div className="mt-10">
+            <GoldButton href="/cadastro">Encontrar minha peneira</GoldButton>
+          </div>
         </Reveal>
       </div>
     </section>

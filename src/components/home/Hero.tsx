@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import type { Peneira } from "@/lib/mock-data";
 import { Reveal } from "./Reveal";
+import { AuthLink } from "./AuthLink";
 import { ProximaPeneiraCard } from "./ProximaPeneiraCard";
 
 export function Hero({
@@ -43,14 +44,14 @@ export function Hero({
 
           <Reveal immediate delay={360}>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
-                to="/peneiras"
+              <AuthLink
+                href="/peneiras"
                 className="group/btn relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-full bg-primary px-7 text-sm font-bold uppercase tracking-[0.12em] text-primary-foreground shadow-gold transition-transform duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               >
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/45 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
                 Encontrar minha peneira
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
-              </Link>
+              </AuthLink>
               <a
                 href="#como-funciona"
                 className="inline-flex h-12 items-center rounded-full border border-border px-6 text-sm font-bold uppercase tracking-[0.12em] transition-colors hover:border-primary hover:text-primary"
