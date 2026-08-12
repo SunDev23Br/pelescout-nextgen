@@ -123,7 +123,7 @@ function Landing() {
       </header>
 
       <main>
-        <Hero proxima={proxima} />
+        <Hero proxima={proxima} loading={loading} />
         <MaisQueUmaPeneira />
         <Historia />
         <DentroDaAcademia />
