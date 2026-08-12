@@ -47,8 +47,12 @@ function MarcoFoto({ src, alt }: { src: string; alt: string }) {
     <div
       ref={ref}
       {...tiltProps}
-      className="group/foto relative mt-6 overflow-hidden [perspective:900px] transition-shadow duration-500 hover:shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.55)] motion-reduce:transition-none"
-      style={{ transform: "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))" }}
+      className="group/foto relative mt-6 overflow-hidden [perspective:900px] transition-shadow duration-500 hover:shadow-[0_18px_40px_-18px_var(--shadow-gold-c)] motion-reduce:transition-none"
+      style={{
+        transform: "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))",
+        ["--shadow-gold-c" as string]:
+          "color-mix(in oklab, var(--primary) 55%, transparent)",
+      }}
     >
       <img
         src={src}
@@ -62,7 +66,7 @@ function MarcoFoto({ src, alt }: { src: string; alt: string }) {
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/foto:opacity-100 motion-reduce:hidden"
         style={{
           background:
-            "radial-gradient(220px circle at var(--mx,50%) var(--my,50%), hsl(var(--primary)/0.30), transparent 65%)",
+            "radial-gradient(220px circle at var(--mx,50%) var(--my,50%), color-mix(in oklab, var(--primary) 32%, transparent), transparent 65%)",
         }}
       />
       <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-transparent transition-colors duration-500 group-hover/foto:ring-primary/50" />
