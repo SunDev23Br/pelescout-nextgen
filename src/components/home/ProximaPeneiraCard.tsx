@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { AuthLink } from "./AuthLink";
+
 import { ArrowUpRight, CalendarDays, Clock, MapPin, Users } from "lucide-react";
 import type { Peneira } from "@/lib/mock-data";
 import { useTilt } from "@/hooks/use-tilt";
@@ -150,21 +152,21 @@ export function ProximaPeneiraCard({
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              to="/peneiras/$peneiraId"
-              params={{ peneiraId: peneira.id }}
-              className="group/btn relative inline-flex h-11 items-center gap-2 overflow-hidden rounded-full bg-primary px-6 text-xs font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-gold transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+            <AuthLink
+              href={`/peneiras/${peneira.id}`}
+              className="group/btn relative inline-flex h-11 flex-1 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-6 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-gold transition-transform duration-300 hover:-translate-y-0.5 active:scale-[0.98] sm:flex-none sm:text-xs"
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/45 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
               Ver oportunidade
               <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/peneiras"
-              className="inline-flex h-11 items-center rounded-full border border-white/30 px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-primary hover:text-primary"
+            </AuthLink>
+            <AuthLink
+              href="/peneiras"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-white/30 px-5 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-primary hover:text-primary sm:flex-none sm:text-xs"
             >
               Ver todas
-            </Link>
+            </AuthLink>
+
           </div>
         </div>
       </article>

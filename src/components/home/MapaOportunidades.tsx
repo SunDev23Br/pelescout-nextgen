@@ -1,32 +1,10 @@
 import { useMemo, useState } from "react";
 import type { Peneira } from "@/lib/mock-data";
-import { UF_COORDS } from "@/lib/geo";
+import { BR_STATE_PATHS, BR_VIEWBOX } from "@/lib/br-map-paths";
 import { Eyebrow, Reveal } from "./Reveal";
+import { AuthLink } from "./AuthLink";
 
-const LAT = { min: -34, max: 6 };
-const LNG = { min: -74, max: -34 };
-
-/** Deslocamento manual do rótulo em estados que se sobrepõem. */
-const LABEL_OFFSET: Record<string, { dx: number; dy: number }> = {
-  DF: { dx: -6.5, dy: -1.6 },
-  GO: { dx: 2.8, dy: 2.4 },
-  SE: { dx: 2.8, dy: 1.6 },
-  AL: { dx: 2.8, dy: -1.2 },
-  PB: { dx: 2.8, dy: -1.4 },
-  PE: { dx: -6.5, dy: 0 },
-  RN: { dx: 2.8, dy: -1.8 },
-  RJ: { dx: 2.8, dy: 2.2 },
-  ES: { dx: 2.8, dy: -0.6 },
-  SP: { dx: -6.5, dy: 0.8 },
-  SC: { dx: 2.8, dy: 1.4 },
-  RS: { dx: -6.5, dy: 1.4 },
-};
-
-function project(lat: number, lng: number) {
-  const x = ((lng - LNG.min) / (LNG.max - LNG.min)) * 100;
-  const y = ((LAT.max - lat) / (LAT.max - LAT.min)) * 100;
-  return { x, y };
-}
+const [, , VB_W, VB_H] = BR_VIEWBOX.split(" ").map(Number);
 
 export function MapaOportunidades({ peneiras }: { peneiras: Peneira[] }) {
   const [ativoUf, setAtivoUf] = useState<string | null>(null);
@@ -39,6 +17,11 @@ export function MapaOportunidades({ peneiras }: { peneiras: Peneira[] }) {
     return m;
   }, [peneiras]);
 
+  const max = useMemo(
+    () => Math.max(1, ...[...porUf.values()]),
+    [porUf],
+  );
+
   const top = useMemo(
     () => [...porUf.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6),
     [porUf],
@@ -49,25 +32,31 @@ export function MapaOportunidades({ peneiras }: { peneiras: Peneira[] }) {
     [porUf],
   );
 
+  const estadoAtivo = BR_STATE_PATHS.find((s) => s.uf === ativoUf);
+  const nAtivo = ativoUf ? (porUf.get(ativoUf) ?? 0) : 0;
+
   return (
-    <section className="border-y border-border bg-bg2/40">
-      <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-24 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:px-10 lg:py-32">
+    <section
+      id="mapa"
+      className="scroll-mt-16 border-y border-border bg-bg2/40"
+    >
+      <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:px-10 lg:py-32">
         <Reveal>
           <Eyebrow>Mapa de oportunidades</Eyebrow>
-          <h2 className="mt-6 max-w-md font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.02em] lg:text-5xl">
+          <h2 className="mt-6 max-w-md font-display text-3xl font-extrabold leading-[1.05] tracking-[-0.02em] sm:text-4xl lg:text-5xl">
             O talento está espalhado. A avaliação também.
           </h2>
           <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Cada ponto representa um estado com peneiras ativas na plataforma —
-            {" "}
+            Os estados destacados em dourado têm peneiras ativas cadastradas
+            agora —{" "}
             <span className="font-semibold text-foreground tabular-nums">
               {totalAtivas}
             </span>{" "}
-            no total. Passe o cursor sobre um estado da lista para localizá-lo
-            no mapa.
+            no total. O mapa é atualizado automaticamente conforme novas
+            peneiras entram no sistema.
           </p>
 
-          <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-3">
+          <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
             {top.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Novas regiões em breve.
@@ -100,81 +89,92 @@ export function MapaOportunidades({ peneiras }: { peneiras: Peneira[] }) {
         </Reveal>
 
         <Reveal delay={140}>
-          <div className="relative mx-auto aspect-square w-full max-w-xl">
+          <div className="relative mx-auto w-full max-w-[34rem]">
             <svg
-              viewBox="0 0 100 100"
-              className="h-full w-full overflow-visible"
+              viewBox={BR_VIEWBOX}
+              className="h-auto w-full"
               role="img"
-              aria-label="Distribuição de peneiras pelos estados do Brasil"
+              aria-label="Mapa do Brasil com os estados que têm peneiras ativas"
             >
-              {Object.entries(UF_COORDS).map(([uf, c]) => {
-                const { x, y } = project(c.lat, c.lng);
-                const n = porUf.get(uf) ?? 0;
+              {BR_STATE_PATHS.map((s) => {
+                const n = porUf.get(s.uf) ?? 0;
                 const ativo = n > 0;
-                const destaque = ativoUf === uf;
-                const off = LABEL_OFFSET[uf] ?? { dx: 2.6, dy: 1 };
+                const destaque = ativoUf === s.uf;
+                const intensidade = ativo ? 0.25 + (n / max) * 0.6 : 0;
                 return (
-                  <g
-                    key={uf}
-                    onMouseEnter={() => ativo && setAtivoUf(uf)}
+                  <path
+                    key={s.uf}
+                    d={s.d}
+                    onMouseEnter={() => setAtivoUf(s.uf)}
                     onMouseLeave={() => setAtivoUf(null)}
-                    className={ativo ? "cursor-pointer" : undefined}
-                  >
-                    {ativo && (
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={2.4 + Math.min(n, 5) * 0.45}
-                        className={
-                          destaque
-                            ? "fill-primary/35"
-                            : "animate-pulse fill-primary/15"
-                        }
-                      />
-                    )}
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={ativo ? (destaque ? 1.8 : 1.15) : 0.45}
-                      className={
-                        ativo ? "fill-primary" : "fill-foreground/20"
-                      }
-                    />
-                    {ativo && (
-                      <text
-                        x={x + off.dx}
-                        y={y + off.dy}
-                        className={`hidden text-[2.4px] font-bold tracking-[0.08em] sm:block ${
-                          destaque ? "fill-primary" : "fill-foreground/65"
-                        }`}
-                      >
-                        {uf}
-                      </text>
-                    )}
-                    {destaque && (
-                      <>
-                        <rect
-                          x={x - 9}
-                          y={y - 9.5}
-                          width={18}
-                          height={6}
-                          rx={3}
-                          className="fill-foreground"
-                        />
-                        <text
-                          x={x}
-                          y={y - 5.4}
-                          textAnchor="middle"
-                          className="fill-background text-[2.8px] font-bold"
-                        >
-                          {uf} · {n} peneira{n > 1 ? "s" : ""}
-                        </text>
-                      </>
-                    )}
-                  </g>
+                    className={`transition-all duration-200 ${
+                      ativo ? "cursor-pointer" : ""
+                    }`}
+                    style={{
+                      fill: ativo
+                        ? `color-mix(in oklab, var(--gold) ${
+                            (destaque ? 1 : intensidade) * 100
+                          }%, transparent)`
+                        : "color-mix(in oklab, var(--foreground) 7%, transparent)",
+                      stroke: destaque
+                        ? "var(--gold-light)"
+                        : "color-mix(in oklab, var(--foreground) 22%, transparent)",
+                      strokeWidth: destaque ? 3 : 1.2,
+                      strokeLinejoin: "round",
+                    }}
+                  />
                 );
               })}
+
+              {BR_STATE_PATHS.filter((s) => (porUf.get(s.uf) ?? 0) > 0).map(
+                (s) => (
+                  <text
+                    key={`l-${s.uf}`}
+                    x={s.cx}
+                    y={s.cy + 6}
+                    textAnchor="middle"
+                    pointerEvents="none"
+                    className="fill-foreground text-[20px] font-bold tracking-[0.06em]"
+                  >
+                    {s.uf}
+                  </text>
+                ),
+              )}
             </svg>
+
+            {estadoAtivo && (
+              <div
+                className="pointer-events-none absolute z-10 w-max -translate-x-1/2 -translate-y-full rounded-xl border border-primary/40 bg-background/95 px-3 py-2 shadow-xl backdrop-blur"
+                style={{
+                  left: `${(estadoAtivo.cx / VB_W) * 100}%`,
+                  top: `${(estadoAtivo.cy / VB_H) * 100 - 1}%`,
+                }}
+              >
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                  {estadoAtivo.nome}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {nAtivo > 0
+                    ? `${nAtivo} peneira${nAtivo > 1 ? "s" : ""} ativa${nAtivo > 1 ? "s" : ""}`
+                    : "Sem peneiras no momento"}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-sm bg-primary" /> Com peneiras
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-sm bg-foreground/10" /> Em breve
+              </span>
+              <AuthLink
+                href="/peneiras"
+                className="font-bold text-primary underline-offset-4 hover:underline"
+              >
+                Ver todas
+              </AuthLink>
+            </div>
           </div>
         </Reveal>
       </div>
