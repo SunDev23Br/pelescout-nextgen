@@ -33,6 +33,7 @@ import {
 import { getPeneira } from "@/lib/mock-data";
 import { fetchPeneiraById } from "@/lib/peneiras.db";
 import { useSession } from "@/lib/session";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/peneiras/$peneiraId")({
@@ -101,6 +102,7 @@ export const Route = createFileRoute("/peneiras/$peneiraId")({
 });
 
 function PeneiraDetalhe() {
+  useRequireAuth();
   const { peneira } = Route.useLoaderData();
   const { user, ready } = useSession();
   const navigate = useNavigate();
