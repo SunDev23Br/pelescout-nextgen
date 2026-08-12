@@ -1,20 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Trophy, Sparkles, Target, Users, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useCountUp } from "@/hooks/use-count-up";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-import { Button } from "@/components/ui/button";
+import { Hero } from "@/components/home/Hero";
+import { MaisQueUmaPeneira } from "@/components/home/MaisQueUmaPeneira";
+import { Historia } from "@/components/home/Historia";
+import { DentroDaAcademia } from "@/components/home/DentroDaAcademia";
+import { ComoFunciona } from "@/components/home/ComoFunciona";
+import { PeneirasSection } from "@/components/home/PeneirasSection";
+import { MapaOportunidades } from "@/components/home/MapaOportunidades";
+import { Parceiros } from "@/components/home/Parceiros";
+import { CtaFinal } from "@/components/home/CtaFinal";
 import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
 import type { Peneira } from "@/lib/mock-data";
-
-function formatProxData(iso: string) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-  });
-}
 
 const HOME_OG_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03615082-b43f-44bc-a325-e562d4b95d20/id-preview-8a2baf9e--9a1282c2-3650-4073-a7fa-efe94d2d29d8.lovable.app-1777083107748.png";
@@ -22,36 +20,44 @@ const HOME_OG_IMAGE =
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Pelé Next Gen — Peneiras oficiais de futebol" },
+      { title: "Pelé Scout — Peneiras oficiais e avaliação de atletas" },
       {
         name: "description",
         content:
-          "Inscreva-se em peneiras oficiais, seja avaliado por olheiros profissionais e dê o próximo passo na sua carreira no futebol.",
+          "O talento existe, falta a oportunidade. Encontre peneiras oficiais, seja avaliado por olheiros profissionais e acompanhe sua evolução.",
       },
-      { property: "og:title", content: "Pelé Next Gen — Peneiras oficiais de futebol" },
+      {
+        property: "og:title",
+        content: "Pelé Scout — Peneiras oficiais e avaliação de atletas",
+      },
       {
         property: "og:description",
         content:
-          "Plataforma oficial Pelé Next Gen: peneiras, olheiros profissionais e perfis de atletas.",
+          "Encontre peneiras oficiais em todo o Brasil, seja avaliado por olheiros e dê o próximo passo na sua carreira no futebol.",
       },
       { property: "og:url", content: "https://pelescout-nextgen.lovable.app/" },
       { property: "og:image", content: HOME_OG_IMAGE },
       { name: "twitter:image", content: HOME_OG_IMAGE },
-      { name: "twitter:title", content: "Pelé Next Gen — Peneiras oficiais de futebol" },
+      {
+        name: "twitter:title",
+        content: "Pelé Scout — Peneiras oficiais e avaliação de atletas",
+      },
       {
         name: "twitter:description",
         content:
-          "Plataforma oficial Pelé Next Gen: peneiras, olheiros profissionais e perfis de atletas.",
+          "Encontre peneiras oficiais em todo o Brasil e seja avaliado por olheiros profissionais.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://pelescout-nextgen.lovable.app/" }],
+    links: [
+      { rel: "canonical", href: "https://pelescout-nextgen.lovable.app/" },
+    ],
     scripts: [
       {
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Pelé Next Gen",
+          name: "Pelé Scout",
           url: "https://pelescout-nextgen.lovable.app",
         }),
       },
@@ -60,189 +66,93 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-
 function Landing() {
-  const [proxima, setProxima] = useState<Peneira | null>(null);
+  const [peneiras, setPeneiras] = useState<Peneira[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPeneirasFromDb().then((list) => {
-      const aberta = list.find((p) => p.status === "aberta") ?? list[0] ?? null;
-      setProxima(aberta);
-    });
+    fetchPeneirasFromDb()
+      .then(setPeneiras)
+      .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <div className="min-h-screen overflow-hidden">
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Logo />
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Button asChild variant="ghost">
-            <Link to="/login">Entrar</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/cadastro">Cadastrar</Link>
-          </Button>
-        </div>
+  const proxima =
+    peneiras.find((p) => p.status === "aberta") ?? peneiras[0] ?? null;
 
+  return (
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-3 lg:px-10">
+          <Logo className="[&_img]:h-12" />
+          <nav className="hidden items-center gap-8 md:flex">
+            <Link
+              to="/peneiras"
+              className="text-xs font-bold uppercase tracking-[0.18em] text-foreground/70 transition-colors hover:text-primary"
+            >
+              Peneiras
+            </Link>
+            <a
+              href="#como-funciona"
+              className="text-xs font-bold uppercase tracking-[0.18em] text-foreground/70 transition-colors hover:text-primary"
+            >
+              Como funciona
+            </a>
+            <Link
+              to="/manual"
+              className="text-xs font-bold uppercase tracking-[0.18em] text-foreground/70 transition-colors hover:text-primary"
+            >
+              Manual
+            </Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              to="/login"
+              className="hidden h-10 items-center px-3 text-xs font-bold uppercase tracking-[0.14em] text-foreground/80 transition-colors hover:text-primary sm:inline-flex"
+            >
+              Entrar
+            </Link>
+            <Link
+              to="/cadastro"
+              className="inline-flex h-10 items-center bg-primary px-5 text-xs font-bold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-gold-light"
+            >
+              Cadastrar
+            </Link>
+          </div>
+        </div>
       </header>
 
       <main>
-      <section className="relative mx-auto max-w-7xl px-6 pb-24 pt-12 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <span className="mb-5 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              Plataforma oficial
-            </span>
-            <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              A nova geração do{" "}
-              <span className="text-gradient-gold">futebol</span> começa aqui!
-            </h1>
-            <p className="mt-6 max-w-xl text-lg text-foreground/80">
-              Descubra peneiras em todo o Brasil e dê o próximo passo na sua carreira. Cadastre-se,
-              seja avaliado por olheiros profissionais e mostre seu talento para os maiores clubes.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="group text-base shadow-gold transition-transform duration-200 hover:scale-[1.03]"
-              >
-                <Link to="/cadastro">
-                  Criar perfil de atleta
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-base transition-colors hover:bg-primary/10">
-                <Link to="/login">Entrar na minha conta</Link>
-              </Button>
-            </div>
-
-            <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8">
-              <Stat icon={Trophy} target={120} suffix="+" label="Peneiras realizadas" />
-              <Stat icon={Users} target={8400} format="k" label="Atletas cadastrados" />
-              <Stat icon={Star} target={320} label="Talentos descobertos" />
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="absolute -inset-6 rounded-[2rem] bg-gradient-gold opacity-20 blur-3xl" />
-            <div className="relative overflow-hidden rounded-3xl border border-border shadow-card">
-              <img
-                src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1200&q=80"
-                alt="Atleta jovem driblando em campo"
-                className="h-[520px] w-full object-cover"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/80 to-transparent p-6">
-                {proxima ? (
-                  <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-card/90 p-4 backdrop-blur">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-gold">
-                      <Trophy className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-display font-bold">Próxima peneira</p>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {proxima.titulo} · {proxima.cidade}/{proxima.estado} · {formatProxData(proxima.data)}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-card/90 p-4 backdrop-blur">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-gold">
-                      <Trophy className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-display font-bold">Próxima peneira</p>
-                      <p className="text-sm text-muted-foreground">Em breve</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-bg2/50">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-20 sm:grid-cols-2 lg:grid-cols-3">
-          <Feature
-            icon={Trophy}
-            title="Peneiras oficiais"
-            text="Acesse seletivas dos maiores centros de treinamento do país."
-          />
-          <Feature
-            icon={Target}
-            title="Avaliações de olheiros"
-            text="Seu desempenho é registrado em tempo real por profissionais."
-          />
-          <Feature
-            icon={Sparkles}
-            title="Seu perfil profissional"
-            text="Construa um histórico de avaliações que clubes podem visualizar."
-          />
-        </div>
-      </section>
+        <Hero proxima={proxima} />
+        <MaisQueUmaPeneira />
+        <Historia />
+        <DentroDaAcademia />
+        <ComoFunciona />
+        <PeneirasSection peneiras={peneiras} loading={loading} />
+        <MapaOportunidades peneiras={peneiras} />
+        <Parceiros />
+        <CtaFinal />
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <Logo />
-          <p className="text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-[1400px] flex-col items-start justify-between gap-6 px-6 py-10 sm:flex-row sm:items-center lg:px-10">
+          <Logo className="[&_img]:h-12" />
+          <div className="flex flex-wrap items-center gap-6 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <Link to="/peneiras" className="hover:text-primary">
+              Peneiras
+            </Link>
+            <Link to="/manual" className="hover:text-primary">
+              Manual
+            </Link>
+            <Link to="/suporte" className="hover:text-primary">
+              Suporte
+            </Link>
+          </div>
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Pelé Next Gen — Academia
           </p>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function Stat({
-  icon: Icon,
-  target,
-  label,
-  suffix = "",
-  format,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  target: number;
-  label: string;
-  suffix?: string;
-  format?: "k";
-}) {
-  const [value, ref] = useCountUp(target);
-  const display =
-    format === "k"
-      ? `${(value / 1000).toFixed(value >= 1000 ? 1 : 0)}k`
-      : `${value}${suffix}`;
-  return (
-    <div ref={ref as React.RefObject<HTMLDivElement>} className="animate-fade-in">
-      <div className="mb-1.5 flex items-center gap-1.5 text-primary">
-        <Icon className="h-4 w-4" />
-      </div>
-      <p className="font-display text-3xl font-extrabold text-gradient-gold tabular-nums">
-        {display}
-      </p>
-      <p className="mt-1 text-xs font-medium text-foreground/70">{label}</p>
-    </div>
-  );
-}
-
-function Feature({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
-        <Icon className="h-6 w-6" />
-      </div>
-      <h2 className="font-display text-lg font-bold">{title}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }
