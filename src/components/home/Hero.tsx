@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import type { Peneira } from "@/lib/mock-data";
 import { Reveal } from "./Reveal";
