@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -14,6 +14,7 @@ import { MapaOportunidades } from "@/components/home/MapaOportunidades";
 import { Parceiros } from "@/components/home/Parceiros";
 import { CtaFinal } from "@/components/home/CtaFinal";
 import { useScrollSpy } from "@/hooks/use-scroll-spy";
+import { PageLoader } from "@/components/home/PageLoader";
 import { fetchPeneirasFromDb } from "@/lib/peneiras.db";
 import type { Peneira } from "@/lib/mock-data";
 
@@ -28,6 +29,18 @@ const SECTIONS = [
 ];
 
 const SECTION_IDS = SECTIONS.map((s) => s.id);
+
+const HEADER_OFFSET = 84;
+
+function scrollToSection(e: ReactMouseEvent<HTMLAnchorElement>, id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  e.preventDefault();
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+  window.scrollTo({ top, behavior: reduced ? "auto" : "smooth" });
+  window.history.replaceState(null, "", `#${id}`);
+}
 
 
 const HOME_OG_IMAGE =
@@ -100,6 +113,7 @@ function Landing() {
 
   return (
     <div className="min-h-screen">
+      <PageLoader />
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-10">
           <Logo className="shrink-0 [&_img]:h-10 sm:[&_img]:h-12" />
@@ -109,6 +123,7 @@ function Landing() {
               <a
                 key={s.id}
                 href={`#${s.id}`}
+                onClick={(e) => scrollToSection(e, s.id)}
                 data-active={active === s.id}
                 className="relative text-[11px] font-bold uppercase tracking-[0.16em] text-foreground/65 transition-colors hover:text-primary data-[active=true]:text-primary"
               >
@@ -153,7 +168,10 @@ function Landing() {
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                onClick={() => setMenu(false)}
+                onClick={(e) => {
+                  setMenu(false);
+                  scrollToSection(e, s.id);
+                }}
                 className="rounded-lg px-3 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-foreground/75 transition-colors hover:bg-bg2 hover:text-primary"
               >
                 {s.label}
@@ -190,6 +208,7 @@ function Landing() {
               <a
                 key={s.id}
                 href={`#${s.id}`}
+                onClick={(e) => scrollToSection(e, s.id)}
                 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-primary"
               >
                 {s.label}
