@@ -40,3 +40,9 @@ Ajustes sobre o redesign editorial atual, mantendo a identidade (preto/dourado, 
 - `Reveal.tsx` ganha modo `onMount` para as animações de abertura.
 - Alterados: `Hero.tsx`, `PeneirasSection.tsx`, `DentroDaAcademia.tsx`, `Parceiros.tsx`, `MapaOportunidades.tsx`, `ComoFunciona.tsx`, `MaisQueUmaPeneira.tsx`.
 - Sem mudanças de banco de dados; a imagem da peneira já vem do campo existente com fallback.
+
+## 8. Alternância de cor entre azul e branco nas seções explicativas
+- Algumas seções explicativas passam a alternar de fundo em vez de ficarem todas escuras: "Mais que uma peneira" e "Como funciona" ganham fundo azul profundo com texto claro; "Dentro da academia" e "Clubes e parceiros" ficam em fundo branco/claro com texto escuro.
+- A alternância cria ritmo ao rolar (escuro → azul → claro → azul), com o dourado mantido como cor de destaque em ambos os fundos.
+- Usa os tokens de azul já existentes no design system (`blue`, `blue-light`, `blue-dark`), então funciona igual no tema claro e no escuro; nenhum valor de cor fixo no código.
+- Bordas, eyebrows e botões dentro dessas seções recebem a variante de contraste correta para permanecerem legíveis.
