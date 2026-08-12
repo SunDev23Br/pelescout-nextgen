@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -32,7 +32,7 @@ const SECTION_IDS = SECTIONS.map((s) => s.id);
 
 const HEADER_OFFSET = 84;
 
-function scrollToSection(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+function scrollToSection(e: ReactMouseEvent<HTMLAnchorElement>, id: string) {
   const el = document.getElementById(id);
   if (!el) return;
   e.preventDefault();

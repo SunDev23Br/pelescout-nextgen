@@ -4,6 +4,7 @@ import imgExp from "@/assets/home/timeline-expansao.jpg";
 import imgHoje from "@/assets/home/timeline-presente.jpg";
 import { Eyebrow, Reveal } from "./Reveal";
 import { useTilt } from "@/hooks/use-tilt";
+import type { CSSProperties } from "react";
 
 const MARCOS = [
   {
@@ -52,7 +53,7 @@ function MarcoFoto({ src, alt }: { src: string; alt: string }) {
         transform: "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))",
         "--shadow-gold-c":
           "color-mix(in oklab, var(--primary) 55%, transparent)",
-      } as React.CSSProperties}
+      } as CSSProperties}
     >
       <img
         src={src}
