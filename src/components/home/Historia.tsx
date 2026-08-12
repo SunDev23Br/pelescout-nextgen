@@ -50,9 +50,9 @@ function MarcoFoto({ src, alt }: { src: string; alt: string }) {
       className="group/foto relative mt-6 overflow-hidden [perspective:900px] transition-shadow duration-500 hover:shadow-[0_18px_40px_-18px_var(--shadow-gold-c)] motion-reduce:transition-none"
       style={{
         transform: "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))",
-        ["--shadow-gold-c" as string]:
+        "--shadow-gold-c":
           "color-mix(in oklab, var(--primary) 55%, transparent)",
-      }}
+      } as React.CSSProperties}
     >
       <img
         src={src}
