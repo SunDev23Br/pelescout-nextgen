@@ -34,8 +34,21 @@
 - Os dados vêm das peneiras já carregadas do banco, então o mapa se atualiza sozinho conforme novas peneiras são cadastradas.
 - A lista lateral de estados continua sincronizada com o realce no mapa.
 
+## 8. Acesso somente com conta
+- Qualquer caminho para o sistema a partir da homepage exige conta: "Ver todas as peneiras", "Ver oportunidade", cards de peneiras, o mapa e os botões do hero/CTA levam o visitante sem sessão direto para a tela de login.
+- A página de login recebe o destino pretendido e, após entrar (ou criar conta), o usuário é levado exatamente para onde clicou.
+- A proteção também vale para quem digita a URL direto: as páginas de peneiras e detalhe da peneira verificam a sessão e redirecionam para o login quando não houver.
+- A homepage continua pública, com as informações de vitrine visíveis.
+
+## 9. Cards de peneiras alinhados e responsivos
+- Os cards passam a ter altura uniforme, com título, local, categorias, contador de vagas e botão sempre nas mesmas linhas, independentemente do tamanho do texto (títulos com no máximo duas linhas).
+- No mobile: uma coluna, imagem em proporção fixa, tipografia e espaçamentos reduzidos, botões de largura total e área de toque confortável.
+- Filtros/busca, header, hero, carrossel, mapa e footer revisados nas larguras pequenas para evitar transbordo horizontal e textos apertados.
+
 ## Notas técnicas
-- Alterados: `src/routes/index.tsx` (header, footer, ids/scroll spy), `src/styles.css` (gradiente do `surface-blue`), `CtaFinal.tsx`, `MapaOportunidades.tsx` e demais seções em `src/components/home/` para reveal escalonado e tilt via `use-tilt`.
+- Alterados: `src/routes/index.tsx` (header, footer, ids/scroll spy), `src/styles.css` (gradiente do `surface-blue`), `CtaFinal.tsx`, `MapaOportunidades.tsx`, `PeneirasSection.tsx`, `ProximaPeneiraCard.tsx`, `Hero.tsx` e demais seções em `src/components/home/`.
+- Guarda de sessão nas rotas `peneiras.index` e `peneiras.$peneiraId`, com `redirect` na URL de login e retorno após autenticar.
 - Novo hook leve de scroll spy em `src/hooks/`; novo componente de mapa SVG do Brasil com os paths dos 27 estados em `src/components/home/` (sem dependência externa de mapas).
-- Sem mudanças de dados ou banco; a contagem por UF continua derivada de `peneiras`.
+- Sem mudanças de banco; a contagem por UF continua derivada de `peneiras`.
+
 
